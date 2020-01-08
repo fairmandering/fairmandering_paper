@@ -1,6 +1,7 @@
 from gurobipy import *
+import random
 
-def make_kmedians(config, pop_dict, lengths, relax=True):
+def make_kmedians(config, pop_dict, lengths, relax=True, random_seeds=0):
     n_districts = config['n_districts']
     alpha = config['cost_exponential']
     avg_pop = sum(pop_dict.values()) / n_districts
@@ -44,10 +45,15 @@ def make_kmedians(config, pop_dict, lengths, relax=True):
                                 for j in lengths[i]) >= pmin * ys[i],
                        name='population_minimum')
 
-    kmed.setObjective(quicksum(xs[i][j] * int(lengths[i][j] ** alpha * pop_dict[j] / 1000)
+    kmed.setObjective(quicksum(xs[i][j] * int(lengths[i][j] ** alpha * pop_dict[j])
                                for i in lengths
                                for j in lengths[i]),
                       GRB.MINIMIZE)
+
+    for i in range(random_seeds):
+        seed = random.choice(list(ys.keys()))
+        kmed.addConstr(ys[seed] == 1, name='random_center_%d' % i)
+
     kmed.update()
 
     return kmed, xs, ys

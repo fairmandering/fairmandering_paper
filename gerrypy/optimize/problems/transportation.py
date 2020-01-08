@@ -29,7 +29,7 @@ def make_transportation_problem(config, lengths, pop_dict):
                            name='x%s_maxsize' % j)
 
     transport.setObjective(quicksum(xs[i][j] *
-                            int(lengths[i][j] ** alpha * pop_dict[j] / 1000)
+                            int(lengths[i][j] ** alpha * pop_dict[j])
                                for i in lengths
                                for j in lengths[i]),
                       GRB.MINIMIZE)

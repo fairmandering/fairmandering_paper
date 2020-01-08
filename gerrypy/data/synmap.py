@@ -1,6 +1,8 @@
 import random
+
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter
+
 
 def gkern(size, sig):
     """Returns a 2D Gaussian kernel array."""
