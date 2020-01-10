@@ -43,6 +43,6 @@ def euclidean_kmeans_seeds(config, state_df, random_seeds=0, init='random'):
 def rand_weight(n_seeds, weights):
     total_weight = weights.sum()
     for _ in range(n_seeds):
-        rand_seed = random.randint(0, len(weights))
+        rand_seed = random.randint(0, len(weights) - 1)
         weights[rand_seed] = total_weight
     return weights
