@@ -7,6 +7,7 @@ from gerrypy.data.synpolitics import create_political_distribution
 from gerrypy.optimize.prune import make_lengths_data
 from gerrypy.optimize.initial_cols import *
 from gerrypy.optimize.problems.master import make_master
+from gerrypy.optimize.hierarchical import split
 import matplotlib.pyplot as plt
 
 def solve(config, data_paths=None):
@@ -19,7 +20,9 @@ def solve(config, data_paths=None):
         pop_array = syn_map.flatten() * 100
         x = np.arange(w).repeat(h).reshape(w, h).T.flatten()
         y = np.arange(h).repeat(w).reshape(h, w).flatten()
-        state_df = pd.DataFrame({'population': pop_array, 'x': x, 'y': y})
+        z = np.zeros(h*w)
+        state_df = pd.DataFrame({'population': pop_array,
+                                 'x': x, 'y': y, 'z': z})
         state_poli_mean, state_covar = create_political_distribution(config,
                                                                      state_df)
         state_df['affiliation'] = state_poli_mean
@@ -27,21 +30,22 @@ def solve(config, data_paths=None):
     else:
         pass
 
-    solution_logger = build_initial_columns(config, state_df, lengths)
-    clean_cols, cleaning_results = clean_initial_cols(G, solution_logger)
-    try:
-        removal_df = analyze_initial_cols(config, solution_logger, cleaning_results)
-        print(removal_df)
-    except KeyError:
-        print('Removal Analysis Failed')
+
+    # solution_logger = build_initial_columns(config, state_df, lengths)
+    # clean_cols, cleaning_results = clean_initial_cols(G, solution_logger)
+    # try:
+    #     removal_df = analyze_initial_cols(config, solution_logger, cleaning_results)
+    #     print(removal_df)
+    # except KeyError:
+    #     print('Removal Analysis Failed')
+    clean_cols = split(config, G, state_df, lengths)
 
     cost = [expected_rep_gap(distr,
                              state_df.population.values,
                              state_df.affiliation.values,
                              state_covar) for distr in clean_cols]
 
-
-    master, distr_activations = make_master(config, clean_cols, cost)
+    master, distr_activations = make_master(config, clean_cols, cost, relax=False)
     # master.update()
     # master.optimize()
     return state_df, clean_cols, master, distr_activations
@@ -68,19 +72,21 @@ if __name__ == '__main__':
     init_config = {
         # List where l[i] indicates number of trials with i random seeds
         'n_random_seeded_kmeans_iters': [3, 10, 10],
-        'n_random_seeded_kmedians_iters': [1, 10, 10],
+        'n_random_seeded_kmedians_iters': [1, 2, 2],
         'n_barrier_sample_iters': 5,
         'center_pruning_percent': .75,
         'population_pruning_radius': 8
     }
 
-    main_loop_config = {
-
+    hconfig = {
+        # Number of attempts to sample a node
+        'n_sample_tries': 4,
+        'n_samples': 3
     }
 
     config = {
         'euclidean': True,
-        'n_districts': 6,
+        'n_districts': 5,
         'population_tolerance': .05,
         'cost_exponential': 1,
         'spectral_activation_threshold': 1e-4,
@@ -90,6 +96,7 @@ if __name__ == '__main__':
         'IP_timeout': 5,
         'synmap_config': synmap_config,
         'init_config': init_config,
-        'politics_config': politics_config
+        'politics_config': politics_config,
+        'hconfig': hconfig
     }
     solve(config)

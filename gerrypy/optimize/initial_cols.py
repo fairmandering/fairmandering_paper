@@ -166,7 +166,8 @@ def analyze_initial_cols(config, solution_logger, cleaning_results):
                             'when': whens,
                             'n_random': rand_seeds})
     n_cols_generated = config['n_districts'] * len(solution_logger)
-    removal_df = removal_df.groupby('why') \
-                     .apply(lambda x: x.groupby('what') \
-                            .count())['why'] / n_cols_generated * 100
-    return removal_df
+    group_df = removal_df.groupby('why') \
+                   .apply(lambda x: x.groupby('what') \
+                          .apply(lambda y: y.groupby('n_random')['why'] \
+                                 .count())) / n_cols_generated * 100
+    return group_df
