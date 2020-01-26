@@ -7,6 +7,12 @@ def yi_prune(lengths, ratio):
     return {k: v for k, v in lengths.items() if random.random() > ratio}
 
 
+def complete_lengths_data(state_df):
+    locs = state_df[['x', 'y', 'z']].values
+    sq_locs = np.sum(locs ** 2, axis=1)
+    dists = -2 * np.dot(locs, locs.T) + sq_locs + sq_locs[:, np.newaxis]
+    return np.sqrt(dists)
+
 def make_lengths_data(config, state_df):
     tracts = list(state_df.index)
     x = state_df['x'].values
@@ -18,20 +24,16 @@ def make_lengths_data(config, state_df):
 
     tract_lengths_dict = {}
     for ix, tract in enumerate(tracts):
-        lens = xij_preprocess(tracts, ix, pop, x, y, ideal_pop,
-                              config['euclidean'])
+        lens = xij_preprocess(tracts, ix, pop, x, y, ideal_pop)
         tract_lengths_dict[tract] = lens
 
     return tract_lengths_dict
 
 
-def xij_preprocess(tracts, t, pop, cent_x, cent_y, ideal_pop, is_euclidean):
-    if is_euclidean:
-        pdist = np.linalg.norm(np.stack([cent_x - cent_x[t],
-                                         cent_y - cent_y[t]]),
-                               axis=0)
-    else:
-        pdist = vecdist(cent_y, cent_x, cent_y[t], cent_x[t]).flatten()
+def xij_preprocess(tracts, t, pop, cent_x, cent_y, ideal_pop):
+    pdist = np.linalg.norm(np.stack([cent_x - cent_x[t],
+                                     cent_y - cent_y[t]]),
+                           axis=0)
     if ideal_pop/2 > np.sum(pop) - 100:
         return {tracts[tr]: int(pdist[tr]) for tr in range(len(tracts))}
     search_range = [0, max(pdist)]

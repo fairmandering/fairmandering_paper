@@ -1,10 +1,8 @@
 from gurobipy import *
 import numpy as np
 
-def make_master(config, initial_cols, costs, relax=True):
-    n_districts = config['n_districts']
-    n_blocks = config['synmap_config']['width'] * \
-               config['synmap_config']['height']
+
+def make_master(n_districts, n_blocks, initial_cols, costs, relax=True):
 
     district_mat = np.zeros((n_blocks, len(costs)))
     for ix, column in enumerate(initial_cols):
@@ -18,18 +16,18 @@ def make_master(config, initial_cols, costs, relax=True):
     for j in J:
         x[j] = master.addVar(vtype=vtype, name="x(%s)" % j)
 
+    master.addConstrs((quicksum(x[j] * district_mat[i, j] for j in J) == 1
+                       for i in range(n_blocks)), name='exactlyOne')
+
+    master.addConstr(quicksum(x[j] for j in J) == n_districts,
+                     name="totalDistricts")
+
     w = master.addVar(name="w")
 
     master.addConstr(quicksum(costs[j] * x[j] for j in J) <= w,
                      name='absval_pos')
     master.addConstr(quicksum(costs[j] * x[j] for j in J) >= -w,
                      name='absval_neg')
-
-    master.addConstrs((quicksum(x[j] * district_mat[i, j] for j in J) == 1
-                       for i in range(n_blocks)), name='exactlyOne')
-
-    master.addConstr(quicksum(x[j] for j in J) == n_districts,
-                     name="totalDistricts")
 
     master.setObjective(w, GRB.MINIMIZE)
 

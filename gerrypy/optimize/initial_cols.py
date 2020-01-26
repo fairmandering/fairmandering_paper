@@ -8,13 +8,8 @@ from gerrypy.optimize.spectral import *
 
 
 def gen_kmeans_cols(config, state_df, lengths, random_seeds=0):
-    if config['euclidean']:
-        kmeans_fn = euclidean_kmeans_seeds
-    else:
-        kmeans_fn = geographic_kmeans_seeds
-
     iter_start = time.time()
-    centers = kmeans_fn(config, state_df, random_seeds)
+    centers = euclidean_kmeans_seeds(config, state_df, random_seeds)
     kmeans_finish_t = time.time()
     tp_lengths = {i: lengths[i] for i in centers}
     tp, xs = make_transportation_problem(config, tp_lengths,
