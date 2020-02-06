@@ -2,8 +2,7 @@ import networkx as nx
 import pandas as pd
 import numpy as np
 from gerrypy.optimize.cost import expected_rep_gap
-from gerrypy.data.synmap import generate_map
-from gerrypy.data.synpolitics import create_political_distribution
+from gerrypy.data.synthetic import generate_synthetic_input
 from gerrypy.optimize.prune import make_lengths_data, complete_lengths_data
 from gerrypy.optimize.initial_cols import *
 from gerrypy.optimize.problems.master import make_master
@@ -14,22 +13,8 @@ from gurobipy import *
 
 def solve(config, data_base_path=None):
     if data_base_path is None:
-        synmap_config = config['synmap_config']
-        syn_map = generate_map(synmap_config)
-        h, w = synmap_config['height'], synmap_config['width']
-        G = nx.grid_graph([w, h])
-        G = nx.convert_node_labels_to_integers(G)
-        pop_array = syn_map.flatten() * 100
-        x = np.arange(w).repeat(h).reshape(w, h).T.flatten()
-        y = np.arange(h).repeat(w).reshape(h, w).flatten()
-        z = np.zeros(h * w)
-        state_df = pd.DataFrame({'population': pop_array,
-                                 'x': x, 'y': y, 'z': z})
-        state_poli_mean, state_covar = create_political_distribution(config,
-                                                                     state_df)
-        state_df['affiliation'] = state_poli_mean
-        # lengths = make_lengths_data(config, state_df)
-        lengths = complete_lengths_data(state_df)
+        synthetic_input = generate_synthetic_input(config)
+        state_df, G, state_covar, lengths = synthetic_input
     else:
         state_df_path = os.path.join(data_base_path, 'state_df.csv')
         adjacency_graph_path = os.path.join(data_base_path, 'G.p')
@@ -39,7 +24,11 @@ def solve(config, data_base_path=None):
         G = nx.read_gpickle(adjacency_graph_path)
         state_covar = np.load(covar_path)
 
-        lengths = complete_lengths_data(state_df)
+        if os.path.exists(os.path.join(data_base_path, 'lengths.npy')):
+            lengths_path = os.path.join(data_base_path, 'lengths.npy')
+            lengths = np.load(lengths_path)
+        else:
+            lengths = complete_lengths_data(state_df)
 
 
     # solution_logger = build_initial_columns(config, state_df, lengths)
