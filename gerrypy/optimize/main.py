@@ -10,11 +10,10 @@ from gerrypy.optimize.problems.master import make_master
 from gerrypy.optimize.hierarchical import non_binary_bfs_split
 from gerrypy.optimize.tree import SampleTree
 from gurobipy import *
-import matplotlib.pyplot as plt
 
 
-def solve(config, data_paths=None):
-    if data_paths is None:
+def solve(config, data_base_path=None):
+    if data_base_path is None:
         synmap_config = config['synmap_config']
         syn_map = generate_map(synmap_config)
         h, w = synmap_config['height'], synmap_config['width']
@@ -32,7 +31,16 @@ def solve(config, data_paths=None):
         # lengths = make_lengths_data(config, state_df)
         lengths = complete_lengths_data(state_df)
     else:
-        pass
+        state_df_path = os.path.join(data_base_path, 'state_df.csv')
+        adjacency_graph_path = os.path.join(data_base_path, 'G.p')
+        covar_path = os.path.join(data_base_path, 'covar.npy')
+
+        state_df = pd.read_csv(state_df_path)
+        G = nx.read_gpickle(adjacency_graph_path)
+        state_covar = np.load(covar_path)
+
+        lengths = complete_lengths_data(state_df)
+
 
     # solution_logger = build_initial_columns(config, state_df, lengths)
     # clean_cols, cleaning_results = clean_initial_cols(G, solution_logger)
@@ -63,7 +71,7 @@ def solve(config, data_paths=None):
 
     master_constraints = master.getConstrs()
 
-    for i in range(1):
+    for i in range(config['n_tree_samples']):
         tree = SampleTree(config['hconfig'], config['n_districts'])
         clean_cols = non_binary_bfs_split(config, G, state_df, lengths, tree)
         all_cols += clean_cols
@@ -78,8 +86,8 @@ def solve(config, data_paths=None):
             # Tract membership terms
             master_col.addTerms(np.ones(len(col)),
                                 [master_constraints[i] for i in col])
-            # abs value +, abs value -, n_districts
-            control_terms = [cost, -cost, 1]
+            # n_districts, abs value +, abs value -
+            control_terms = [1, cost, cost]
             master_col.addTerms(control_terms, master_constraints[-3:])
             var_num = len(variables)
             variables[var_num] = master.addVar(vtype=GRB.BINARY,
@@ -146,11 +154,13 @@ if __name__ == '__main__':
 
     config = {
         'n_districts': 11,
+        'n_tree_samples': 10,
         'cost_exponential': 1,
         'population_tolerance': .05,
-        'spectral_activation_threshold': 1e-4,
-        'barrier_timeout': 100,  # Seconds
-        'barrier_convergence_tol': 1e-2,
+        'master_obj_tolerance': 1e-4,
+        # 'spectral_activation_threshold': 1e-4,
+        # 'barrier_timeout': 100,  # Seconds
+        # 'barrier_convergence_tol': 1e-2,
         'IP_gap_tol': 1e-2,
         'IP_timeout': 5,
         'synmap_config': synmap_config,

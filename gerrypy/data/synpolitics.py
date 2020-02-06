@@ -32,8 +32,8 @@ def create_political_distribution(config, state_df):
 
     gamma = config['politics_config']['covariance_gamma']
     covar_mat = rbf_kernel(X, gamma=gamma)
-    np.fill_diagonal(covar_mat, 0)
-    variance = np.diag(np.random.normal(loc=0, scale=var, size=size))
+    np.fill_diagonal(covar_mat, 1)
+    variance = np.abs(np.diag(np.random.normal(loc=0, scale=var, size=size)))
     covar_mat += variance
 
     return mean_vector, covar_mat

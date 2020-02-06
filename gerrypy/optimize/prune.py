@@ -11,7 +11,7 @@ def complete_lengths_data(state_df):
     locs = state_df[['x', 'y', 'z']].values
     sq_locs = np.sum(locs ** 2, axis=1)
     dists = -2 * np.dot(locs, locs.T) + sq_locs + sq_locs[:, np.newaxis]
-    return np.sqrt(dists)
+    return np.nan_to_num(np.sqrt(dists))
 
 def make_lengths_data(config, state_df):
     tracts = list(state_df.index)
