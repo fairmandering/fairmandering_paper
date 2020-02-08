@@ -6,6 +6,42 @@ from gerrypy.optimize.tree import SampleTree
 from gurobipy import *
 
 
+def generate_columns(config, state_df, G, lengths, state_covar,
+                     timeout=None, max_samples=None):
+    all_cols = []
+    all_costs = []
+
+    timeout = timeout if timeout is not None else 1e15
+    max_tree_samples = max_samples if max_samples is not None else 1e10
+    start_time = time.time()
+    n_tree_samples = 0
+
+    while n_tree_samples < max_tree_samples and \
+            time.time() - start_time < timeout:
+
+        tree = SampleTree(config['hconfig'], config['n_districts'])
+        sampled_tree = False
+        while not sampled_tree:
+            try:
+                clean_cols = non_binary_bfs_split(config, G, state_df,
+                                                  lengths, tree)
+                sampled_tree = True
+            except ValueError:
+                print('Tree sample failed')
+                continue
+
+        costs = [expected_rep_gap(distr,
+                                  state_df.population.values,
+                                  state_df.affiliation.values,
+                                  state_covar) for distr in clean_cols]
+        all_cols += clean_cols
+        all_costs += costs
+        n_tree_samples += 1
+
+    return all_cols, all_costs
+
+
+
 def track_tree_sampling(config, state_df, G, lengths, state_covar):
     all_cols = []
     all_costs = []
@@ -14,21 +50,16 @@ def track_tree_sampling(config, state_df, G, lengths, state_covar):
     obj_vals = []
 
     # Initialization iteration
-    tree = SampleTree(config['hconfig'], config['n_districts'])
-    trees.append(tree)
-    clean_cols = non_binary_bfs_split(config, G, state_df, lengths, tree)
-    all_cols += clean_cols
+    cols, costs = generate_columns(config, state_df, G, lengths, state_covar,
+                                   max_samples=1)
 
-    costs = [expected_rep_gap(distr,
-                              state_df.population.values,
-                              state_df.affiliation.values,
-                              state_covar) for distr in clean_cols]
-
+    all_cols += cols
     all_costs += costs
+
     master, variables = make_master(config['n_districts'], len(state_df),
                                     all_cols, all_costs, relax=False)
 
-    master.Params.MIPGap = config['master_obj_tolerance']
+    master.Params.MIPGapAbs = config['master_abs_gap']
     master.update()
     master.optimize()
 
@@ -40,25 +71,14 @@ def track_tree_sampling(config, state_df, G, lengths, state_covar):
     master_constraints = master.getConstrs()
 
     for i in range(config['n_tree_samples']):
-        tree = SampleTree(config['hconfig'], config['n_districts'])
-        trees.append(tree)
-        sampled_tree = False
-        while not sampled_tree:
-            try:
-                clean_cols = non_binary_bfs_split(config, G, state_df,
-                                                  lengths, tree)
-                sampled_tree = True
-            except ValueError:
-                print('Tree sample failed')
-                continue
-        all_cols += clean_cols
-        costs = [expected_rep_gap(distr,
-                                  state_df.population.values,
-                                  state_df.affiliation.values,
-                                  state_covar) for distr in clean_cols]
 
+        cols, costs = generate_columns(config, state_df, G, lengths,
+                                       state_covar, max_samples=1)
+
+        all_cols += cols
         all_costs += costs
-        for col, cost in zip(clean_cols, costs):
+
+        for col, cost in zip(cols, costs):
             master_col = Column()
             # Tract membership terms
             master_col.addTerms(np.ones(len(col)),
@@ -70,7 +90,7 @@ def track_tree_sampling(config, state_df, G, lengths, state_covar):
             variables[var_num] = master.addVar(vtype=GRB.BINARY,
                                                name="x(%s)" % var_num,
                                                column=master_col,
-                                               obj=cost)
+                                               obj=0)
 
         master.update()
         master.optimize()

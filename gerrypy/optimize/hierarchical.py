@@ -123,7 +123,7 @@ def make_pop_bounds(split_info, state_df, centers):
         n_child_districts = child.n_districts
         levels_to_leaf = child.max_levels_to_leaf
         distr_pop = area_pop * n_child_districts / n_districts
-        pop_tol = split_info['population_tolerance'] / (levels_to_leaf + 1)
+        pop_tol = split_info['population_tolerance'] / (levels_to_leaf + 2)
         ub = distr_pop * (1 + pop_tol)
         lb = distr_pop * (1 - pop_tol)
         bound_list.append({

@@ -11,24 +11,30 @@ from gerrypy.optimize.tree import SampleTree
 from gurobipy import *
 
 
+def load_real_data(data_base_path):
+    state_df_path = os.path.join(data_base_path, 'state_df.csv')
+    adjacency_graph_path = os.path.join(data_base_path, 'G.p')
+    covar_path = os.path.join(data_base_path, 'covar.npy')
+
+    state_df = pd.read_csv(state_df_path)
+    G = nx.read_gpickle(adjacency_graph_path)
+    state_covar = np.load(covar_path)
+
+    if os.path.exists(os.path.join(data_base_path, 'lengths.npy')):
+        lengths_path = os.path.join(data_base_path, 'lengths.npy')
+        lengths = np.load(lengths_path)
+    else:
+        lengths = complete_lengths_data(state_df)
+    return state_df, G, state_covar, lengths
+
+
 def solve(config, data_base_path=None):
     if data_base_path is None:
         synthetic_input = generate_synthetic_input(config)
         state_df, G, state_covar, lengths = synthetic_input
     else:
-        state_df_path = os.path.join(data_base_path, 'state_df.csv')
-        adjacency_graph_path = os.path.join(data_base_path, 'G.p')
-        covar_path = os.path.join(data_base_path, 'covar.npy')
-
-        state_df = pd.read_csv(state_df_path)
-        G = nx.read_gpickle(adjacency_graph_path)
-        state_covar = np.load(covar_path)
-
-        if os.path.exists(os.path.join(data_base_path, 'lengths.npy')):
-            lengths_path = os.path.join(data_base_path, 'lengths.npy')
-            lengths = np.load(lengths_path)
-        else:
-            lengths = complete_lengths_data(state_df)
+        real_input = load_real_data(data_base_path)
+        state_df, G, state_covar, lengths = real_input
 
 
     # solution_logger = build_initial_columns(config, state_df, lengths)
@@ -123,15 +129,6 @@ if __name__ == '__main__':
         'covariance_gamma': .3
     }
 
-    init_config = {
-        # List where l[i] indicates number of trials with i random seeds
-        'n_random_seeded_kmeans_iters': [3, 10, 10],
-        'n_random_seeded_kmedians_iters': [1, 2, 2],
-        'n_barrier_sample_iters': 5,
-        'center_pruning_percent': .75,
-        'population_pruning_radius': 8
-    }
-
     hconfig = {
         # Number of attempts to sample a node
         'n_sample_tries': 4,
@@ -146,14 +143,10 @@ if __name__ == '__main__':
         'n_tree_samples': 10,
         'cost_exponential': 1,
         'population_tolerance': .05,
-        'master_obj_tolerance': 1e-4,
-        # 'spectral_activation_threshold': 1e-4,
-        # 'barrier_timeout': 100,  # Seconds
-        # 'barrier_convergence_tol': 1e-2,
         'IP_gap_tol': 1e-2,
         'IP_timeout': 5,
+        'master_abs_gap': 1e-3,
         'synmap_config': synmap_config,
-        'init_config': init_config,
         'politics_config': politics_config,
         'hconfig': hconfig
     }

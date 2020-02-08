@@ -21,6 +21,11 @@ def sample_n_children(hconfig, n_distrs):
     return child_n_distrs
 
 
+class SampleNode:
+    def __init__(self, hconfig, n_districts):
+        pass
+
+
 class SampleTree:
     def __init__(self, hconfig, n_districts, level=0):
         self.n_districts = n_districts
