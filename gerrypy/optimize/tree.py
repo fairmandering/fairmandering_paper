@@ -22,8 +22,16 @@ def sample_n_children(hconfig, n_distrs):
 
 
 class SampleNode:
-    def __init__(self, hconfig, n_districts):
-        pass
+    def __init__(self, hconfig, n_districts, area, tree=None):
+        self.hconfig = hconfig
+        self.n_districts = n_districts
+        self.area = area
+        self.tree = tree
+
+        self.id = hash(frozenset(area))
+        self.n_sample_failures = 0
+        self.n_disconnected_samples = 0
+
 
 
 class SampleTree:

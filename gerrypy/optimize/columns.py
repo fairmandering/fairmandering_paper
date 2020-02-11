@@ -10,6 +10,7 @@ def generate_columns(config, state_df, G, lengths, state_covar,
                      timeout=None, max_samples=None):
     all_cols = []
     all_costs = []
+    n_sample_failures = 0
 
     timeout = timeout if timeout is not None else 1e15
     max_tree_samples = max_samples if max_samples is not None else 1e10
@@ -26,8 +27,8 @@ def generate_columns(config, state_df, G, lengths, state_covar,
                 clean_cols = non_binary_bfs_split(config, G, state_df,
                                                   lengths, tree)
                 sampled_tree = True
-            except ValueError:
-                print('Tree sample failed')
+            except RuntimeError:
+                n_sample_failures += 1
                 continue
 
         costs = [expected_rep_gap(distr,

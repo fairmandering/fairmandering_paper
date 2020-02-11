@@ -1,8 +1,7 @@
 from gurobipy import *
 
 
-def make_splitter(config, lengths, population, pop_bounds):
-    alpha = config['cost_exponential']
+def make_splitter(lengths, population, pop_bounds, alpha):
     splitter = Model('dual_split')
     districts = {}
     for center, tracts in lengths.items():
