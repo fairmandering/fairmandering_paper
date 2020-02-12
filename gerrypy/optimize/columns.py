@@ -2,6 +2,7 @@ from gerrypy.optimize.cost import expected_rep_gap
 from gerrypy.optimize.initial_cols import *
 from gerrypy.optimize.problems.master import make_master
 from gerrypy.optimize.hierarchical import non_binary_bfs_split
+from gerrypy.optimize.shc import shc
 from gerrypy.optimize.tree import SampleTree
 from gurobipy import *
 
@@ -24,8 +25,7 @@ def generate_columns(config, state_df, G, lengths, state_covar,
         sampled_tree = False
         while not sampled_tree:
             try:
-                clean_cols = non_binary_bfs_split(config, G, state_df,
-                                                  lengths, tree)
+                clean_cols = shc(config, G, state_df, lengths, tree)
                 sampled_tree = True
             except RuntimeError:
                 n_sample_failures += 1
@@ -40,7 +40,6 @@ def generate_columns(config, state_df, G, lengths, state_covar,
         n_tree_samples += 1
 
     return all_cols, all_costs
-
 
 
 def track_tree_sampling(config, state_df, G, lengths, state_covar):

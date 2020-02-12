@@ -2,35 +2,34 @@ import math
 import random
 import numpy as np
 
-
-def sample_n_children(hconfig, n_distrs):
-    n_splits = random.randint(min(hconfig['min_n_splits'], n_distrs),
-                              min(hconfig['max_n_splits'], n_distrs))
-
-    ub = max(math.ceil(hconfig['max_split_population_difference']
-                       * n_distrs / n_splits), 2)
-    lb = max(math.floor((1 / hconfig['max_split_population_difference'])
-                        * n_distrs / n_splits), 1)
-
-    child_n_distrs = np.zeros(n_splits) + lb
-    while int(sum(child_n_distrs)) != n_distrs:
-        ix = random.randint(0, n_splits - 1)
-        if child_n_distrs[ix] < ub:
-            child_n_distrs[ix] += 1
-
-    return child_n_distrs
-
-
 class SampleNode:
-    def __init__(self, hconfig, n_districts, area, tree=None):
+    def __init__(self, hconfig, n_districts, area):
         self.hconfig = hconfig
         self.n_districts = n_districts
         self.area = area
-        self.tree = tree
+        self.children_ids = []
 
         self.id = hash(frozenset(area))
         self.n_sample_failures = 0
         self.n_disconnected_samples = 0
+
+    def sample_n_children(self):
+        n_distrs = self.n_districts
+        n_splits = random.randint(min(self.hconfig['min_n_splits'], n_distrs),
+                                  min(self.hconfig['max_n_splits'], n_distrs))
+
+        ub = max(math.ceil(self.hconfig['max_split_population_difference']
+                           * n_distrs / n_splits), 2)
+        lb = max(math.floor((1 / self.hconfig['max_split_population_difference'])
+                            * n_distrs / n_splits), 1)
+
+        child_n_distrs = np.zeros(n_splits) + lb
+        while int(sum(child_n_distrs)) != n_distrs:
+            ix = random.randint(0, n_splits - 1)
+            if child_n_distrs[ix] < ub:
+                child_n_distrs[ix] += 1
+
+        return child_n_distrs
 
 
 
@@ -40,7 +39,7 @@ class SampleTree:
         self.level = 0
 
         if n_districts > 1:
-            children_n_distrs = sample_n_children(hconfig, n_districts)
+            children_n_distrs = SampleNode.sample_n_children()
             self.children = [SampleTree(hconfig, n, level + 1)
                              for n in children_n_distrs]
         else:
