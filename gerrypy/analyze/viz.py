@@ -3,7 +3,9 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 from pysal.lib.weights import Queen
+from matplotlib.colors import LinearSegmentedColormap as LSC
 import matplotlib.pyplot as plt
+
 
 def color_map(gdf, districting):
     # Takes a few seconds
@@ -19,14 +21,15 @@ def color_map(gdf, districting):
     shape_series = gpd.GeoSeries(shapes)
     G = Queen(shapes).to_networkx()
     color_series = pd.Series(nx.greedy_color(G))
-    if len(set(color_series.values)) == 3:
-        cmap = 'jet'
-    else:
-        cmap = 'gist_rainbow'
+    n_colors = len(set(color_series.values))
+
+    cmap = LSC.from_list("", ["red", "lime", "dodgerblue",
+                              'yellow', 'darkviolet', 'chocolate'][:n_colors])
+
     map_gdf = gpd.GeoDataFrame({'geometry': shape_series,
                                 'color': color_series})
     map_gdf.plot(column='color', figsize=(15, 15), cmap=cmap)
-
+    return map_gdf
 
 
 def color_synthetic_map(config, districting):
@@ -36,6 +39,7 @@ def color_synthetic_map(config, districting):
         for tract in district:
             tmap[tract // w, tract % w] += ix
     plt.matshow(tmap)
+
 
 def politics_map(gdf, politics, districting):
     pass

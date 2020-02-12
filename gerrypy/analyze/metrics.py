@@ -78,7 +78,7 @@ def dispersion_compactness(districting, gdf):
 
 def competitiveness(districting, state_df,
                     scale=((2, 'tossup'), (5, 'lean'),
-                           (10, 'strong lean'), (50, 'likely'))):
+                           (10, 'likely'), (50, 'safe'))):
 
     def helper(mean, scale):
         for percent, competition_rank in scale:
@@ -99,8 +99,6 @@ def competitiveness(districting, state_df,
     return competitive_results
 
 
-
-
 def n_competitive(districting, state_df, percent_threshold=5):
     competitive = 0
     for d, district in districting.items():
@@ -111,7 +109,8 @@ def n_competitive(districting, state_df, percent_threshold=5):
             competitive += 1
     return competitive
 
+
 def show_metrics(districting, state_df):
-    print(efficiency_gap(districting, state_df))
-    print(competitiveness(districting, state_df))
-    print(population_gap(districting, state_df))
+    print(efficiency_gap(districting, state_df), '\n')
+    print(competitiveness(districting, state_df), '\n')
+    print(population_gap(districting, state_df), '\n')
