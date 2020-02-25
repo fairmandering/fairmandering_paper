@@ -32,6 +32,17 @@ def color_map(gdf, districting):
     return map_gdf
 
 
+def draw_adjacency_graph(gdf, G, size=(200, 150)):
+    base = gdf.plot(color='white', edgecolor='black', figsize=size)
+    nx.draw_networkx(G,
+                     pos={i: (geo.centroid.x, geo.centroid.y)
+                          for i, geo in gdf.geometry.iteritems()},
+                     ax=base,
+                     node_size=50,
+                     with_labels=False,
+                     edge_color='red')
+
+
 def color_synthetic_map(config, districting):
     h, w = config['synmap_config']['height'], config['synmap_config']['width']
     tmap = np.zeros((h, w))
