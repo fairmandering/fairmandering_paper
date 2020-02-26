@@ -10,6 +10,8 @@ from scipy.spatial.distance import cdist
 def annotate_precincts(precinct_shape_path, census_shape_path,
                        census_data_path, census_column_path):
     precincts = gpd.read_file(precinct_shape_path).to_crs(epsg=4326)
+    precincts.columns = [c.upper() if c != 'geometry' else c
+                         for c in precincts.columns]
     tracts = gpd.read_file(census_shape_path).to_crs(epsg=4326)
 
     tracts['center_x'] = tracts.centroid.x
@@ -29,14 +31,18 @@ def annotate_precincts(precinct_shape_path, census_shape_path,
         pgeo = row.geometry
         parea = pgeo.area
         tix = 0
-        while percent_precinct_covered < .99:
+        while percent_precinct_covered < .99 and tix < len(t_centers) / 2:
             tract_id = dists[pix, tix]
             tract_row = tracts.iloc[tract_id]
             tgeo = tract_row.geometry
             try:
                 overlap_area = pgeo.intersection(tgeo).area
             except TopologicalError:  # In case polygon crosses itself
-                overlap_area = pgeo.buffer(0).intersection(tgeo.buffer(0)).area
+                try:
+                    overlap_area = pgeo.buffer(0).intersection(tgeo.buffer(0)).area
+                except TopologicalError:
+                    overlap_area = pgeo.convex_hull.buffer(0)\
+                        .intersection(tgeo.convex_hull.buffer(0)).area
             if overlap_area > 0:
                 percent_precinct_covered += overlap_area / parea
 
@@ -87,8 +93,8 @@ def annotate_precincts(precinct_shape_path, census_shape_path,
     precinct_df['population'] = precinct_populations
 
     total_voters = (precincts['G16PRERTRU'] + precincts['G16PREDCLI'])
-    precinct_df['p_dem'] = precincts['G16PREDCLI'] / total_voters
-
+    precinct_df['p_dem'] = (precincts['G16PREDCLI'] / total_voters)
+    precinct_df = precinct_df.fillna(precinct_df.median())
     return precinct_df
 
 
