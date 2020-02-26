@@ -34,13 +34,15 @@ def color_map(gdf, districting):
 
 def draw_adjacency_graph(gdf, G, size=(200, 150)):
     base = gdf.plot(color='white', edgecolor='black', figsize=size)
+    edge_colors = ['green' if G[u][v].get('inferred', False) else 'red'
+                   for u, v in G.edges]
     nx.draw_networkx(G,
                      pos={i: (geo.centroid.x, geo.centroid.y)
                           for i, geo in gdf.geometry.iteritems()},
                      ax=base,
                      node_size=50,
                      with_labels=False,
-                     edge_color='red')
+                     edge_color=edge_colors)
 
 
 def color_synthetic_map(config, districting):

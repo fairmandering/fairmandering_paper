@@ -82,9 +82,9 @@ def create_adjacency_graph(gdf,
             islands to the main land mass.
 
 
-    Returns: tuple of undirected NetworkX graphs.
-                The first graph is the graph after phase 1, so not all components
-                 are connected yet. The second graph is after the the merging step.
+    Returns: undirected NetworkX graph
+
+    Note: Edges added is phase 2 have edge attribute "inferred"
     """
     # Create finer granularity polygons
     interpolated_polygons = create_interpolated_polygons(gdf,
@@ -119,8 +119,6 @@ def create_adjacency_graph(gdf,
                 G.add_edge(precinct_ix1, precinct_ix2)
             # Don't need to check the reverse pair
             searched_pairs.add((precinct_ix2, precinct_ix1))
-
-    unmerged_G = G.copy()
 
     comps = [list(c) for c in list(nx.connected_components(G))]
 
@@ -167,7 +165,7 @@ def create_adjacency_graph(gdf,
                 print('added edge', poly_ix, poly_jx)
         comps = [list(c) for c in list(nx.connected_components(G))]
 
-    return unmerged_G, G
+    return G
 
 
 def interp_pts(dist, scaling, offset):
