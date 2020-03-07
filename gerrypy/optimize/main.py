@@ -1,5 +1,6 @@
 import networkx as nx
 import pandas as pd
+import pickle
 import numpy as np
 from gerrypy.optimize.cost import expected_rep_gap
 from gerrypy.data.synthetic import generate_synthetic_input
@@ -24,8 +25,16 @@ def load_real_data(data_base_path):
         lengths_path = os.path.join(data_base_path, 'lengths.npy')
         lengths = np.load(lengths_path)
     else:
-        lengths = complete_lengths_data(state_df)
-    return state_df, G, state_covar, lengths
+        from scipy.spatial.distance import pdist, squareform
+        lengths = squareform(pdist(state_df[['x', 'y']].values))
+
+    if os.path.exists(os.path.join(data_base_path, 'edge_dists.p')):
+        edge_dists_path = os.path.join(data_base_path, 'edge_dists.p')
+        edge_dists = pickle.load(open(edge_dists_path, 'rb'))
+    else:
+        edge_dists = dict(nx.all_pairs_shortest_path_length(G))
+
+    return state_df, G, state_covar, lengths, edge_dists
 
 
 def solve(config, data_base_path=None):

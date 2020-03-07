@@ -8,7 +8,7 @@ def yi_prune(lengths, ratio):
 
 
 def complete_lengths_data(state_df):
-    locs = state_df[['x', 'y', 'z']].values
+    locs = state_df[['x', 'y']].values
     sq_locs = np.sum(locs ** 2, axis=1)
     dists = -2 * np.dot(locs, locs.T) + sq_locs + sq_locs[:, np.newaxis]
     return np.nan_to_num(np.sqrt(dists))

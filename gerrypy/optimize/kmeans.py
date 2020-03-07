@@ -29,7 +29,7 @@ def euclidean_kmeans_seeds(config, state_df, random_seeds=0, init='random'):
 
     weights = rand_weight(random_seeds, weights)
 
-    pts = state_df[['x', 'y', 'z']]
+    pts = state_df[['x', 'y']]
 
     kmeans = KMeans(n_clusters=n_distrs, init=init, n_jobs=-1) \
         .fit(pts, sample_weight=weights).cluster_centers_

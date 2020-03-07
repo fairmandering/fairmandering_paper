@@ -24,13 +24,15 @@ def make_master(n_districts, n_blocks, initial_cols, costs,
     master.addConstr(quicksum(x[j] for j in J) == n_districts,
                      name="totalDistricts")
 
-    if maximize_dem_advantage:
-        master.setObjective(quicksum(costs[j] * x[j] for j in J), GRB.MAXIMIZE)
-    elif maximize_rep_advantage:
-        master.setObjective(quicksum(costs[j] * x[j] for j in J), GRB.MINIMIZE)
-    else:
-        w = master.addVar(name="w")
+    w = master.addVar(name="w", lb=-n_districts, ub=n_districts)
 
+    if maximize_dem_advantage:
+        master.addConstr(quicksum(costs[j] * x[j] for j in J) == w)
+        master.setObjective(w, GRB.MAXIMIZE)
+    elif maximize_rep_advantage:
+        master.addConstr(quicksum(costs[j] * x[j] for j in J) == -w)
+        master.setObjective(w, GRB.MAXIMIZE)
+    else:
         master.addConstr(quicksum(costs[j] * x[j] for j in J) <= w,
                          name='absval_pos')
         master.addConstr(quicksum(costs[j] * x[j] for j in J) >= -w,

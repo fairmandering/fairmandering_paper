@@ -4,25 +4,31 @@ import networkx as nx
 from scipy.spatial.distance import cdist
 from gerrypy.optimize.kmeans import *
 from gerrypy.optimize.problems.splitter import make_splitter
-from gerrypy.optimize.tree import SampleNode
+from gerrypy.optimize.problems.connected_splitter import make_connected_splitter
+
+from gerrypy.optimize.tree import SHCNode
 
 
-def shc(config, G, state_df, lengths):
+def shc(config, G, state_df, lengths, edge_dists):
     sample_queue = []
     internal_nodes = []
     leaf_nodes = []
 
-    config['hconfig']['cost_exponential'] = config['cost_exponential']
-    config['hconfig']['population_tolerance'] = config['population_tolerance']
+    ideal_pop = state_df.population.values.sum() / config['n_districts']
+    max_pop_variation = ideal_pop * config['population_tolerance']
 
-    root = SampleNode(config['hconfig'], config['n_districts'],
-                      list(state_df.index))
+    config['hconfig']['max_pop_variation'] = max_pop_variation
+    config['hconfig']['ideal_pop'] = ideal_pop
+    enforce_connectivity = config['enforce_connectivity']
+
+    root = SHCNode(config['hconfig'], config['n_districts'],
+                   list(state_df.index))
 
     sample_queue.append(root)
 
     while len(sample_queue) > 0:
         node = sample_queue.pop()
-        child_samples = sample_node(G, state_df, lengths, node)
+        child_samples = sample_node(G, state_df, lengths, edge_dists, node, enforce_connectivity)
         if len(child_samples) == 0:
             raise RuntimeError('Unable to sample tree')
         for child in child_samples:
@@ -35,13 +41,13 @@ def shc(config, G, state_df, lengths):
     return leaf_nodes, internal_nodes
 
 
-def sample_node(G, state_df, lengths, node):
+def sample_node(G, state_df, lengths, edge_dists, node, enforce_connectivity):
     """From a node in a the compatibility tree, sample k children"""
     state_df = state_df.loc[node.area]
 
     samples = []
     for i in range(node.hconfig['n_samples']):
-        child_nodes = sample_random(G, state_df, lengths, node)
+        child_nodes = sample_random(G, state_df, lengths, edge_dists, node, enforce_connectivity)
         if child_nodes:
             samples.append(child_nodes)
             node.children_ids.append([child.id for child in child_nodes])
@@ -51,7 +57,7 @@ def sample_node(G, state_df, lengths, node):
     return [node for sample in samples for node in sample]
 
 
-def sample_random(G, state_df, lengths, node):
+def sample_random(G, state_df, lengths, edge_dists, node, enforce_connectivity):
     """Using a random seed, try k times to sample one split from a
     compatibility tree node."""
     for j in range(node.hconfig['n_sample_tries']):
@@ -63,22 +69,38 @@ def sample_random(G, state_df, lengths, node):
                       for i in centers}
 
         pop_bounds = make_pop_bounds(node, state_df, centers, children)
-        splitter, xs = make_splitter(tp_lengths,
-                                     state_df.population.to_dict(),
-                                     pop_bounds, 1 + random.random())
+
+        if not enforce_connectivity:
+            splitter, xs = make_splitter(tp_lengths,
+                                         state_df.population.to_dict(),
+                                         pop_bounds, 1 + random.random())
+
+        else:
+            splitter, xs = make_connected_splitter(tp_lengths, edge_dists, G,
+                                         state_df.population.to_dict(),
+                                         pop_bounds, 1 + random.random())
         splitter.update()
         splitter.optimize()
-        districting = {i: [j for j in xs[i] if xs[i][j].X > .5]
-                       for i in centers}
-        connected = all([nx.is_connected(nx.subgraph(G, distr)) for
-                         distr in districting.values()])
+        try:
+            districting = {i: [j for j in xs[i] if xs[i][j].X > .5]
+                           for i in centers}
+            connected = all([nx.is_connected(nx.subgraph(G, distr)) for
+                             distr in districting.values()])
+        except AttributeError:
+            connected = False
+
         if connected:
-            return [SampleNode(node.hconfig,
-                               pop_bounds[center]['n_districts'],
-                               area)
+            print('successful sample')
+            return [SHCNode(node.hconfig,
+                            pop_bounds[center]['n_districts'],
+                            area)
                     for center, area in districting.items()]
 
         else:
+            if enforce_connectivity:
+                print('infeasible')
+            else:
+                print('disconnected')
             node.n_disconnected_samples += 1
     return []
 
@@ -90,16 +112,17 @@ def make_pop_bounds(node, state_df, centers, children):
     n_districts = node.n_districts
 
     area_pop = state_df.population.sum()
-    pop_deviation = area_pop / n_districts * node.hconfig['population_tolerance']
+    pop_deviation = node.hconfig['max_pop_variation']
 
     bound_list = []
     # Make the bounds for an area considering # area districts and tree level
     for n_child_districts in children:
-        # levels_to_leaf = math.ceil(math.log2(n_child_districts))
-        distr_pop = area_pop * n_child_districts / n_districts
+        levels_to_leaf = math.ceil(math.log2(n_child_districts))
+        levels_to_leaf = levels_to_leaf if levels_to_leaf >= 1 else 1
+        distr_pop = node.hconfig['ideal_pop'] * n_child_districts
 
-        ub = distr_pop + pop_deviation
-        lb = distr_pop - pop_deviation
+        ub = distr_pop + pop_deviation / levels_to_leaf
+        lb = distr_pop - pop_deviation / levels_to_leaf
 
         bound_list.append({
             'ub': ub,
@@ -110,8 +133,8 @@ def make_pop_bounds(node, state_df, centers, children):
     # Make most centralized center have most number of districts
     # Centers closer to area borders have less districts
     bound_list.sort(key=lambda x: x['n_districts'])
-    area_locs = state_df[['x', 'y', 'z']].values
-    center_locs = state_df.loc[centers, ['x', 'y', 'z']].values
+    area_locs = state_df[['x', 'y']].values
+    center_locs = state_df.loc[centers, ['x', 'y']].values
     center_max_dists = np.max(cdist(area_locs, center_locs), axis=0)
     center_max_dists = [(center, dist) for center, dist
                         in zip(centers, center_max_dists)]

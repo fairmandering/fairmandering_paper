@@ -2,14 +2,18 @@ import math
 import random
 import numpy as np
 
-class SampleNode:
+
+class SHCNode:
     def __init__(self, hconfig, n_districts, area):
         self.hconfig = hconfig
         self.n_districts = n_districts
         self.area = area
         self.children_ids = []
 
-        self.id = hash(frozenset(area))
+        self.pepper = random.randint(-1e10, 1e10)
+        self.area_hash = hash(frozenset(area))
+        self.id = self.area_hash + self.pepper
+
         self.n_sample_failures = 0
         self.n_disconnected_samples = 0
 
@@ -31,6 +35,18 @@ class SampleNode:
 
         return child_n_distrs
 
+    def __repr__(self):
+        print_str = "Node %d \n" % self.id
+        internals = self.__dict__
+        for k, v in internals.items():
+            if k == 'area': continue
+            print_str += k + ': ' + v.__repr__() + '\n'
+        return print_str
+
+
+class SHCTree:
+    def __init__(self, internal_nodes, leaf_nodes, n_districts):
+        pass
 
 
 class SampleTree:

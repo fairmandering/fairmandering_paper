@@ -2,6 +2,7 @@ import numpy as np
 import networkx as nx
 import os
 import pysal
+import json
 import pandas as pd
 import geopandas as gpd
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
@@ -56,6 +57,7 @@ def save_preprocessing(raw_data_paths,
     if require_adjacency:
         print('Making adjacency graph')
         adjacency_graph = create_adjacency_graph(precincts)
+        edge_dists = dict(nx.all_pairs_shortest_path_length(adjacency_graph))
 
     state_df['population'] = population
     state_df['affiliation'] = np.clip(mean, 0, 1)
@@ -66,4 +68,6 @@ def save_preprocessing(raw_data_paths,
     state_df.to_csv(os.path.join(save_path, 'state_df.csv'), index=False)
     if require_adjacency:
         nx.write_gpickle(adjacency_graph, os.path.join(save_path, 'G.p'))
+        json.dump(edge_dists, open(os.path.join(save_path, 'edge_dists.json'), 'w'))
+
 
