@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GerryPy</title>
+
+    <script src='https://api.mapbox.com/mapbox-gl-js/v1.4.1/mapbox-gl.js'></script>
+    <script src='https://api.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js'></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <link href='https://api.mapbox.com/mapbox-gl-js/v1.4.1/mapbox-gl.css' rel='stylesheet' />
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+
+</head>
+<div id="header-container">
+    <header> GerryPy </header>
+</div>
+<div id="control-panel">
+    <div id="select-field">
+        <select id="path-selector"> Choose Run
+            {% for state in path_dict%}
+            <optgroup label="{{state}}">
+                {%for path in path_dict[state]%}
+                <option value="{{state}}-{{path}}">{{path}}</option>
+                {% endfor %}
+            </optgroup>
+            {% endfor %}
+        </select>
+        <button id="select-button">Submit</button>
+    </div>
+    <div id="playback-controls">
+        <div id="button-container">
+            <button id="back">Back</button>
+            <button id="pause">Pause</button>
+            <button id="play">Play</button>
+            <button id="forward">Forward</button>
+        </div>
+        <div class="slidecontainer">
+          <input type="range" min="1" max="1000" value="250" class="slider" id="play-speed">
+        </div>
+    </div>
+</div>
+<script id="button-functionality">
+    $('#select-button').click(function(){
+        let sel = document.getElementById('path-selector');
+        let opt = sel.options[sel.selectedIndex];
+        console.log(opt.value);
+        window.location.href = '/?run_info=' + opt.value;
+        console.log(run_index);
+        console.log(run_len);
+
+    });
+    var run_data = JSON.parse('{{run_data | tojson | safe}}');
+    var run_index = 0;
+    var run_len = run_data.length;
+
+</script>
+
+<div id="map">
+  <script>
+  var map_update = new Event('update');
+  var slider = document.getElementById("play-speed");
+
+  var colors = [
+      '#00ff00',
+      '#0000ff',
+      '#ff0000',
+      '#f9ff00',
+      '#4109a8',
+      '#4109a8',
+      '#4109a8',
+      '#4109a8',
+      '#4109a8'
+  ]
+
+  mapboxgl.accessToken = 'pk.eyJ1IjoiZm9yYWdlciIsImEiOiJjazVlNTV6ZmwxemwwM2twbzVocWljZjR1In0.g7pCpemtWzpHN6WEXMnFUw';
+  var map_border = 1;
+  var bounds = [
+    [Number("{{ bb['w']  }}") - map_border, Number("{{ bb['s'] }}") - map_border],
+    [Number("{{ bb['e'] }}") + map_border, Number("{{ bb['n'] }}") + map_border]
+  ];
+
+  var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/forager/ck5e8bzry0fkd1iqmofttjes4',
+    center: [Number("{{ bb['w']}}") + Number("{{ bb['e'] }}") / 2,
+            Number("{{ bb['n']}}") + Number("{{ bb['s'] }}") / 2],
+    maxBounds: bounds
+  });
+  map.dragRotate.disable();
+  map.touchZoomRotate.disableRotation();
+
+  map.on('load', function() {
+      map.addSource("precincts", {
+          type: "geojson",
+          data: "{{ url_for('static', filename='precincts/%s.geojson' % state) }}",
+          generateId: false
+      });
+      map.addLayer({
+          'id': 'precinct-borders',
+          'type': 'line',
+          "source": "precincts",
+          'paint': {
+              'line-color': '#000000',
+              'line-width': .25,
+              'line-opacity': 1
+          }
+      });
+
+      map.addLayer({
+          "id": "district-precinct",
+          "type": "fill",
+          "source": "precincts",
+          "paint": {
+            "fill-color": [
+              'case',
+                ['==', ['feature-state', 'district_n'], -1], 'rgba(0,0,0,0)',
+                ['==', ['feature-state', 'district_n'], 0], colors[0],
+                ['==', ['feature-state', 'district_n'], 1], colors[1],
+                ['==', ['feature-state', 'district_n'], 2], colors[2],
+                ['==', ['feature-state', 'district_n'], 3], colors[3],
+                ['==', ['feature-state', 'district_n'], 4], colors[4],
+                ['==', ['feature-state', 'district_n'], 5], colors[5],
+                ['==', ['feature-state', 'district_n'], 6], colors[6],
+                'rgba(0,0,0,0)'
+            ],
+            "fill-opacity": .7
+          },
+        });
+
+      map.addLayer({
+      "id": "center-precinct",
+      "type": "fill",
+      "source": "precincts",
+      "paint": {
+        "fill-color": [
+              'case',
+              ['boolean', ['feature-state', 'is_center'], false],
+                '#ee00d0',
+              'rgba(0,0,0,0)', // transparent
+              ],
+        "fill-opacity": 1
+      },
+    });
+
+      // Move to location
+      map.on('sourcedata', function (e) {
+          if (e.sourceId !== 'precincts' || !e.isSourceLoaded) return
+              var f = map.querySourceFeatures('precincts')
+          if (f.length === 0) return
+              var bbox = turf.bbox({
+                type: 'FeatureCollection',
+                features: f
+              });
+          map.fitBounds(bbox, {padding: 20, linear: false});
+        })
+
+
+
+      var prev_centers = [];
+      document.addEventListener('update', function (e) {
+          var algo_step = run_data[run_index];
+
+          if(algo_step.type === 'center_selection'){
+              map.removeFeatureState(
+                  {source: 'precincts'});
+              algo_step.centers.forEach(element =>
+                  map.setFeatureState(
+                  { source: 'precincts', id: element },
+                  { is_center : true }
+            ));
+              prev_centers.forEach(element =>
+                  map.setFeatureState(
+                  { source: 'precincts', id: element },
+                  { is_center : false }
+            ));
+              prev_centers = algo_step.centers;
+          }
+
+          if(algo_step.type === 'partition'){
+              if (algo_step.feasible){
+                  let district_ix = 0;
+                  for(center in algo_step.partition){
+                      algo_step.partition[center].forEach(precinct =>
+                      map.setFeatureState(
+                          { source: 'precincts', id: precinct },
+                          { district_n : district_ix }
+                      ));
+                      district_ix++;
+                  }
+              }
+              else{
+
+              }
+          }
+
+      }, false);
+
+      // var timer = window.setInterval(function() {
+      //   if (run_index < run_len) {
+      //       document.dispatchEvent(increment);
+      //   } else {
+      //       window.clearInterval(timer);
+      //   }
+      // }, slider.value);
+      //
+
+    var running = false;
+    var timing=250;
+    slider.addEventListener('change', function (e) {
+      timing = parseInt(this.value);
+    });
+
+    function loop() {
+        document.dispatchEvent(map_update);
+        if(running){
+            var timer = window.setTimeout(loop, timing);
+            run_index = (run_index + 1) % run_len;
+            console.log('run_index', run_index)
+        }
+    }
+
+    $('#back').click(function(){
+        run_index--;
+        document.dispatchEvent(map_update);
+    });
+
+    $('#play').click(function(){
+        if(! running){
+            running = true;
+            loop();
+        }
+    });
+    $('#pause').click(function(){
+        if(running){
+            running = false;
+        }
+        document.dispatchEvent(map_update);
+    });
+    $('#forward').click(function(){
+        run_index++;
+        document.dispatchEvent(map_update);
+    });
+
+  });
+</script>
+</div>
+
+<script>
+
+</script>
+
+</html>

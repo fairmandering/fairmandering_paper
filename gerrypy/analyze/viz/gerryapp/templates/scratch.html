@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+// Once the map loads
+//   map.on('load', function (e) {
+//     // Load in tract info
+//     map.addSource("tracts", {
+//       type: "geojson",
+//       data: "{{ url_for('static', filename='tracts/%s.geojson' % city) }}",
+//       generateId: true // Not using GEOIDs
+//     });
+//
+//     map.addLayer({
+//         'id': 'tract-borders',
+//         'type': 'line',
+//         "source": "tracts",
+//         'paint': {
+//         'line-color': '#000000',
+//         'line-width': [
+//               'case',
+//               ['boolean', ['feature-state', 'hover'], false],
+//               2,
+//               0.25
+//               ],
+//         'line-opacity': .5
+//         }
+//       },
+//       roadLabelID);
+//
+//
+//
+//     map.addLayer({
+//       "id": "tract-fill",
+//       "type": "fill",
+//       "source": "tracts",
+//       "paint": {
+//         "fill-color": [
+//           "interpolate",
+//           ["linear"],
+//           ["get", "Opportunity Index"],
+//           -300,
+//           "hsl(0, 100%, 50%)",
+//           0,
+//           "hsla(0, 0%, 100%, 0)",
+//           300,
+//           "hsl(120, 100%, 50%)"
+//         ],
+//         "fill-opacity": .6
+//       },
+//     },
+//     buildingID);
+//
+//     // When the user moves their mouse over the state-fill layer, we'll update the
+//   // feature state for the feature under the mouse.
+//     map.on('mousemove', 'tract-fill', function(e) {
+//         if (e.features.length > 0) {
+//           if (hoveredTractId) {
+//               map.setFeatureState(
+//                 { source: 'tracts', id: hoveredTractId },
+//                 { hover: false }
+//               );
+//             }
+//           hoveredTractId = e.features[0].id;
+//           map.setFeatureState(
+//           { source: 'tracts', id: hoveredTractId },
+//           { hover: true }
+//         );
+//         }
+//       });
+//
+//       // When the mouse leaves the state-fill layer, update the feature state of the
+//       // previously hovered feature.
+//       map.on('mouseleave', 'tract-fill', function() {
+//         if (hoveredTractId) {
+//           map.setFeatureState(
+//             { source: 'tracts', id: hoveredTractId },
+//             { hover: false }
+//           );
+//         }
+//         hoveredTractId = null;
+//     });
+//
+//     map.on("click", function(e) {
+//     var features = map.queryRenderedFeatures(e.point, {
+//         layers: ["tract-fill"]
+//       })
+//
+//       // Limit the number of properties we're displaying for
+//       // legibility and performance
+//       var displayProperties = [
+//         "properties",
+//     /*     "id",
+//         "layer",
+//         "source",
+//         "sourceLayer",
+//         "state" */
+//       ];
+//
+//       var displayFeatures = features.map(function(feat) {
+//         var displayFeat = {};
+//         displayProperties.forEach(function(prop) {
+//           displayFeat[prop] = feat[prop];
+//
+//         });
+//
+//         return displayFeat;
+//       });
+//
+//       tract_id = displayFeatures[0].properties['GEOID']
+//       button_html = "<a href=# class='btn btn-default' id='tract-dash-btn'>\
+//                     Tract Dashboard</a>"
+//       $("#sidebar-info").html("");
+//       $("#button-container").html(button_html);
+//       let button_link = "{{url_for('product.tract_dashboard')}}" + '?tract_id=' + tract_id;
+//       $("#tract-dash-btn").attr('href', button_link);
+//       // Send the GeoJson properties of selected tract to server
+//       // to be turned into an html table.
+//       $.ajax({
+//         type: 'POST',
+//         contentType: 'application/json',
+//         url: "{{url_for('product.make_info_table')}}",
+//         dataType : 'html',
+//         data : JSON.stringify(displayFeatures[0].properties),
+//         success : function(result) {
+//           jQuery("#sidebar-table").html(result);
+//         },error : function(result){
+//           console.log(result);
+//         }
+//       });
+//
+//   });
+// });
+</body>
+</html>
