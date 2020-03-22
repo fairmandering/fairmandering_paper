@@ -16,6 +16,7 @@ US_BB = {
 @app.route('/', methods=['GET'])
 def home():
     run_info = request.args.get('run_info')
+    print('$$$$ri$$$$', run_info)
     if run_info:
         state_abbr, run_data = get_geographic_data(run_info)
     else:
@@ -25,7 +26,7 @@ def home():
     path_dict = make_selector()
 
     return render_template('layout.html', path_dict=path_dict, bb=US_BB,
-                           state=state_abbr, run_data=run_data)
+                           state=state_abbr, run_data=run_data, select_value=run_info)
 
 
 def make_selector():
@@ -40,9 +41,8 @@ def make_selector():
     return path_dict
 
 
-def get_geographic_data(run_info):
-    state_abbr = consts.NAME_DICT[run_info.split('-')[0]][consts.ABBREV_IX]
-    run_name = '_'.join(run_info.split('-')[1:])
+def get_geographic_data(run_name):
+    state_abbr = run_name.split('_')[0]
     fpath = os.path.join(consts.COLUMNS_PATH, state_abbr, run_name)
     with open(fpath, 'r') as f:
         trial_run = json.load(f)

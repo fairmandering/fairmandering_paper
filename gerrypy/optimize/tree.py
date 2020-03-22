@@ -4,8 +4,7 @@ import numpy as np
 
 
 class SHCNode:
-    def __init__(self, hconfig, n_districts, area):
-        self.hconfig = hconfig
+    def __init__(self, n_districts, area):
         self.n_districts = n_districts
         self.area = area
         self.children_ids = []
@@ -17,14 +16,14 @@ class SHCNode:
         self.n_sample_failures = 0
         self.n_disconnected_samples = 0
 
-    def sample_n_children(self):
+    def sample_n_children(self, hconfig):
         n_distrs = self.n_districts
-        n_splits = random.randint(min(self.hconfig['min_n_splits'], n_distrs),
-                                  min(self.hconfig['max_n_splits'], n_distrs))
+        n_splits = random.randint(min(hconfig['min_n_splits'], n_distrs),
+                                  min(hconfig['max_n_splits'], n_distrs))
 
-        ub = max(math.ceil(self.hconfig['max_split_population_difference']
+        ub = max(math.ceil(hconfig['max_split_population_difference']
                            * n_distrs / n_splits), 2)
-        lb = max(math.floor((1 / self.hconfig['max_split_population_difference'])
+        lb = max(math.floor((1 / hconfig['max_split_population_difference'])
                             * n_distrs / n_splits), 1)
 
         child_n_distrs = np.zeros(n_splits) + lb

@@ -1,3 +1,8 @@
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,6 +10,39 @@
     <title>Title</title>
 </head>
 <body>
+
+
+<script>
+    d = {
+     "fill-color": [
+      'case',
+      ['boolean', ['feature-state', 'is_center'], false],
+        center_color,
+      'case',
+                ['==', ['feature-state', 'district_n'], -1], 'rgba(0,0,0,0)',
+                ['==', ['feature-state', 'district_n'], 0], colors[0],
+                ['==', ['feature-state', 'district_n'], 1], colors[1],
+                ['==', ['feature-state', 'district_n'], 2], colors[2],
+                ['==', ['feature-state', 'district_n'], 3], colors[3],
+                ['==', ['feature-state', 'district_n'], 4], colors[4],
+                ['==', ['feature-state', 'district_n'], 5], colors[5],
+                ['==', ['feature-state', 'district_n'], 6], colors[6],
+                'rgba(0,0,0,0)', // transparent
+      ]
+    }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
 // Once the map loads
 //   map.on('load', function (e) {
 //     // Load in tract info

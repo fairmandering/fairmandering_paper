@@ -35,7 +35,8 @@ def euclidean_kmeans_seeds(config, state_df, random_seeds=0, init='random'):
         .fit(pts, sample_weight=weights).cluster_centers_
 
     dists = cdist(kmeans, pts)
-    centers = [state_df.index[i] for i in list(np.argmin(dists, axis=1))]
+    centers = [state_df.index[i].item()  # Convert to native int for jsonability
+               for i in list(np.argmin(dists, axis=1))]
 
     return centers
 
