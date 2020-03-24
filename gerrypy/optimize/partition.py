@@ -26,11 +26,10 @@ class ColumnGenerator:
         ideal_pop = state_df.population.values.sum() / config['n_districts']
         max_pop_variation = ideal_pop * config['population_tolerance']
 
-        config['hconfig']['max_pop_variation'] = max_pop_variation
-        config['hconfig']['ideal_pop'] = ideal_pop
+        config['max_pop_variation'] = max_pop_variation
+        config['ideal_pop'] = ideal_pop
 
         self.config = config
-        self.hconfig = config['hconfig']
         self.G = G
         self.state_df = state_df
         self.lengths = lengths
@@ -66,7 +65,7 @@ class ColumnGenerator:
         area_df = self.state_df.loc[node.area]
 
         samples = []
-        for i in range(self.hconfig['n_samples']):
+        for i in range(self.config['n_samples']):
             child_nodes = self.partition(area_df, node)
             if child_nodes:
                 samples.append(child_nodes)
@@ -79,8 +78,8 @@ class ColumnGenerator:
     def partition(self, area_df, node):
         """Using a random seed, try k times to sample one split from a
         compatibility tree node."""
-        for j in range(self.hconfig['n_sample_tries']):
-            children = node.sample_n_children(self.hconfig)
+        for j in range(self.config['max_sample_tries']):
+            children = node.sample_n_children(self.config)
             n_centers = len(children)
             centers = euclidean_kmeans_seeds({'n_districts': n_centers},
                                              area_df, random_seeds=1)
@@ -147,14 +146,14 @@ class ColumnGenerator:
         """Create a dictionary that records upper and lower bounds for
         population in addition to the number of districts the area contains."""
         # The number of districts this area contains
-        pop_deviation = self.hconfig['max_pop_variation']
+        pop_deviation = self.config['max_pop_variation']
 
         bound_list = []
         # Make the bounds for an area considering # area districts and tree level
         for n_child_districts in children:
             levels_to_leaf = math.ceil(math.log2(n_child_districts))
             levels_to_leaf = levels_to_leaf if levels_to_leaf >= 1 else 1
-            distr_pop = self.hconfig['ideal_pop'] * n_child_districts
+            distr_pop = self.config['ideal_pop'] * n_child_districts
 
             ub = distr_pop + pop_deviation / levels_to_leaf
             lb = distr_pop - pop_deviation / levels_to_leaf
@@ -223,8 +222,8 @@ class ColumnGenerator:
         n_districtings = 'nd' + str(self.number_of_districtings())
         n_leaves = 'nl' + str(len(self.leaf_nodes))
         n_interior = 'ni' + str(len(self.internal_nodes))
-        width = 'w' + str(self.hconfig['n_samples'])
-        sample_tries = 'st' + str(self.hconfig['n_sample_tries'])
+        width = 'w' + str(self.config['n_samples'])
+        sample_tries = 'st' + str(self.config['n_sample_tries'])
         n_districts = 'ndist' + str(self.config['n_districts'])
         connectivity = 'fconn' if self.config['enforce_connectivity'] else 'uncon'
         save_time = str(int(time.time()))
