@@ -56,7 +56,7 @@ def run_experiment(df,
                    normalize_labels=True,
                    use_boxcox=False,
                    dim=None,
-                   lr=.01):
+                   lr=.1):
     kf = KFold(n_splits=n_splits, shuffle=True)
     results = {}
     for k, (train_index, test_index) in enumerate(kf.split(df)):

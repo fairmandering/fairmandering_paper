@@ -53,7 +53,8 @@ def preprocess_input(df_train, df_test,
         X_test_transformed = pca.transform(X_test_transformed)
 
     if normalize_labels:
-        label_scaler = scaler.fit(y_train.values.reshape(-1, 1))
+        label_scaler = scaler_type()
+        label_scaler.fit(y_train.values.reshape(-1, 1))
         y_train_transformed = label_scaler.transform(y_train.values.reshape(-1, 1)).flatten()
     else:
         label_scaler = None

@@ -10,8 +10,6 @@ class ExactGPModel(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood, kernel):
         super(ExactGPModel, self).__init__(train_x, train_y, likelihood)
         self.mean_module = gpytorch.means.ConstantMean()
-        if kernel.ard_num_dims:
-            kernel = kernel(ard_num_dims=train_x.shape[1])
         self.covar_module = kernel  # gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
 
     def forward(self, x):
@@ -103,7 +101,8 @@ def run_experiment(df, kernel,
                    normalize_per_year=False,
                    normalize_labels=True,
                    use_boxcox=False,
-                   dim=None):
+                   dim=None,
+                   lr=.1):
     kf = KFold(n_splits=n_splits, shuffle=True)
     results = {}
     for k, (train_index, test_index) in enumerate(kf.split(df)):
@@ -125,6 +124,7 @@ def run_experiment(df, kernel,
                                   likelihood,
                                   train_x,
                                   train_y,
+                                  lr=lr,
                                   training_iterations=n_training_iterations)
         mean, std = evaluate(model, likelihood, test_x)
 
@@ -141,7 +141,7 @@ def run_experiment(df, kernel,
 
         test_y = test_y.numpy()
         l1_error = pd.Series(np.abs(test_y - pred)).describe()
-        std_spread = pd.Series(pred_ub - pred_lb).describe()
+        std_spread = pd.Series((pred_ub - pred_lb)/2).describe()
         pred_above_lb = (pred_lb < test_y)
         pred_below_ub = (test_y < pred_ub)
 
