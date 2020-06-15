@@ -44,6 +44,44 @@ class ColumnGenerator:
         self.event_list = []
 
     def generate(self):
+        completed_root_samples = 0
+        failed_root_samples = 0
+        n_root_samples = self.config['n_root_samples']
+
+        root = SHPNode(self.config['n_districts'],
+                       list(self.state_df.index),
+                       is_root=True)
+        self.root = root
+        self.internal_nodes.append(root)
+
+
+        while completed_root_samples < n_root_samples:
+            self.sample_queue = [root]
+            sample_leaf_nodes = []
+            sample_internal_nodes = []
+            try:
+                print('Root sample number', completed_root_samples)
+                while len(self.sample_queue) > 0:
+                    node = self.sample_queue.pop()
+                    child_samples = self.sample_node(node)
+                    if len(child_samples) == 0:
+                        raise RuntimeError('Unable to sample tree')
+                    for child in child_samples:
+                        if child.n_districts == 1:
+                            sample_leaf_nodes.append(child)
+                        else:
+                            self.sample_queue.append(child)
+                    if not node.is_root:
+                        sample_internal_nodes.append(node)
+                self.internal_nodes += sample_internal_nodes
+                self.leaf_nodes += sample_leaf_nodes
+                completed_root_samples += 1
+            except RuntimeError:
+                print('Root sample failed')
+                self.root.children_ids = self.root.children_ids[:-1]
+                failed_root_samples += 1
+
+    def generate_original(self):
         root = SHPNode(self.config['n_districts'], list(self.state_df.index))
 
         self.root = root
@@ -66,7 +104,8 @@ class ColumnGenerator:
         area_df = self.state_df.loc[node.area]
 
         samples = []
-        for i in range(self.config['n_samples']):
+        n_samples = range(1) if node.is_root else range(self.config['n_samples'])
+        for _ in n_samples:
             child_nodes = self.partition(area_df, node)
             if child_nodes:
                 samples.append(child_nodes)
@@ -137,7 +176,7 @@ class ColumnGenerator:
                         for center, area in districting.items()]
             else:
                 node.n_infeasible_samples += 1
-        print(children_centers, list(area_df.index))
+        #print(children_centers, list(area_df.index))
         return []
 
     def select_centers(self, area_df, children_sizes):

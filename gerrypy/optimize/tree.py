@@ -4,8 +4,8 @@ import numpy as np
 
 
 class SHPNode:
-    def __init__(self, root_ix, n_districts, area, fixed_shape=False):
-        self.root_ix = root_ix
+    def __init__(self, n_districts, area, is_root=False):
+        self.is_root = is_root
         self.n_districts = n_districts
         self.area = area
         self.children_ids = []
