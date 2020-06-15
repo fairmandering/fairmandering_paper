@@ -1,6 +1,9 @@
 import numpy as np
 import scipy.stats as st
 
+# TODO: expand
+#
+
 def expected_rep_gap(district, pop, mean, covar):
     weight = pop[district] / pop[district].sum()
     district_mean = mean[district].dot(weight)

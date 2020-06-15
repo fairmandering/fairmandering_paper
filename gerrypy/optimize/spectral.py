@@ -3,6 +3,7 @@ import networkx as nx
 from sklearn.cluster import SpectralClustering
 from gerrypy.utils.spatial_utils import vecdist
 
+# TODO: Move to baseline
 
 def spectral_cluster(config, xij_activation):
     n_districts = config['n_districts']

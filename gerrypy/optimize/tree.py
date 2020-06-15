@@ -3,8 +3,9 @@ import random
 import numpy as np
 
 
-class SHCNode:
-    def __init__(self, n_districts, area):
+class SHPNode:
+    def __init__(self, root_ix, n_districts, area, fixed_shape=False):
+        self.root_ix = root_ix
         self.n_districts = n_districts
         self.area = area
         self.children_ids = []
@@ -14,16 +15,16 @@ class SHCNode:
         self.id = self.area_hash + self.pepper
 
         self.n_sample_failures = 0
-        self.n_disconnected_samples = 0
+        self.n_infeasible_samples = 0
 
-    def sample_n_children(self, hconfig):
+    def sample_n_splits_and_child_sizes(self, config):
         n_distrs = self.n_districts
-        n_splits = random.randint(min(hconfig['min_n_splits'], n_distrs),
-                                  min(hconfig['max_n_splits'], n_distrs))
+        n_splits = random.randint(min(config['min_n_splits'], n_distrs),
+                                  min(config['max_n_splits'], n_distrs))
 
-        ub = max(math.ceil(hconfig['max_split_population_difference']
+        ub = max(math.ceil(config['max_split_population_difference']
                            * n_distrs / n_splits), 2)
-        lb = max(math.floor((1 / hconfig['max_split_population_difference'])
+        lb = max(math.floor((1 / config['max_split_population_difference'])
                             * n_distrs / n_splits), 1)
 
         child_n_distrs = np.zeros(n_splits) + lb
@@ -38,24 +39,20 @@ class SHCNode:
         print_str = "Node %d \n" % self.id
         internals = self.__dict__
         for k, v in internals.items():
-            if k == 'area': continue
+            if k == 'area':
+                continue
             print_str += k + ': ' + v.__repr__() + '\n'
         return print_str
 
 
-class SHCTree:
-    def __init__(self, internal_nodes, leaf_nodes, n_districts):
-        pass
-
-
 class SampleTree:
-    def __init__(self, hconfig, n_districts, level=0):
+    def __init__(self, config, n_districts, level=0):
         self.n_districts = n_districts
         self.level = 0
 
         if n_districts > 1:
-            children_n_distrs = SampleNode.sample_n_children()
-            self.children = [SampleTree(hconfig, n, level + 1)
+            children_n_distrs = SHPNode.sample_n_splits_and_child_sizes()
+            self.children = [SampleTree(config, n, level + 1)
                              for n in children_n_distrs]
         else:
             self.children = None

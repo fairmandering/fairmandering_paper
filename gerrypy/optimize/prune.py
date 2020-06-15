@@ -3,6 +3,8 @@ import random
 from gerrypy.utils.spatial_utils import vecdist
 
 
+# TODO: DEPRECATED
+# Only useful for baseline
 def yi_prune(lengths, ratio):
     return {k: v for k, v in lengths.items() if random.random() > ratio}
 

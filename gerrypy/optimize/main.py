@@ -5,9 +5,7 @@ import numpy as np
 from gerrypy.optimize.cost import expected_rep_gap
 from gerrypy.data.synthetic import generate_synthetic_input
 from gerrypy.optimize.prune import make_lengths_data, complete_lengths_data
-from gerrypy.optimize.initial_cols import *
 from gerrypy.optimize.problems.master import make_master
-from gerrypy.optimize.hierarchical import non_binary_bfs_split
 from gerrypy.optimize.tree import SampleTree
 from gurobipy import *
 
