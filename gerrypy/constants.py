@@ -1,14 +1,66 @@
 import os
 
+GERRYPY_BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+PRECINCT_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'precincts')
+OPT_DATA_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'optimization_data')
+CENSUS_DATA_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'acs_data')
+COLUMNS_PATH = os.path.join(GERRYPY_BASE_PATH, 'results', 'columns')
+APP_PATH = os.path.join(GERRYPY_BASE_PATH, 'analyze', 'viz', 'gerryapp')
+
 NAME_IX = 0
-FIPS_IX = 1
-ABBREV_IX = 2
+ABBREV_IX = 1
+FIPS_IX = 2
 STATE_IDS = [
-    ('Florida', 12, 'fl'),
-    ('Illinois', 17, 'il'),
-    ('Massachusetts', 25, 'ma'),
-    ('Michigan', 26, 'mi'),
-    ('North Carolina', 37, 'nc')
+    ('Alabama', 'AL', '01'),
+    ('Alaska', 'AK', '02'),
+    ('Arizona', 'AZ', '04'),
+    ('Arkansas', 'AR', '05'),
+    ('California', 'CA', '06'),
+    ('Colorado', 'CO', '08'),
+    ('Connecticut', 'CT', '09'),
+    ('Delaware', 'DE', '10'),
+    ('Florida', 'FL', '12'),
+    ('Georgia', 'GA', '13'),
+    ('Hawaii', 'HI', '15'),
+    ('Idaho', 'ID', '16'),
+    ('Illinois', 'IL', '17'),
+    ('Indiana', 'IN', '18'),
+    ('Iowa', 'IA', '19'),
+    ('Kansas', 'KS', '20'),
+    ('Kentucky', 'KY', '21'),
+    ('Louisiana', 'LA', '22'),
+    ('Maine', 'ME', '23'),
+    ('Maryland', 'MD', '24'),
+    ('Massachusetts', 'MA', '25'),
+    ('Michigan', 'MI', '26'),
+    ('Minnesota', 'MN', '27'),
+    ('Mississippi', 'MS', '28'),
+    ('Missouri', 'MO', '29'),
+    ('Montana', 'MT', '30'),
+    ('Nebraska', 'NE', '31'),
+    ('Nevada', 'NV', '32'),
+    ('New Hampshire', 'NH', '33'),
+    ('New Jersey', 'NJ', '34'),
+    ('New Mexico', 'NM', '35'),
+    ('New York', 'NY', '36'),
+    ('North Carolina', 'NC', '37'),
+    ('North Dakota', 'ND', '38'),
+    ('Ohio', 'OH', '39'),
+    ('Oklahoma', 'OK', '40'),
+    ('Oregon', 'OR', '41'),
+    ('Pennsylvania', 'PA', '42'),
+    ('Rhode Island', 'RI', '44'),
+    ('South Carolina', 'SC', '45'),
+    ('South Dakota', 'SD', '46'),
+    ('Tennessee', 'TN', '47'),
+    ('Texas', 'TX', '48'),
+    ('Utah', 'UT', '49'),
+    ('Vermont', 'VT', '50'),
+    ('Virginia', 'VA', '51'),
+    ('Washington', 'WA', '53'),
+    ('West Virginia', 'WV', '54'),
+    ('Wisconsin', 'WI', '55'),
+    ('Wyoming', 'WY', '56'),
 ]
 NAME_DICT = {state_info[NAME_IX]: state_info for state_info in STATE_IDS}
 FIPS_DICT = {state_info[FIPS_IX]: state_info for state_info in STATE_IDS}
@@ -16,8 +68,3 @@ ABBREV_DICT = {state_info[ABBREV_IX]: state_info for state_info in STATE_IDS}
 
 
 
-GERRYPY_BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-PRECINCT_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'precincts')
-OPT_DATA_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'optimization_data')
-COLUMNS_PATH = os.path.join(GERRYPY_BASE_PATH, 'results', 'columns')
-APP_PATH = os.path.join(GERRYPY_BASE_PATH, 'analyze', 'viz', 'gerryapp')
