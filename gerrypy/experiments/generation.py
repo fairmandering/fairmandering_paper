@@ -19,10 +19,11 @@ class Experiment:
             for trial_values in self.experiment_config['trial_parameters']:
                 trial_config = deepcopy(self.base_config)
                 for k, v in trial_values:
-                    try:
-                        trial_config[k] = v
-                    except KeyError:
+                    if len(k) == 2:
                         trial_config[k[0]][k[1]] = v
+                    else:
+                        trial_config[k] = v
+
                 print('Starting trial', trial_config)
                 cg = ColumnGenerator(trial_config, state)
                 generation_start_t = time.time()
