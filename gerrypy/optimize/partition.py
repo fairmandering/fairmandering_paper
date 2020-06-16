@@ -40,12 +40,12 @@ class ColumnGenerator:
         self.internal_nodes = []
         self.leaf_nodes = []
         self.root = None
+        self.failed_root_samples = 0
 
         self.event_list = []
 
     def generate(self):
         completed_root_samples = 0
-        failed_root_samples = 0
         n_root_samples = self.config['n_root_samples']
 
         root = SHPNode(self.config['n_districts'],
@@ -79,7 +79,7 @@ class ColumnGenerator:
             except RuntimeError:
                 print('Root sample failed')
                 self.root.children_ids = self.root.children_ids[:-1]
-                failed_root_samples += 1
+                self.failed_root_samples += 1
 
     def generate_original(self):
         root = SHPNode(self.config['n_districts'], list(self.state_df.index))
@@ -328,4 +328,4 @@ class ColumnGenerator:
             'sigma_k': Sigma[self.config['n_districts']]
         }
 
-        return metrics, Sigma, Dsim, Psim
+        return metrics, Sigma, precinct_district_matrix
