@@ -13,11 +13,9 @@ from gurobipy import *
 def load_real_data(data_base_path):
     state_df_path = os.path.join(data_base_path, 'state_df.csv')
     adjacency_graph_path = os.path.join(data_base_path, 'G.p')
-    covar_path = os.path.join(data_base_path, 'covar.npy')
 
     state_df = pd.read_csv(state_df_path)
     G = nx.read_gpickle(adjacency_graph_path)
-    state_covar = np.load(covar_path)
 
     if os.path.exists(os.path.join(data_base_path, 'lengths.npy')):
         lengths_path = os.path.join(data_base_path, 'lengths.npy')
@@ -32,7 +30,7 @@ def load_real_data(data_base_path):
     else:
         edge_dists = dict(nx.all_pairs_shortest_path_length(G))
 
-    return state_df, G, state_covar, lengths, edge_dists
+    return state_df, G, lengths, edge_dists
 
 
 def solve(config, data_base_path=None):

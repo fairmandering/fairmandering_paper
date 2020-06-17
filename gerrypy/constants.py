@@ -3,9 +3,13 @@ import os
 GERRYPY_BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 PRECINCT_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'precincts')
 OPT_DATA_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'optimization_data')
+CENSUS_SHAPE_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'shapes')
+TRACT_DATA_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'acs_tract_data')
 CENSUS_DATA_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'acs_data')
 COLUMNS_PATH = os.path.join(GERRYPY_BASE_PATH, 'results', 'columns')
 APP_PATH = os.path.join(GERRYPY_BASE_PATH, 'analyze', 'viz', 'gerryapp')
+
+ACS_BASE_YEAR = 2018
 
 NAME_IX = 0
 ABBREV_IX = 1
