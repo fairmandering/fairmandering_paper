@@ -12,7 +12,7 @@ class Experiment:
         self.experiment_config = experiment_config
 
     def run(self):
-        save_dir = 'experiment_results_%s' % str(time.time())
+        save_dir = 'experiment_results_%s' % str(int(time.time()))
         os.mkdir(save_dir)
         for state in self.experiment_config['states']:
             print('############## Starting %s trials ##############' % state)
@@ -44,7 +44,7 @@ class Experiment:
                 }
 
                 config_str = '_'.join([str(v) for k, v in trial_values])
-                save_name = '_'.join([state, config_str, str(int(time.time() // 1))]) + '.npy'
+                save_name = '_'.join([state, config_str, str(int(time.time()))]) + '.npy'
                 #json.dump(trial_results, open(os.path.join(save_dir, save_name), 'w'))
                 np.save(os.path.join(save_dir, save_name), trial_results)
 
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     }
 
     base_config = {
-        'n_districts': 9,
+        'n_districts': 13,
         'enforce_connectivity': True,
         'population_tolerance': .05,
         'center_selection_config': center_selection_config,
@@ -68,15 +68,15 @@ if __name__ == '__main__':
         'IP_timeout': 10,
         'event_logging': False,
         'verbose': False,
-        'max_sample_tries': 5,
+        'max_sample_tries': 15,
         'n_samples': 3,
-        'n_root_samples': 10,
+        'n_root_samples': 100,
         'max_n_splits': 5,
         'min_n_splits': 2,
         'max_split_population_difference': 1.5
     }
     experiment_config = {
-        'states': ['MA'],
+        'states': ['NC'],
         'trial_parameters': [
             [(('center_selection_config', 'n_random_seeds'), .25)],
             [(('center_selection_config', 'n_random_seeds'), .5)],

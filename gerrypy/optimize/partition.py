@@ -19,7 +19,7 @@ class ColumnGenerator:
     def __init__(self, config, state_abbrev):
         state_fips = consts.ABBREV_DICT[state_abbrev][consts.FIPS_IX]
         data_path = os.path.join(consts.OPT_DATA_PATH, str(state_fips))
-        state_df, G, _, lengths, edge_dists = load_real_data(data_path)
+        state_df, G, lengths, edge_dists = load_real_data(data_path)
 
         self.state_fips = state_fips
         self.state_abbrev = state_abbrev
@@ -40,7 +40,10 @@ class ColumnGenerator:
         self.internal_nodes = []
         self.leaf_nodes = []
         self.root = None
+
         self.failed_root_samples = 0
+        self.n_infeasible_partitions = 0
+        self.n_successful_partitions = 0
 
         self.event_list = []
 
@@ -53,7 +56,6 @@ class ColumnGenerator:
                        is_root=True)
         self.root = root
         self.internal_nodes.append(root)
-
 
         while completed_root_samples < n_root_samples:
             self.sample_queue = [root]
@@ -81,25 +83,25 @@ class ColumnGenerator:
                 self.root.children_ids = self.root.children_ids[:-1]
                 self.failed_root_samples += 1
 
-    def generate_original(self):
-        root = SHPNode(self.config['n_districts'], list(self.state_df.index))
-
-        self.root = root
-        self.sample_queue.append(root)
-
-        while len(self.sample_queue) > 0:
-            node = self.sample_queue.pop()
-            child_samples = self.sample_node(node)
-            if len(child_samples) == 0:
-                raise RuntimeError('Unable to sample tree')
-            for child in child_samples:
-                if child.n_districts == 1:
-                    self.leaf_nodes.append(child)
-                else:
-                    self.sample_queue.append(child)
-            self.internal_nodes.append(node)
-
     def sample_node(self, node):
+        """From a node in the compatibility tree, sample k children"""
+        area_df = self.state_df.loc[node.area]
+        samples = []
+        n_trials = 0
+        n_samples = 1 if node.is_root else self.config['n_samples']
+        while len(samples) < n_samples and n_trials < self.config['max_sample_tries']:
+            child_nodes = self.partition(area_df, node)
+            if child_nodes:
+                self.n_successful_partitions += 1
+                samples.append(child_nodes)
+                node.children_ids.append([child.id for child in child_nodes])
+            else:
+                self.n_infeasible_partitions += 1
+            n_trials += 1
+
+        return [node for sample in samples for node in sample]
+
+    def sample_node_old(self, node):
         """From a node in the compatibility tree, sample k children"""
         area_df = self.state_df.loc[node.area]
 
@@ -118,66 +120,64 @@ class ColumnGenerator:
     def partition(self, area_df, node):
         """Using a random seed, try k times to sample one split from a
         compatibility tree node."""
-        for j in range(self.config['max_sample_tries']):
-            children_sizes = node.sample_n_splits_and_child_sizes(self.config)
+        children_sizes = node.sample_n_splits_and_child_sizes(self.config)
 
-            # dict : {center_ix : child size}
-            children_centers = self.select_centers(area_df, children_sizes)
+        # dict : {center_ix : child size}
+        children_centers = self.select_centers(area_df, children_sizes)
 
-            tp_lengths = {i: {j: self.lengths[i, j] for j in node.area}
-                          for i in children_centers}
+        tp_lengths = {i: {j: self.lengths[i, j] for j in node.area}
+                      for i in children_centers}
 
-            pop_bounds = self.make_pop_bounds(children_centers)
+        pop_bounds = self.make_pop_bounds(children_centers)
 
-            if not self.config['enforce_connectivity']:
-                splitter, xs = make_splitter(tp_lengths,
-                                             area_df.population.to_dict(),
-                                             pop_bounds,
-                                             1 + random.random())
+        if not self.config['enforce_connectivity']:
+            splitter, xs = make_splitter(tp_lengths,
+                                         area_df.population.to_dict(),
+                                         pop_bounds,
+                                         1 + random.random())
 
-            else:
-                splitter, xs = make_connected_splitter(tp_lengths,
-                                                       self.edge_dists,
-                                                       self.G,
-                                                       area_df.population.to_dict(),
-                                                       pop_bounds,
-                                                       1 + random.random())
-            splitter.update()
-            splitter.optimize()
-            try:
-                districting = {i: [j for j in xs[i] if xs[i][j].X > .5]
-                               for i in children_centers}
-                feasible = all([nx.is_connected(nx.subgraph(self.G, distr)) for
-                                distr in districting.values()])
-            except AttributeError:
-                feasible = False
+        else:
+            splitter, xs = make_connected_splitter(tp_lengths,
+                                                   self.edge_dists,
+                                                   self.G,
+                                                   area_df.population.to_dict(),
+                                                   pop_bounds,
+                                                   1 + random.random())
+        splitter.update()
+        splitter.optimize()
+        try:
+            districting = {i: [j for j in xs[i] if xs[i][j].X > .5]
+                           for i in children_centers}
+            feasible = all([nx.is_connected(nx.subgraph(self.G, distr)) for
+                            distr in districting.values()])
+        except AttributeError:
+            feasible = False
 
-            if self.config['event_logging']:
-                if feasible:
-                    self.event_list.append({
-                        'partition': districting,
-                        'feasible': True,
-                    })
-                else:
-                    self.event_list.append({
-                        'area': node.area,
-                        'centers': children_centers,
-                        'feasible': False,
-                    })
-
-            if self.config['verbose']:
-                if feasible:
-                    print('successful sample')
-                else:
-                    print('infeasible')
-
+        if self.config['event_logging']:
             if feasible:
-                return [SHPNode(pop_bounds[center]['n_districts'], area)
-                        for center, area in districting.items()]
+                self.event_list.append({
+                    'partition': districting,
+                    'feasible': True,
+                })
             else:
-                node.n_infeasible_samples += 1
-        #print(children_centers, list(area_df.index))
-        return []
+                self.event_list.append({
+                    'area': node.area,
+                    'centers': children_centers,
+                    'feasible': False,
+                })
+
+        if self.config['verbose']:
+            if feasible:
+                print('successful sample')
+            else:
+                print('infeasible')
+
+        if feasible:
+            return [SHPNode(pop_bounds[center]['n_districts'], area)
+                    for center, area in districting.items()]
+        else:
+            node.n_infeasible_samples += 1
+            return []
 
     def select_centers(self, area_df, children_sizes):
         cs_config = self.config['center_selection_config']
@@ -284,20 +284,20 @@ class ColumnGenerator:
         json.dump(self.event_list, open(save_path, 'w'))
 
     def district_metrics(self):
-        n_failures = sum([i.n_sample_failures for i in self.internal_nodes])
-        n_infeasible = sum([i.n_infeasible_samples for i in self.internal_nodes])
+        p_infeasible = self.n_infeasible_partitions / \
+                       (self.n_infeasible_partitions + self.n_successful_partitions)
         n_interior_nodes = len(self.internal_nodes)
         districts = [d.area for d in self.leaf_nodes]
         duplicates = len(districts) - len(set([frozenset(d) for d in districts]))
 
-        print('Number failures:', n_failures)
-        print('Number infeasible:', n_infeasible)
-        print('Number interior nodes:', n_interior_nodes)
-        print('%d duplicates out of %d districts' % (duplicates, len(districts)))
-
         def average_entropy(M):
             return (- M * np.ma.log(M).filled(0) - (1 - M) *
                     np.ma.log(1 - M).filled(0)).sum() / (M.shape[0] * M.shape[1])
+
+        def svd_entropy(sigma):
+            sigma_hat = sigma / sigma.sum()
+            entropy = - (sigma_hat * (np.ma.log(sigma_hat).filled(0) / np.log(math.e))).sum()
+            return entropy / (math.log(len(sigma)) / math.log(math.e))
 
         precinct_district_matrix = np.zeros((len(self.state_df), len(districts)))
         for ix, d in enumerate(districts):
@@ -317,15 +317,16 @@ class ColumnGenerator:
         conditional_entropy = average_entropy(precinct_conditional_p)
 
         metrics = {
-            'n_failures': n_failures,
-            'n_infeasible': n_infeasible,
+            'n_root_failures': self.failed_root_samples,
+            'p_infeasible': p_infeasible,
             'n_interior_nodes': n_interior_nodes,
             'n_districts': len(districts),
-            'n_duplicates': duplicates,
+            'p_duplicates': duplicates / len(districts),
             'conditional_entropy': conditional_entropy,
             'average_district_sim': self.config['n_districts'] * np.average(Dsim),
             'n_nonzero_singular_values': sum(Sigma > 0.0001),
-            'sigma_k': Sigma[self.config['n_districts']]
+            'sigma_k': Sigma[self.config['n_districts']],
+            'svd_entropy': svd_entropy(Sigma)
         }
 
         return metrics, Sigma, precinct_district_matrix
