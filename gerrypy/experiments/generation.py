@@ -54,7 +54,7 @@ if __name__ == '__main__':
         'center_assignment_order': 'descending',
         'seed_to_center_method': 'identity',
         'perturbation_scale': 0,
-        'n_random_seeds': 1
+        'n_random_seeds': 0
     }
 
     base_config = {
@@ -78,12 +78,11 @@ if __name__ == '__main__':
     experiment_config = {
         'states': ['NC'],
         'trial_parameters': [
-            [(('center_selection_config', 'n_random_seeds'), .25)],
-            [(('center_selection_config', 'n_random_seeds'), .5)],
-            [(('center_selection_config', 'n_random_seeds'), .75)],
-            [(('center_selection_config', 'n_random_seeds'), 1)],
-            [(('center_selection_config', 'n_random_seeds'), 1.25)],
-            [(('center_selection_config', 'n_random_seeds'), 1.5)],
+            [(('center_selection_config', 'perturbation_scale'), .5)],
+            [(('center_selection_config', 'perturbation_scale'), 1)],
+            [(('center_selection_config', 'perturbation_scale'), 1.5)],
+            [(('center_selection_config', 'perturbation_scale'), 2)],
+            [(('center_selection_config', 'perturbation_scale'), 2.5)],
         ]
     }
 
