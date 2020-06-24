@@ -4,6 +4,50 @@ from sklearn.cluster import KMeans
 from gerrypy.utils.spatial_utils import *
 
 
+def iterative_random(cs_config, area_df, capacities, pdists):
+    unassigned_blocks = list(area_df.index)
+
+    if cs_config['center_assignment_order'] == 'random':
+        np.random.shuffle(capacities)
+
+    elif cs_config['center_assignment_order'] == 'ascending':
+        capacities = np.sort(capacities)
+
+    elif cs_config['center_assignment_order'] == 'descending':
+        capacities = np.sort(capacities)[::-1]
+
+    else:
+        raise ValueError('Not a valid center_assignment_order')
+
+    centers = []
+    child_ix = 0
+    block_seed = random.choice(unassigned_blocks)
+    while child_ix < len(capacities):
+        block_seed_sq_dist = pdists[block_seed, unassigned_blocks] ** 2
+        center_p = block_seed_sq_dist / np.sum(block_seed_sq_dist)
+        center_seed = np.random.choice(unassigned_blocks, p=center_p)
+
+        if child_ix < len(capacities) - 1:
+            assignment_order = np.argsort(pdists[center_seed, unassigned_blocks])
+
+            blocks_assigned_to_center = []
+            population_assigned_to_center = 0
+            target_population = capacities[child_ix]
+            assignment_ix = 0
+            while population_assigned_to_center < target_population:
+                block = unassigned_blocks[assignment_order[assignment_ix]]
+                blocks_assigned_to_center.append(block)
+                population_assigned_to_center += area_df.loc[block]['population']
+                assignment_ix += 1
+
+            for block in blocks_assigned_to_center:
+                unassigned_blocks.remove(block)
+
+        centers.append(center_seed)
+        block_seed = center_seed
+        child_ix += 1
+    return centers
+
 def random_centers(cs_config, area_df, capacities, pdists):
     unassigned_blocks = list(area_df.index)
 
@@ -201,4 +245,28 @@ def assign_children_to_centers(centers, child_sizes, area_df):
 
     return {centers[cen_ix]: child_sizes[cap_ix] for cen_ix, cap_ix
             in zip(center_order, capacities_order)}
+
+
+def compute_ideal_capacities(centers, child_sizes, area_df):
+    n_children = len(child_sizes)
+    total_size = int(sum(child_sizes))
+
+    center_locs = area_df.loc[centers][['x', 'y']].values
+    locs = area_df[['x', 'y']].values
+    pop = area_df['population'].values
+
+    dist_mat = cdist(locs, center_locs)
+    dist_mat /= np.sum(dist_mat, axis=1)[:, None]
+
+    center_assignment_score = np.sum(dist_mat * pop[:, None], axis=0)
+    center_assignment_score /= center_assignment_score.sum()
+    center_fractional_caps = center_assignment_score * total_size
+
+    center_caps = np.ones(n_children).astype(int)
+    while center_caps.sum() != total_size:
+        disparity = center_fractional_caps - center_caps
+        center_caps[np.argmax(disparity)] += 1
+    print(center_caps)
+
+    return {center: capacity for center, capacity in zip(centers, center_caps)}
 
