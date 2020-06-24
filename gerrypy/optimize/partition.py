@@ -185,7 +185,7 @@ class ColumnGenerator:
 
         method = cs_config['selection_method']
         if method == 'random_iterative':
-            centers, _ = random_centers(cs_config, area_df, capacities, self.lengths)
+            centers = iterative_random(cs_config, area_df, capacities, self.lengths)
         elif method == 'uncapacitated_kmeans':
             weight_perturbation_scale = cs_config['perturbation_scale']
             n_random_seeds = cs_config['n_random_seeds']
@@ -196,17 +196,19 @@ class ColumnGenerator:
         else:
             raise ValueError('center selection_method not valid')
 
-        center_capacities = assign_children_to_centers(centers, children_sizes, area_df)
+        if cs_config['capacity_method'] == 'match':
+            center_capacities = assign_children_to_centers(centers, children_sizes, area_df)
+        elif cs_config['capacity_method'] == 'compute':
+            center_capacities = compute_ideal_capacities(centers, children_sizes, area_df)
+        else:
+            raise ValueError('capacity_method not valid')
 
         return center_capacities
 
     def make_pop_bounds(self, children_centers):
         """Create a dictionary that records upper and lower bounds for
         population in addition to the number of districts the area contains."""
-        # The number of districts this area contains
         pop_deviation = self.config['max_pop_variation']
-
-        # bound_list = []
         pop_bounds = {}
         # Make the bounds for an area considering # area districts and tree level
         for center, n_child_districts in children_centers.items():
@@ -303,18 +305,22 @@ class ColumnGenerator:
         for ix, d in enumerate(districts):
             precinct_district_matrix[d, ix] = 1
 
+        max_rank = min(precinct_district_matrix.shape)
         U, Sigma, Vt = np.linalg.svd(precinct_district_matrix)
-
-        district_norm = np.linalg.norm(precinct_district_matrix, axis=0)
-        precinct_norm = np.linalg.norm(precinct_district_matrix, axis=1)
 
         Dsim = 1 - pdist(precinct_district_matrix.T, metric='jaccard')
 
         precinct_coocc = precinct_district_matrix @ precinct_district_matrix.T
         precinct_conditional_p = precinct_coocc / precinct_district_matrix.sum(axis=1)
-        Psim = precinct_coocc / np.outer(precinct_norm, precinct_norm)
+
+        L = (np.diag(precinct_coocc.sum(axis=1)) - precinct_coocc)
+        D_inv = np.diag(precinct_coocc.sum(axis=1) ** -.5)
+        e = np.linalg.eigvals(D_inv @ L @ D_inv)
 
         conditional_entropy = average_entropy(precinct_conditional_p)
+
+        dispersion = dispersion_compactness(districts, self.state_df)
+        roeck = roeck_compactness(districts, self.state_df, self.lengths)
 
         metrics = {
             'n_root_failures': self.failed_root_samples,
@@ -324,9 +330,14 @@ class ColumnGenerator:
             'p_duplicates': duplicates / len(districts),
             'conditional_entropy': conditional_entropy,
             'average_district_sim': self.config['n_districts'] * np.average(Dsim),
-            'n_nonzero_singular_values': sum(Sigma > 0.0001),
-            'sigma_k': Sigma[self.config['n_districts']],
-            'svd_entropy': svd_entropy(Sigma)
+            'svd_entropy': svd_entropy(Sigma),
+            '50p_approx_rank': sum(np.cumsum(Sigma / Sigma.sum()) < .5) / max_rank,
+            '95p_approx_rank': sum(np.cumsum(Sigma / Sigma.sum()) < .95) / max_rank,
+            '99p_approx_rank': sum(np.cumsum(Sigma / Sigma.sum()) < .99) / max_rank,
+            'lambda_2': e[1],
+            'lambda_k': e[self.config['n_districts']],
+            'dispersion': np.array(dispersion).mean(),
+            'roeck': np.array(roeck).mean()
         }
 
         return metrics, Sigma, precinct_district_matrix
