@@ -81,7 +81,7 @@ if __name__ == '__main__':
         'verbose': True,
         'max_sample_tries': 15,
         'n_samples': 3,
-        'n_root_samples': 100,
+        'n_root_samples': 200,
         'max_n_splits': 5,
         'min_n_splits': 2,
         'max_split_population_difference': 1.5
@@ -97,17 +97,17 @@ if __name__ == '__main__':
             [(('center_selection_config', 'capacity_kwargs'),
               {'weights': 'voronoi', 'dist_penalty': 1, 'capacities': 'match'})],
             [(('center_selection_config', 'capacity_kwargs'),
-              {'weights': 'fractional', 'dist_penalty': 1, 'capacities': 'compute', 'capacity_constraint': 1.5})],
+              {'weights': 'fractional', 'dist_penalty': 1, 'capacities': 'match'})],
             [(('center_selection_config', 'capacity_kwargs'),
-              {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'compute'})],
+              {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'compute', 'capacity_constraint': 1.5})],
             [(('center_selection_config', 'capacity_kwargs'),
-              {'weights': 'voronoi', 'dist_penalty': 1, 'capacities': 'match'})],
+              {'weights': 'voronoi', 'dist_penalty': 1, 'capacities': 'compute'})],
             [(('center_selection_config', 'capacity_kwargs'),
-              {'weights': 'fractional', 'dist_penalty': 1, 'capacities': 'compute', 'capacity_constraint': 1.5})],
+              {'weights': 'fractional', 'dist_penalty': 1, 'capacities': 'compute'})],
             [(('center_selection_config', 'capacity_kwargs'),
-              {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'compute'})],
+              {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'match'})],
             [(('center_selection_config', 'capacity_kwargs'),
-              {'weights': 'voronoi', 'dist_penalty': 1, 'capacities': 'match'})],
+              {'weights': 'voronoi', 'dist_penalty': 1, 'capacities': 'compute', 'capacity_constraint': 1.5})],
         ]
     }
 
