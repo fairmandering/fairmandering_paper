@@ -1,3 +1,4 @@
+import math
 import random
 from scipy.spatial.distance import cdist, pdist
 from sklearn.cluster import KMeans
@@ -230,6 +231,56 @@ def weight_perturbation(weights, scale):
     return weights * np.random.pareto(scale, len(weights))
 
 
+def get_capacities(centers, child_sizes, area_df, kwargs):
+    n_children = len(child_sizes)
+    total_seats = int(sum(child_sizes))
+
+    center_locs = area_df.loc[centers][['x', 'y']].values
+    locs = area_df[['x', 'y']].values
+    pop = area_df['population'].values
+
+    dist_mat = cdist(locs, center_locs)
+    if kwargs['weights'] == 'fractional':
+        dist_mat **= kwargs['dist_penalty']
+        weights = dist_mat / np.sum(dist_mat, axis=1)[:, None]
+    elif kwargs['weights'] == 'voronoi':
+        assignment = np.argmin(dist_mat, axis=1)
+        weights = np.zeros((len(locs), len(centers)))
+        weights[np.arange(len(assignment)), assignment] = 1
+    else:
+        raise ValueError('Invalid capacity weight method')
+
+    center_assignment_score = np.sum(weights * pop[:, None], axis=0)
+    center_assignment_score /= center_assignment_score.sum()
+    center_fractional_caps = center_assignment_score * total_seats
+
+    if kwargs['capacities'] == 'compute':
+        cap_constraint = kwargs.get('capacity_constraint', None)
+        if cap_constraint:
+            lb = max(1, math.floor(total_seats / (n_children * cap_constraint)))
+            ub = min(total_seats, math.ceil((total_seats * cap_constraint) / n_children))
+        else:
+            lb = 1
+            ub = total_seats
+        center_caps = np.ones(n_children).astype(int) * lb
+        while center_caps.sum() != total_seats:
+            disparity = center_fractional_caps - center_caps
+            at_capacity = center_caps >= ub
+            disparity[at_capacity] = -total_seats  # enforce upperbound
+            center_caps[np.argmax(disparity)] += 1
+
+        return {center: capacity for center, capacity in zip(centers, center_caps)}
+
+    elif kwargs['capacities'] == 'match':
+        center_order = center_assignment_score.argsort()
+        capacities_order = child_sizes.argsort()
+
+        return {centers[cen_ix]: child_sizes[cap_ix] for cen_ix, cap_ix
+                in zip(center_order, capacities_order)}
+    else:
+        raise ValueError('Invalid capacity domain')
+
+
 def assign_children_to_centers(centers, child_sizes, area_df):
     center_locs = area_df.loc[centers][['x', 'y']].values
     locs = area_df[['x', 'y']].values
@@ -247,7 +298,7 @@ def assign_children_to_centers(centers, child_sizes, area_df):
             in zip(center_order, capacities_order)}
 
 
-def compute_ideal_capacities(centers, child_sizes, area_df):
+def compute_fractional_capacities(centers, child_sizes, area_df):
     n_children = len(child_sizes)
     total_size = int(sum(child_sizes))
 
@@ -259,6 +310,33 @@ def compute_ideal_capacities(centers, child_sizes, area_df):
     dist_mat /= np.sum(dist_mat, axis=1)[:, None]
 
     center_assignment_score = np.sum(dist_mat * pop[:, None], axis=0)
+    center_assignment_score /= center_assignment_score.sum()
+    center_fractional_caps = center_assignment_score * total_size
+
+    center_caps = np.ones(n_children).astype(int)
+    while center_caps.sum() != total_size:
+        disparity = center_fractional_caps - center_caps
+        center_caps[np.argmax(disparity)] += 1
+    print(center_caps)
+
+    return {center: capacity for center, capacity in zip(centers, center_caps)}
+
+
+def compute_optimal_capacities(centers, child_sizes, area_df):
+    n_children = len(child_sizes)
+    total_size = int(sum(child_sizes))
+
+    center_locs = area_df.loc[centers][['x', 'y']].values
+    locs = area_df[['x', 'y']].values
+    pop = area_df['population'].values
+
+    dist_mat = cdist(locs, center_locs)
+    assignment = np.argmin(dist_mat, axis=1)
+
+    assignment_ix = np.zeros((len(locs), len(centers)))
+    assignment_ix[np.arange(len(assignment)), assignment] = 1
+
+    center_assignment_score = np.sum(assignment_ix * pop[:, None], axis=0)
     center_assignment_score /= center_assignment_score.sum()
     center_fractional_caps = center_assignment_score * total_size
 

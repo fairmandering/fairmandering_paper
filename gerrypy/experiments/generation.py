@@ -48,7 +48,13 @@ class Experiment:
                     'trial_values': trial_values
                 }
 
-                config_str = '_'.join([str(v) for k, v in trial_values])
+                def process(val):
+                    if isinstance(val, dict):
+                        return ''.join([c for c in str(val) if c.isalnum()])
+                    else:
+                        return str(val)
+
+                config_str = '_'.join([process(v) for k, v in trial_values])
                 save_name = '_'.join([state, config_str, str(int(time.time()))]) + '.npy'
                 #json.dump(trial_results, open(os.path.join(save_dir, save_name), 'w'))
                 np.save(os.path.join(save_dir, save_name), trial_results)
@@ -57,9 +63,9 @@ if __name__ == '__main__':
     center_selection_config = {
         'selection_method': 'uncapacitated_kmeans',  # one of
         'center_assignment_order': 'descending',
-        'perturbation_scale': 0,
+        'perturbation_scale': .5,
         'n_random_seeds': 0,
-        'capacity_method': 'match'
+        'capacity_kwargs': {}
     }
 
     base_config = {
@@ -72,37 +78,71 @@ if __name__ == '__main__':
         'IP_gap_tol': 1e-4,
         'IP_timeout': 10,
         'event_logging': False,
-        'verbose': False,
+        'verbose': True,
         'max_sample_tries': 15,
         'n_samples': 3,
-        'n_root_samples': 1,
+        'n_root_samples': 100,
         'max_n_splits': 5,
         'min_n_splits': 2,
         'max_split_population_difference': 1.5
     }
     experiment_config = {
-        'name': 'NC_generation',
+        'name': 'NC_cap_test',
         'states': ['NC'],
         'trial_parameters': [
-            [(('center_selection_config', 'perturbation_scale'), .25), (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-            [(('center_selection_config', 'perturbation_scale'), .5), (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-            [(('center_selection_config', 'perturbation_scale'), .75), (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-            [(('center_selection_config', 'perturbation_scale'), 1), (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-            [(('center_selection_config', 'perturbation_scale'), 1.5), (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-            [(('center_selection_config', 'perturbation_scale'), 2), (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-
-            [(('center_selection_config', 'n_random_seeds'), .25), (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-            [(('center_selection_config', 'n_random_seeds'), .5), (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-            [(('center_selection_config', 'n_random_seeds'), .75), (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-            [(('center_selection_config', 'n_random_seeds'), 1), (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-            [(('center_selection_config', 'n_random_seeds'), 1.25), (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-            [(('center_selection_config', 'n_random_seeds'), 1.5), (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-
-            [(('center_selection_config', 'center_assignment_order'), 'ascending'), (('center_selection_config', 'selection_method'), 'random_iterative')],
-            [(('center_selection_config', 'center_assignment_order'), 'descending'), (('center_selection_config', 'selection_method'), 'random_iterative')],
-            [(('center_selection_config', 'center_assignment_order'), 'random'), (('center_selection_config', 'selection_method'), 'random_iterative')],
+            [(('center_selection_config', 'capacity_kwargs'),
+              {'weights': 'fractional', 'dist_penalty': 1, 'capacities': 'compute', 'capacity_constraint': 1.5})],
+            [(('center_selection_config', 'capacity_kwargs'),
+              {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'compute'})],
+            [(('center_selection_config', 'capacity_kwargs'),
+              {'weights': 'voronoi', 'dist_penalty': 1, 'capacities': 'match'})],
+            [(('center_selection_config', 'capacity_kwargs'),
+              {'weights': 'fractional', 'dist_penalty': 1, 'capacities': 'compute', 'capacity_constraint': 1.5})],
+            [(('center_selection_config', 'capacity_kwargs'),
+              {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'compute'})],
+            [(('center_selection_config', 'capacity_kwargs'),
+              {'weights': 'voronoi', 'dist_penalty': 1, 'capacities': 'match'})],
+            [(('center_selection_config', 'capacity_kwargs'),
+              {'weights': 'fractional', 'dist_penalty': 1, 'capacities': 'compute', 'capacity_constraint': 1.5})],
+            [(('center_selection_config', 'capacity_kwargs'),
+              {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'compute'})],
+            [(('center_selection_config', 'capacity_kwargs'),
+              {'weights': 'voronoi', 'dist_penalty': 1, 'capacities': 'match'})],
         ]
     }
 
     experiment = Experiment(base_config, experiment_config)
     experiment.run()
+
+# [(('center_selection_config', 'perturbation_scale'), .25),
+#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+# [(('center_selection_config', 'perturbation_scale'), .5),
+#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+# [(('center_selection_config', 'perturbation_scale'), .75),
+#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+# [(('center_selection_config', 'perturbation_scale'), 1),
+#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+# [(('center_selection_config', 'perturbation_scale'), 1.5),
+#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+# [(('center_selection_config', 'perturbation_scale'), 2),
+#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+#
+# [(('center_selection_config', 'n_random_seeds'), .25),
+#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+# [(('center_selection_config', 'n_random_seeds'), .5),
+#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+# [(('center_selection_config', 'n_random_seeds'), .75),
+#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+# [(('center_selection_config', 'n_random_seeds'), 1),
+#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+# [(('center_selection_config', 'n_random_seeds'), 1.25),
+#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+# [(('center_selection_config', 'n_random_seeds'), 1.5),
+#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+#
+# [(('center_selection_config', 'center_assignment_order'), 'ascending'),
+#  (('center_selection_config', 'selection_method'), 'random_iterative')],
+# [(('center_selection_config', 'center_assignment_order'), 'descending'),
+#  (('center_selection_config', 'selection_method'), 'random_iterative')],
+# [(('center_selection_config', 'center_assignment_order'), 'random'),
+#  (('center_selection_config', 'selection_method'), 'random_iterative')],

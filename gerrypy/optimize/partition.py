@@ -5,7 +5,7 @@ import json
 import itertools
 import numpy as np
 import networkx as nx
-from scipy.spatial.distance import cdist
+from scipy.spatial.distance import pdist
 from gerrypy.analyze.districts import *
 from gerrypy.optimize.main import load_real_data
 from gerrypy.optimize.center_selection import *
@@ -181,11 +181,10 @@ class ColumnGenerator:
 
     def select_centers(self, area_df, children_sizes):
         cs_config = self.config['center_selection_config']
-        capacities = self.config['ideal_pop'] * np.array(children_sizes)
-
         method = cs_config['selection_method']
         if method == 'random_iterative':
-            centers = iterative_random(cs_config, area_df, capacities, self.lengths)
+            pop_capacity = self.config['ideal_pop'] * np.array(children_sizes)
+            centers = iterative_random(cs_config, area_df, pop_capacity, self.lengths)
         elif method == 'uncapacitated_kmeans':
             weight_perturbation_scale = cs_config['perturbation_scale']
             n_random_seeds = cs_config['n_random_seeds']
@@ -196,12 +195,9 @@ class ColumnGenerator:
         else:
             raise ValueError('center selection_method not valid')
 
-        if cs_config['capacity_method'] == 'match':
-            center_capacities = assign_children_to_centers(centers, children_sizes, area_df)
-        elif cs_config['capacity_method'] == 'compute':
-            center_capacities = compute_ideal_capacities(centers, children_sizes, area_df)
-        else:
-            raise ValueError('capacity_method not valid')
+        cap_kwargs = cs_config['capacity_kwargs']
+        center_capacities = get_capacities(centers, children_sizes,
+                                           area_df, cap_kwargs)
 
         return center_capacities
 
@@ -286,12 +282,6 @@ class ColumnGenerator:
         json.dump(self.event_list, open(save_path, 'w'))
 
     def district_metrics(self):
-        p_infeasible = self.n_infeasible_partitions / \
-                       (self.n_infeasible_partitions + self.n_successful_partitions)
-        n_interior_nodes = len(self.internal_nodes)
-        districts = [d.area for d in self.leaf_nodes]
-        duplicates = len(districts) - len(set([frozenset(d) for d in districts]))
-
         def average_entropy(M):
             return (- M * np.ma.log(M).filled(0) - (1 - M) *
                     np.ma.log(1 - M).filled(0)).sum() / (M.shape[0] * M.shape[1])
@@ -301,9 +291,16 @@ class ColumnGenerator:
             entropy = - (sigma_hat * (np.ma.log(sigma_hat).filled(0) / np.log(math.e))).sum()
             return entropy / (math.log(len(sigma)) / math.log(math.e))
 
+        p_infeasible = self.n_infeasible_partitions / \
+                       (self.n_infeasible_partitions + self.n_successful_partitions)
+        n_interior_nodes = len(self.internal_nodes)
+        districts = [d.area for d in self.leaf_nodes]
+        duplicates = len(districts) - len(set([frozenset(d) for d in districts]))
+
         precinct_district_matrix = np.zeros((len(self.state_df), len(districts)))
         for ix, d in enumerate(districts):
             precinct_district_matrix[d, ix] = 1
+        precinct_district_matrix = np.unique(precinct_district_matrix, axis=1)
 
         max_rank = min(precinct_district_matrix.shape)
         U, Sigma, Vt = np.linalg.svd(precinct_district_matrix)
