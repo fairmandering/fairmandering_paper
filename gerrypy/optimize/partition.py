@@ -297,18 +297,18 @@ class ColumnGenerator:
         districts = [d.area for d in self.leaf_nodes]
         duplicates = len(districts) - len(set([frozenset(d) for d in districts]))
 
-        precinct_district_matrix = np.zeros((len(self.state_df), len(districts)))
+        block_district_matrix = np.zeros((len(self.state_df), len(districts)))
         for ix, d in enumerate(districts):
-            precinct_district_matrix[d, ix] = 1
-        precinct_district_matrix = np.unique(precinct_district_matrix, axis=1)
+            block_district_matrix[d, ix] = 1
+        ubdm = np.unique(block_district_matrix, axis=1)
 
-        max_rank = min(precinct_district_matrix.shape)
-        U, Sigma, Vt = np.linalg.svd(precinct_district_matrix)
+        max_rank = min(ubdm.shape)
+        U, Sigma, Vt = np.linalg.svd(ubdm)
 
-        Dsim = 1 - pdist(precinct_district_matrix.T, metric='jaccard')
+        Dsim = 1 - pdist(ubdm.T, metric='jaccard')
 
-        precinct_coocc = precinct_district_matrix @ precinct_district_matrix.T
-        precinct_conditional_p = precinct_coocc / precinct_district_matrix.sum(axis=1)
+        precinct_coocc = ubdm @ ubdm.T
+        precinct_conditional_p = precinct_coocc / ubdm.sum(axis=1)
 
         L = (np.diag(precinct_coocc.sum(axis=1)) - precinct_coocc)
         D_inv = np.diag(precinct_coocc.sum(axis=1) ** -.5)
@@ -337,4 +337,4 @@ class ColumnGenerator:
             'roeck': np.array(roeck).mean()
         }
 
-        return metrics, Sigma, precinct_district_matrix
+        return metrics, Sigma, block_district_matrix
