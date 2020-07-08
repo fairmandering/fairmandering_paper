@@ -88,14 +88,17 @@ if __name__ == '__main__':
         'max_split_population_difference': 1.5
     }
     experiment_config = {
-        'name': 'NC_final_results',
+        'name': 'NC_variable_district_size',
         'states': ['NC'],
         'trial_parameters': [
-            [('population_tolerance', .005)],
-            [('population_tolerance', .01)],
-            [('population_tolerance', .025)],
-            [('population_tolerance', .05)],
-            [('population_tolerance', .1)],
+            [('population_tolerance', 0.05), ('n_districts', 120), ('n_root_samples', 20), ('n_samples', 2)],
+            [('population_tolerance', 0.05), ('n_districts', 100), ('n_root_samples', 25), ('n_samples', 2)],
+            [('population_tolerance', 0.04), ('n_districts', 80), ('n_root_samples', 30), ('n_samples', 2)],
+            [('population_tolerance', 0.03), ('n_districts', 60), ('n_root_samples', 20), ('n_samples', 3)],
+            [('population_tolerance', 0.025), ('n_districts', 50), ('n_root_samples', 40), ('n_samples', 3)],
+            [('population_tolerance', 0.02), ('n_districts', 40), ('n_root_samples', 60), ('n_samples', 3)],
+            [('population_tolerance', 0.0075), ('n_districts', 20), ('n_root_samples', 100), ('n_samples', 3)],
+            [('population_tolerance', 0.005), ('n_districts', 13), ('n_root_samples', 100), ('n_samples', 4)]
         ]
     }
 
