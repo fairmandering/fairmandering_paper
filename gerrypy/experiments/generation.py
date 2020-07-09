@@ -32,8 +32,6 @@ class Experiment:
                 generation_t = time.time() - generation_start_t
                 analysis_start_t = time.time()
                 metrics, sigma, bdm = cg.district_metrics()
-                id_to_ix = {n.id: ix for ix, n in enumerate(cg.leaf_nodes)}
-                plans = [[id_to_ix[nid] for nid in plan] for plan in cg.enumerate_partitions()]
                 analysis_t = time.time() - analysis_start_t
 
                 trial_results = {
@@ -42,8 +40,9 @@ class Experiment:
                     'cg_metrics': metrics,
                     'singular_values': sigma,
                     'block_district_matrix': bdm,
-                    'plans': plans,
-                    'n_unique_districtings': len(plans),
+                    'n_unique_districtings': cg.number_of_districtings(),
+                    'leaf_nodes': cg.leaf_nodes,
+                    'internal_nodes': cg.internal_nodes,
                     'trial_config': trial_config,
                     'trial_values': trial_values
                 }
@@ -91,8 +90,8 @@ if __name__ == '__main__':
         'name': 'NC_variable_district_size',
         'states': ['NC'],
         'trial_parameters': [
-            [('population_tolerance', 0.05), ('n_districts', 120), ('n_root_samples', 20), ('n_samples', 2)],
-            [('population_tolerance', 0.05), ('n_districts', 100), ('n_root_samples', 25), ('n_samples', 2)],
+            [('population_tolerance', 0.05), ('n_districts', 120), ('n_root_samples', 10), ('n_samples', 2)],
+            [('population_tolerance', 0.05), ('n_districts', 100), ('n_root_samples', 20), ('n_samples', 2)],
             [('population_tolerance', 0.04), ('n_districts', 80), ('n_root_samples', 30), ('n_samples', 2)],
             [('population_tolerance', 0.03), ('n_districts', 60), ('n_root_samples', 20), ('n_samples', 3)],
             [('population_tolerance', 0.025), ('n_districts', 50), ('n_root_samples', 40), ('n_samples', 3)],
