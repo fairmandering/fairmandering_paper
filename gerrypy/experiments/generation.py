@@ -69,7 +69,7 @@ if __name__ == '__main__':
     }
 
     base_config = {
-        'n_districts': 13,
+        'n_districts': 18,
         'enforce_connectivity': True,
         'population_tolerance': .025,
         'center_selection_config': center_selection_config,
@@ -81,23 +81,39 @@ if __name__ == '__main__':
         'verbose': False,
         'max_sample_tries': 20,
         'n_samples': 3,
-        'n_root_samples': 200,
+        'n_root_samples': 150,
         'max_n_splits': 5,
         'min_n_splits': 2,
         'max_split_population_difference': 1.5
     }
     experiment_config = {
-        'name': 'NC_variable_district_size',
-        'states': ['NC'],
+        'name': 'IL_frac_results',
+        'states': ['IL'],
         'trial_parameters': [
-            [('population_tolerance', 0.05), ('n_districts', 120), ('n_root_samples', 10), ('n_samples', 2)],
-            [('population_tolerance', 0.05), ('n_districts', 100), ('n_root_samples', 20), ('n_samples', 2)],
-            [('population_tolerance', 0.04), ('n_districts', 80), ('n_root_samples', 30), ('n_samples', 2)],
-            [('population_tolerance', 0.03), ('n_districts', 60), ('n_root_samples', 20), ('n_samples', 3)],
-            [('population_tolerance', 0.025), ('n_districts', 50), ('n_root_samples', 40), ('n_samples', 3)],
-            [('population_tolerance', 0.02), ('n_districts', 40), ('n_root_samples', 60), ('n_samples', 3)],
-            [('population_tolerance', 0.0075), ('n_districts', 20), ('n_root_samples', 100), ('n_samples', 3)],
-            [('population_tolerance', 0.005), ('n_districts', 13), ('n_root_samples', 100), ('n_samples', 4)]
+             [(('center_selection_config', 'capacity_kwargs'),
+               {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'compute'}),
+              (('center_selection_config', 'n_random_seeds'), 1),
+              (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+             [(('center_selection_config', 'capacity_kwargs'),
+               {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'compute'}),
+              (('center_selection_config', 'center_assignment_order'), 'random'),
+              (('center_selection_config', 'selection_method'), 'random_iterative')],
+             [(('center_selection_config', 'capacity_kwargs'),
+               {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'match'}),
+              (('center_selection_config', 'perturbation_scale'), 0.5),
+              (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+             [(('center_selection_config', 'capacity_kwargs'),
+               {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'match'}),
+              (('center_selection_config', 'perturbation_scale'), 1),
+              (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+             [(('center_selection_config', 'capacity_kwargs'),
+               {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'match'}),
+              (('center_selection_config', 'n_random_seeds'), 1),
+              (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
+             [(('center_selection_config', 'capacity_kwargs'),
+               {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'match'}),
+              (('center_selection_config', 'center_assignment_order'), 'random'),
+              (('center_selection_config', 'selection_method'), 'random_iterative')]
         ]
     }
 
