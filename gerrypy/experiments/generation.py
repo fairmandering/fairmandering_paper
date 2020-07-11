@@ -32,6 +32,8 @@ class Experiment:
                 generation_t = time.time() - generation_start_t
                 analysis_start_t = time.time()
                 metrics, sigma, bdm = cg.district_metrics()
+                id_to_ix = {n.id: ix for ix, n in enumerate(cg.leaf_nodes)}
+                plans = [[id_to_ix[nid] for nid in plan] for plan in cg.enumerate_partitions()]
                 analysis_t = time.time() - analysis_start_t
 
                 trial_results = {
@@ -40,9 +42,8 @@ class Experiment:
                     'cg_metrics': metrics,
                     'singular_values': sigma,
                     'block_district_matrix': bdm,
-                    'n_unique_districtings': cg.number_of_districtings(),
-                    'leaf_nodes': cg.leaf_nodes,
-                    'internal_nodes': cg.internal_nodes,
+                    'plans': plans,
+                    'n_unique_districtings': len(plans),
                     'trial_config': trial_config,
                     'trial_values': trial_values
                 }
