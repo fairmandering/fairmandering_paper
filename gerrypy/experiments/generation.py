@@ -32,8 +32,6 @@ class Experiment:
                 generation_t = time.time() - generation_start_t
                 analysis_start_t = time.time()
                 metrics, sigma, bdm = cg.district_metrics()
-                id_to_ix = {n.id: ix for ix, n in enumerate(cg.leaf_nodes)}
-                plans = [[id_to_ix[nid] for nid in plan] for plan in cg.enumerate_partitions()]
                 analysis_t = time.time() - analysis_start_t
 
                 trial_results = {
@@ -42,8 +40,9 @@ class Experiment:
                     'cg_metrics': metrics,
                     'singular_values': sigma,
                     'block_district_matrix': bdm,
-                    'plans': plans,
-                    'n_unique_districtings': len(plans),
+                    'n_unique_districtings': cg.number_of_districtings(),
+                    'leaf_nodes': cg.leaf_nodes,
+                    'internal_nodes': cg.internal_nodes,
                     'trial_config': trial_config,
                     'trial_values': trial_values
                 }
@@ -64,15 +63,15 @@ if __name__ == '__main__':
     center_selection_config = {
         'selection_method': 'uncapacitated_kmeans',  # one of
         'center_assignment_order': 'descending',
-        'perturbation_scale': .5,
-        'n_random_seeds': 0,
+        'perturbation_scale': 1,
+        'n_random_seeds': 1,
         'capacity_kwargs': {'weights': 'voronoi', 'capacities': 'match'}
     }
 
     base_config = {
         'n_districts': 18,
         'enforce_connectivity': True,
-        'population_tolerance': .025,
+        'population_tolerance': .01,
         'center_selection_config': center_selection_config,
         'master_abs_gap': 1e-3,
         'master_max_time': 5,
@@ -80,41 +79,20 @@ if __name__ == '__main__':
         'IP_timeout': 10,
         'event_logging': False,
         'verbose': False,
-        'max_sample_tries': 20,
-        'n_samples': 3,
-        'n_root_samples': 150,
+        'max_sample_tries': 30,
+        'n_samples': 7,
+        'n_root_samples': 10,
         'max_n_splits': 5,
         'min_n_splits': 2,
         'max_split_population_difference': 1.5
     }
     experiment_config = {
-        'name': 'IL_frac_results',
+        'name': 'IL_opt_cols',
         'states': ['IL'],
         'trial_parameters': [
-             [(('center_selection_config', 'capacity_kwargs'),
-               {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'compute'}),
-              (('center_selection_config', 'n_random_seeds'), 1),
-              (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-             [(('center_selection_config', 'capacity_kwargs'),
-               {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'compute'}),
-              (('center_selection_config', 'center_assignment_order'), 'random'),
-              (('center_selection_config', 'selection_method'), 'random_iterative')],
-             [(('center_selection_config', 'capacity_kwargs'),
-               {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'match'}),
-              (('center_selection_config', 'perturbation_scale'), 0.5),
-              (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-             [(('center_selection_config', 'capacity_kwargs'),
-               {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'match'}),
-              (('center_selection_config', 'perturbation_scale'), 1),
-              (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-             [(('center_selection_config', 'capacity_kwargs'),
-               {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'match'}),
-              (('center_selection_config', 'n_random_seeds'), 1),
-              (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-             [(('center_selection_config', 'capacity_kwargs'),
-               {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'match'}),
-              (('center_selection_config', 'center_assignment_order'), 'random'),
-              (('center_selection_config', 'selection_method'), 'random_iterative')]
+            [('n_samples', 7)],
+            [(('center_selection_config', 'capacity_kwargs'),
+              {'weights': 'voronoi', 'capacities': 'compute'})],
         ]
     }
 
