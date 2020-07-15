@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 import pandas as pd
 from sklearn import preprocessing
 from sklearn.decomposition import PCA
@@ -12,6 +13,7 @@ def preprocess_input(df_train, df_test,
     X_train = df_train.drop(columns=['label'])
     y_train = df_train['label']
     X_test = df_test.drop(columns=['label'])
+    print('pi1', X_test.shape)
 
     if use_boxcox:
         scaler_type = preprocessing.PowerTransformer
@@ -21,26 +23,30 @@ def preprocess_input(df_train, df_test,
     if normalize_per_year:
         train_year_dfs = []
         test_year_dfs = []
+        x_scalers = {}
         for year, group in X_train.groupby('year').groups.items():
             scaler = scaler_type()
             X = X_train.loc[group]
             scaler.fit(X.values)
             year_train_df = pd.DataFrame(scaler.transform(X.values),
-                                 columns=X.columns,
-                                 index=X.index)
-
-            Xtst = X_test.query('year == @year')
-            year_test_df = pd.DataFrame(scaler.transform(Xtst.values),
-                                      columns=Xtst.columns,
-                                      index=Xtst.index)
-
+                                         columns=X.columns,
+                                         index=X.index)
             train_year_dfs.append(year_train_df)
+            x_scalers[year] = scaler
+
+        for year, group in X_test.groupby('year').groups.items():
+            scaler = scaler_type()
+            Xtst = X_test.loc[group]
+
+            scaler.fit(Xtst.values)
+            year_test_df = pd.DataFrame(scaler.transform(Xtst.values),
+                                        columns=Xtst.columns,
+                                        index=Xtst.index)
             test_year_dfs.append(year_test_df)
 
         X_train_transformed = pd.concat(train_year_dfs).values
         X_test_transformed = pd.concat(test_year_dfs).values
-
-    else:
+    elif not normalize_per_year:
         scaler = scaler_type()
         scaler.fit(X_train.values)
         X_train_transformed = scaler.transform(X_train.values)
@@ -65,7 +71,6 @@ def preprocess_input(df_train, df_test,
            torch.tensor(y_train_transformed), \
            torch.tensor(df_test['label'].values), \
            label_scaler
-
 
 if __name__ == '__main__':
     import os

@@ -1,5 +1,6 @@
 import gpytorch
 import torch
+import math
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import KFold
@@ -97,7 +98,8 @@ def evaluate(model, likelihood, test_X):
 
 def run_experiment(df, kernel,
                    n_splits=10,
-                   n_training_iterations=25,
+                   n_training_iterations=50,
+                   non_normalized_columns=[],
                    normalize_per_year=False,
                    normalize_labels=True,
                    use_boxcox=False,
@@ -109,11 +111,12 @@ def run_experiment(df, kernel,
         df_train, df_test = df.iloc[train_index], df.iloc[test_index]
 
         prepro = preprocess_input(df_train, df_test,
+                                  non_normalized_columns=non_normalized_columns,
                                   normalize_per_year=normalize_per_year,
                                   normalize_labels=normalize_labels,
                                   use_boxcox=use_boxcox,
                                   dim=dim)
-        train_x, test_x, train_y, test_y, label_scaler = prepro
+        train_x, test_x, train_y, test_y, label_scaler, _ = prepro
 
         likelihood = gpytorch.likelihoods.GaussianLikelihood()
         model = ExactGPModel(train_x,
@@ -138,14 +141,24 @@ def run_experiment(df, kernel,
             pred = mean
             pred_ub = ub
             pred_lb = lb
-
         test_y = test_y.numpy()
+
+        y_mean = train_y.numpy().mean()
+        y_std = train_y.numpy().std()
+
+        neg_log_prob = .5 * np.log(2 * math.pi * std ** 2) + (pred - test_y) ** 2 / (2 * std ** 2)
+        triv_nlp = .5 * np.log(2 * math.pi * y_std ** 2) + (pred - y_mean) ** 2 / (2 * y_std ** 2)
+        sll = (neg_log_prob - triv_nlp).mean()
+
+        mse = np.mean((test_y - pred) ** 2)
         l1_error = pd.Series(np.abs(test_y - pred)).describe()
-        std_spread = pd.Series((pred_ub - pred_lb)/2).describe()
+        std_spread = pd.Series((pred_ub - pred_lb) / 2).describe()
         pred_above_lb = (pred_lb < test_y)
         pred_below_ub = (test_y < pred_ub)
 
         results[k] = {
+            'MSE': mse,
+            'SLL': sll,
             'l1_mean_error': l1_error['mean'],
             'l1_median_error': l1_error['50%'],
             'l1_error_std': l1_error['std'],
@@ -154,4 +167,74 @@ def run_experiment(df, kernel,
             'percent_below_std_ub': sum(pred_below_ub) / len(pred_below_ub),
             'percent_above_std_lb': sum(pred_above_lb) / len(pred_above_lb),
         }
+    return results
+
+
+def run_time_experiment(df_train, df_test, kernel,
+                        n_training_iterations=50,
+                        non_normalized_columns=[],
+                        normalize_per_year=False,
+                        normalize_labels=True,
+                        use_boxcox=False,
+                        dim=None,
+                        lr=.1):
+
+    df_train = df_train.sort_index()
+    df_test = df_test.sort_index()
+    prepro = preprocess_input(df_train, df_test,
+                              non_normalized_columns=non_normalized_columns,
+                              normalize_per_year=normalize_per_year,
+                              normalize_labels=normalize_labels,
+                              use_boxcox=use_boxcox,
+                              dim=dim)
+    train_x, test_x, train_y, test_y, label_scaler, _ = prepro
+
+    likelihood = gpytorch.likelihoods.GaussianLikelihood()
+    model = ExactGPModel(train_x,
+                         train_y,
+                         likelihood,
+                         kernel)
+    model, likelihood = train(model,
+                              likelihood,
+                              train_x,
+                              train_y,
+                              lr=lr,
+                              training_iterations=n_training_iterations)
+    mean, std = evaluate(model, likelihood, test_x)
+
+    eval_weights = df_test['population']
+
+    ub = mean + std
+    lb = mean - std
+    if normalize_labels:
+        pred = label_scaler.inverse_transform(mean.reshape(-1, 1)).flatten()
+        pred_ub = label_scaler.inverse_transform(ub.reshape(-1, 1)).flatten()
+        pred_lb = label_scaler.inverse_transform(lb.reshape(-1, 1)).flatten()
+    else:
+        pred = mean
+        pred_ub = ub
+        pred_lb = lb
+    test_y = test_y.numpy()
+
+    y_mean = train_y.numpy().mean()
+    y_std = train_y.numpy().std()
+
+    neg_log_prob = .5 * np.log(2 * math.pi * std ** 2) + (pred - test_y) ** 2 / (2 * std ** 2)
+    triv_nlp = .5 * np.log(2 * math.pi * y_std ** 2) + (y_mean - test_y) ** 2 / (2 * y_std ** 2)
+    sll = np.average(neg_log_prob - triv_nlp, weights=eval_weights)
+
+    mse = np.average((test_y - pred) ** 2, weights=eval_weights)
+    mae = np.average(np.abs(test_y - pred), weights=eval_weights)
+
+    pred_above_lb = (pred_lb < test_y)
+    pred_below_ub = (test_y < pred_ub)
+
+    results = {
+        'MAE': mae,
+        'MSE': mse,
+        'SLL': sll,
+        'MSTD': np.average((pred_ub - pred_lb) / 2, weights=eval_weights),
+        'percent_below_std_ub': np.average(pred_below_ub, weights=eval_weights),
+        'percent_above_std_lb': np.average(pred_above_lb, weights=eval_weights),
+    }
     return results
