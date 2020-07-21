@@ -1,19 +1,6 @@
-import networkx as nx
-import pandas as pd
 import pickle
-import numpy as np
-from gerrypy.optimize import partition
-from gerrypy.optimize.cost import expected_rep_gap
-from gerrypy.data.synthetic import generate_synthetic_input
-from gerrypy.optimize.prune import make_lengths_data, complete_lengths_data
-from gerrypy.optimize.problems.master import make_master
-from gerrypy.optimize.tree import SampleTree
 from gurobipy import *
-import gpytorch
-from gerrypy.gp import exact
-from gerrypy.optimize import annotate
 from gerrypy.analyze.districts import *
-from scipy.stats import norm
 
 
 def load_real_data(data_base_path):

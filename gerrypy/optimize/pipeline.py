@@ -1,14 +1,10 @@
-import networkx as nx
-import pandas as pd
 import pickle
-import numpy as np
 import os
 import time
-from gerrypy.optimize import partition
+from gerrypy.optimize import generate
 from gerrypy import constants as consts
 from scipy.spatial.distance import pdist, squareform
-from gerrypy.data.synthetic import generate_synthetic_input
-from gerrypy.optimize.problems.master import make_master
+from gerrypy.optimize.master import make_master
 import gpytorch
 from gerrypy.gp import exact
 from gerrypy.optimize import annotate
@@ -103,7 +99,7 @@ def solve(config):
                                         allow_pickle=True)[()]['block_district_matrix']
         district_blocks = [np.nonzero(row)[0] for row in block_district_matrix.T]
     else:
-        cg = partition.ColumnGenerator(config, config['state'])
+        cg = generate.ColumnGenerator(config, config['state'])
         cg.generate()
         district_blocks = [d.area for d in cg.leaf_nodes]
         block_district_matrix = np.zeros((len(state_df), len(district_blocks)))
@@ -193,7 +189,7 @@ if __name__ == '__main__':
     center_selection_config = {
         'selection_method': 'uncapacitated_kmeans',  # one of
         'center_assignment_order': 'descending',
-        'perturbation_scale': .5,
+        'perturbation_scale': 1,
         'n_random_seeds': 1,
         'capacity_kwargs': {'weights': 'voronoi', 'capacities': 'match'}
     }
@@ -209,7 +205,7 @@ if __name__ == '__main__':
         'IP_timeout': 10,
         'event_logging': False,
         'verbose': False,
-        'max_sample_tries': 20,
+        'max_sample_tries': 25,
         'n_samples': 5,
         'n_root_samples': 10,
         'max_n_splits': 5,
@@ -218,8 +214,8 @@ if __name__ == '__main__':
         'state': 'NC',
         'saved_districts_path': None,
     }
-    n_trials = 5
-    save_dir = 'NC_generation_results'
+    n_trials = 10
+    save_dir = 'NC_generation_results_2'
     try:
         os.mkdir(save_dir)
     except:
@@ -228,4 +224,3 @@ if __name__ == '__main__':
         results, opt_results, district_df = solve(config)
         pickle.dump([results, opt_results, district_df],
                     open(os.path.join(save_dir, 'opttrial%d.p' % i), 'wb'))
-        

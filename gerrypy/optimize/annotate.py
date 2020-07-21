@@ -3,6 +3,7 @@ import numpy as np
 from scipy.stats import t
 from gerrypy.analyze.districts import dispersion_compactness
 
+
 def create_district_df(bdm, state_df):
     district_list = []
     sum_columns = ['area', 'population']

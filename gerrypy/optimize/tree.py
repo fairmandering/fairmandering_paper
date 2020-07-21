@@ -45,14 +45,14 @@ class SHPNode:
         return print_str
 
 
-class SampleTree:
+class ExampleTree:
     def __init__(self, config, n_districts, level=0):
         self.n_districts = n_districts
         self.level = 0
 
         if n_districts > 1:
             children_n_distrs = SHPNode.sample_n_splits_and_child_sizes()
-            self.children = [SampleTree(config, n, level + 1)
+            self.children = [ExampleTree(config, n, level + 1)
                              for n in children_n_distrs]
         else:
             self.children = None
