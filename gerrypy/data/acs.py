@@ -103,17 +103,17 @@ def download_census_tables(state=None, year=None, county=False):
             df.rename(columns={"GEO_ID": "GEOID"}, inplace=True)
             if county:
                 df['GEOID'] = df['GEOID'].apply(lambda x: x.split("US")[1]) \
-                    .astype('string').apply(lambda x: x.zfill(5))
+                    .astype(str).apply(lambda x: x.zfill(5))
             else:
                 df['GEOID'] = df['GEOID'].apply(lambda x: x.split("US")[1]) \
-                    .astype('string').apply(lambda x: x.zfill(11))
+                    .astype(str).apply(lambda x: x.zfill(11))
         else:
-            df['state'] = df['state'].astype('string').apply(lambda x: x.zfill(2))
-            df['county'] = df['county'].astype('string').apply(lambda x: x.zfill(3))
+            df['state'] = df['state'].astype(str).apply(lambda x: x.zfill(2))
+            df['county'] = df['county'].astype(str).apply(lambda x: x.zfill(3))
             if county:
                 df['GEOID'] = df['state'] + df['county']
             else:
-                df['tract'] = df['tract'].astype('string').apply(lambda x: x.zfill(6))
+                df['tract'] = df['tract'].astype(str).apply(lambda x: x.zfill(6))
                 df['GEOID'] = df['state'] + df['county'] + df['tract']
 
         df = df.set_index('GEOID')
