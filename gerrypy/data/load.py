@@ -3,9 +3,8 @@ from gerrypy import constants
 import networkx as nx
 import os
 import numpy as np
-import geopandas as gpd
 import pandas as pd
-
+import geopandas as gpd
 
 def load_state_df(state_abbrev):
     state_df_path = os.path.join(constants.OPT_DATA_PATH,

@@ -5,7 +5,7 @@ PRECINCT_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'precincts')
 OPT_DATA_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'optimization_data')
 CENSUS_SHAPE_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'shapes')
 TRACT_DATA_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'acs_tract_data')
-CENSUS_DATA_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'acs_data')
+COUNTY_DATA_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'acs_county_data')
 COLUMNS_PATH = os.path.join(GERRYPY_BASE_PATH, 'results', 'columns')
 APP_PATH = os.path.join(GERRYPY_BASE_PATH, 'analyze', 'viz', 'gerryapp')
 
@@ -16,7 +16,7 @@ ABBREV_IX = 1
 FIPS_IX = 2
 STATE_IDS = [
     ('Alabama', 'AL', '01'),
-    ('Alaska', 'AK', '02'),
+    # ('Alaska', 'AK', '02'),
     ('Arizona', 'AZ', '04'),
     ('Arkansas', 'AR', '05'),
     ('California', 'CA', '06'),
