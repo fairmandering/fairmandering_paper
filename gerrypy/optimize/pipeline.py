@@ -7,9 +7,9 @@ from scipy.spatial.distance import pdist, squareform
 from gerrypy.optimize.master import make_master
 import gpytorch
 from gerrypy.gp import exact
-from gerrypy.optimize import annotate
+from gerrypy.analyze import districts
 from gerrypy.analyze.districts import *
-from gerrypy.optimize.main import load_real_data
+from gerrypy.data.load import load_opt_data
 from scipy.stats import norm
 
 def make_train_df(district_df, tpoint=3000):
@@ -91,7 +91,7 @@ def state_gp_results(district_df):
 def solve(config):
     state_fips = consts.ABBREV_DICT[config['state']][consts.FIPS_IX]
     data_path = os.path.join(consts.OPT_DATA_PATH, str(state_fips))
-    real_input = load_real_data(data_path)
+    real_input = load_opt_data(data_path)
     state_df, G, state_covar, lengths = real_input
     gen_t_start = time.time()
     if config['saved_districts_path']:
@@ -107,7 +107,7 @@ def solve(config):
             block_district_matrix[d, ix] = 1
 
     gen_t = time.time() - gen_t_start
-    district_df = annotate.create_district_df(block_district_matrix, state_df)
+    district_df = districts.create_district_df(block_district_matrix, state_df)
     mean, pred_lb, pred_ub = state_gp_results(district_df)
     std = (pred_ub - pred_lb) / 2
 

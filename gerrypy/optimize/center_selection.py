@@ -72,7 +72,7 @@ def weight_perturbation(weights, scale):
     return weights * np.random.pareto(scale, len(weights))
 
 
-def get_capacities(centers, child_sizes, area_df, kwargs):
+def get_capacities(centers, child_sizes, area_df, config):
     n_children = len(child_sizes)
     total_seats = int(sum(child_sizes))
 
@@ -81,10 +81,10 @@ def get_capacities(centers, child_sizes, area_df, kwargs):
     pop = area_df['population'].values
 
     dist_mat = cdist(locs, center_locs)
-    if kwargs['weights'] == 'fractional':
-        dist_mat **= kwargs['dist_penalty']
+    if config['capacity_weights'] == 'fractional':
+        dist_mat **= 2
         weights = dist_mat / np.sum(dist_mat, axis=1)[:, None]
-    elif kwargs['weights'] == 'voronoi':
+    elif config['capacity_weights'] == 'voronoi':
         assignment = np.argmin(dist_mat, axis=1)
         weights = np.zeros((len(locs), len(centers)))
         weights[np.arange(len(assignment)), assignment] = 1
@@ -95,8 +95,8 @@ def get_capacities(centers, child_sizes, area_df, kwargs):
     center_assignment_score /= center_assignment_score.sum()
     center_fractional_caps = center_assignment_score * total_seats
 
-    if kwargs['capacities'] == 'compute':
-        cap_constraint = kwargs.get('capacity_constraint', None)
+    if config['capacities'] == 'compute':
+        cap_constraint = config.get('capacity_constraint', None)
         if cap_constraint:
             lb = max(1, math.floor(total_seats / (n_children * cap_constraint)))
             ub = min(total_seats, math.ceil((total_seats * cap_constraint) / n_children))
@@ -112,7 +112,7 @@ def get_capacities(centers, child_sizes, area_df, kwargs):
 
         return {center: capacity for center, capacity in zip(centers, center_caps)}
 
-    elif kwargs['capacities'] == 'match':
+    elif config['capacities'] == 'match':
         center_order = center_assignment_score.argsort()
         capacities_order = child_sizes.argsort()
 
