@@ -9,10 +9,11 @@ from scipy.spatial.distance import cdist
 
 def annotate_precincts(precinct_shape_path, census_shape_path,
                        census_data_path, census_column_path):
-    precincts = gpd.read_file(precinct_shape_path).to_crs(epsg=4326)
+
+    precincts = gpd.read_file(precinct_shape_path).to_crs(epsg=3078)
     precincts.columns = [c.upper() if c != 'geometry' else c
                          for c in precincts.columns]
-    tracts = gpd.read_file(census_shape_path).to_crs(epsg=4326)
+    tracts = gpd.read_file(census_shape_path).to_crs(epsg=3078)
 
     tracts['center_x'] = tracts.centroid.x
     tracts['center_y'] = tracts.centroid.y
@@ -23,7 +24,7 @@ def annotate_precincts(precinct_shape_path, census_shape_path,
     t_centers = tracts[['center_x', 'center_y']].values
 
     dists = cdist(p_centers, t_centers).argsort()
-
+    # Calculate the overlap of tracts and precincts
     precinct_coverage = {}
     for pix, row in precincts.iterrows():
         precinct_coverage[pix] = []
@@ -50,6 +51,7 @@ def annotate_precincts(precinct_shape_path, census_shape_path,
                                                overlap_area / tgeo.area))
             tix += 1
 
+    # TODO: fix data download format
     csvs = []
     for csv_path in os.listdir(census_data_path):
         csv = pd.read_csv(os.path.join(census_data_path, csv_path))
@@ -77,6 +79,7 @@ def annotate_precincts(precinct_shape_path, census_shape_path,
     for pix, tract_list in precinct_coverage.items():
         precinct_population = []
         for tract, coverage_percent in tract_list:
+            # TODO: normalize coverage_percent
             tract_geoid = tracts['GEOID'].loc[tract]
             population = population_column[tract_geoid]
             precinct_population.append((tract_geoid,

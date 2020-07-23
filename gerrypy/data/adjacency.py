@@ -1,7 +1,44 @@
 import numpy as np
 import networkx as nx
+import pysal
 import time
 from scipy.spatial.distance import cdist, pdist, squareform
+
+
+def connect_components(gdf, inclusion_factor=1.5):
+    shape_list = gdf.geometry.to_list()
+    # For the purpose of getting boundary node for connection algo
+    outer = gdf.geometry.unary_union
+    bbox = outer.envelope.buffer(1000)
+    shape_list.append(bbox.difference(outer))
+    G = pysal.lib.weights.Rook.from_iterable(shape_list).to_networkx()
+    boundaries = set(G[len(gdf)])
+    G.remove_node(len(gdf))
+
+    # connect components with closest centroids until one component
+    centroids = np.stack([gdf.centroid.x, gdf.centroid.y]).T
+    while not nx.is_connected(G):
+        components = nx.connected_components(G)
+        comp_boundaries = [list(set(c).intersection(boundaries)) for c in components]
+
+        min_comp_dist = 1e20
+        min_comps = (0, 0)
+        for ix, c1 in enumerate(comp_boundaries[:-1]):
+            for jx, c2 in enumerate(comp_boundaries[ix+1:]):
+                comp_dist = cdist(centroids[c1], centroids[c2]).min()
+                if comp_dist < min_comp_dist:
+                    min_comp_dist = comp_dist
+                    min_comps = (ix, ix + 1 + jx)
+        print(min_comps, min_comp_dist)
+
+        cix, cjx = min_comps
+        c1, c2 = comp_boundaries[cix], comp_boundaries[cjx]
+        threshold_distance = min_comp_dist * inclusion_factor
+        c1_nodes, c2_nodes = np.nonzero(cdist(centroids[c1], centroids[c2]) < threshold_distance)
+        for n1, n2 in zip(c1_nodes, c2_nodes):
+            G.add_edge(c1[n1], c2[n2], inferred=True)
+
+    return G
 
 
 def create_adjacency_graph(gdf,
@@ -13,16 +50,19 @@ def create_adjacency_graph(gdf,
                            large_component_searches=50,
                            component_edge_threshold_factor=1.5):
     """
+    NOTE: This is only for use of precincts. Census shapefiles include water
+    features and are more accurate, therefore pysal contiguity is sufficient
+
     Constructs an adjacency graph from a geodataframe
 
     Note: Make sure the geodateframe is projected with units of feet or meters.
     For the USA, EPSG:3078 is recommended.
 
-    The algorithm proceeds in 2 phases. It first constructs a set of higher
-    granularity polygons by interpolating points on the edge (so straight
+    The algorithm proceeds in 2 phases. First construct a set of higher
+    granularity polygons by interpolating points on edges (so straight
     edges don't only have 2 points) guided by the interpolation parameters
     [interp_scaling] and [interp_offset]. With the set of higher granularity
-    polygons look at their centroids and iterate over each one,
+    polygons, look at their centroids and iterate over each one,
     identifying the [centroid_search_fraction] closest other centroids.
     For each pair identify the number of boundary points within
     [max_adjacent_distance] of each other. If this number is greater than
@@ -34,7 +74,7 @@ def create_adjacency_graph(gdf,
     Specifically, start by finding the pair of centroids from different
     components with minimum distance (d1). Then find the pair of boundary
     points in the two components with minimum distance (d2).
-    Then for each polygon with centroid within an [island_search_factor] of d1
+    Then for each polygon with centroid within [island_search_factor] of d1
     add an edge if there is a pair of boundary points less than
     [island_edge_factor] * d2 between 2 polygons. Continue this process
     until there is only one component.
@@ -69,13 +109,13 @@ def create_adjacency_graph(gdf,
             density.
 
         large_component_searches (int): The number of polygons in the larger
-            component to check for a inter-component edge. These are the
-            closest polygons by centroids. Increasing this parameter
+            component to check for a egde between components. These are the
+            closest polygons by centroid distance. Increasing this parameter
             requires more time but there is typically only a few component
-            matching loops so it makes a small difference.
+            matching loops so it makes only a small difference.
 
         component_edge_threshold_factor (float): After finding the minimum
-            distance between two boundary points in two different components d2,
+            distance between two boundary points in two different components (d2),
             add an edge between every 2 polygons that have minimum boundary
             point distance less than d2 * [component_edge_threshold_factor].
             Increasing this parameter will increase the connectivity of

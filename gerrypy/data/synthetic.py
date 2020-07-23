@@ -4,7 +4,7 @@ import pandas as pd
 import networkx as nx
 from sklearn.metrics.pairwise import rbf_kernel
 from scipy.ndimage.filters import gaussian_filter
-from gerrypy.optimize.prune import complete_lengths_data
+from scipy.spatial.distance import pdist, squareform
 
 
 def generate_synthetic_input(config):
@@ -16,13 +16,12 @@ def generate_synthetic_input(config):
     pop_array = syn_map.flatten() * 100
     x = np.arange(w).repeat(h).reshape(w, h).T.flatten()
     y = np.arange(h).repeat(w).reshape(h, w).flatten()
-    z = np.zeros(h * w)
     state_df = pd.DataFrame({'population': pop_array,
-                             'x': x, 'y': y, 'z': z})
+                             'x': x, 'y': y})
     state_poli_mean, state_covar = create_political_distribution(config,
                                                                  state_df)
     state_df['affiliation'] = state_poli_mean
-    lengths = complete_lengths_data(state_df)
+    lengths = squareform(pdist(state_df[['x', 'y']].values))
 
     return state_df, G, state_covar, lengths
 
