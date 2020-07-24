@@ -14,6 +14,7 @@ class ColumnGenerator:
     def __init__(self, config):
         state_abbrev = config['state']
         state_df, G, lengths, edge_dists = load_opt_data(state_abbrev)
+        lengths /= 1000
 
         self.state_abbrev = state_abbrev
 
@@ -34,6 +35,7 @@ class ColumnGenerator:
         self.leaf_nodes = []
         self.root = None
 
+        self.failed_regions = []
         self.failed_root_samples = 0
         self.n_infeasible_partitions = 0
         self.n_successful_partitions = 0
@@ -60,6 +62,9 @@ class ColumnGenerator:
                     node = self.sample_queue.pop()
                     child_samples = self.sample_node(node)
                     if len(child_samples) == 0:
+                        self.failed_regions.append(node.area)
+                        if self.config['verbose']:
+                            print(node.area)
                         raise RuntimeError('Unable to sample tree')
                     for child in child_samples:
                         if child.n_districts == 1:
@@ -74,6 +79,7 @@ class ColumnGenerator:
             except RuntimeError:
                 print('Root sample failed')
                 self.root.children_ids = self.root.children_ids[:-1]
+                self.root.partition_times = self.root.partition_times[:-1]
                 self.failed_root_samples += 1
 
     def sample_node(self, node):
@@ -82,14 +88,20 @@ class ColumnGenerator:
         samples = []
         n_trials = 0
         n_samples = 1 if node.is_root else self.config['n_samples']
+        if not isinstance(n_samples, int):
+            n_samples = int(n_samples // 1 + random.random() < n_samples % 1)
         while len(samples) < n_samples and n_trials < self.config['max_sample_tries']:
+            partition_start_t = time.time()
             child_nodes = self.make_partition(area_df, node)
+            partition_end_t = time.time()
             if child_nodes:
                 self.n_successful_partitions += 1
                 samples.append(child_nodes)
                 node.children_ids.append([child.id for child in child_nodes])
+                node.partition_times.append(partition_end_t - partition_start_t)
             else:
                 self.n_infeasible_partitions += 1
+                node.n_infeasible_samples += 1
             n_trials += 1
 
         return [node for sample in samples for node in sample]
@@ -115,6 +127,7 @@ class ColumnGenerator:
                                          area_df.population.to_dict(),
                                          pop_bounds,
                                          1 + random.random())
+        #partition_IP.Params.MIPGap = self.config['IP_gap_tol']
         partition_IP.update()
         partition_IP.optimize()
         try:
@@ -206,3 +219,40 @@ class ColumnGenerator:
                                  save_name)
 
         json.dump(self.event_list, open(save_path, 'w'))
+
+
+if __name__ == '__main__':
+    center_selection_config = {
+        'selection_method': 'uncapacitated_kmeans',  # one of
+        'perturbation_scale': 0,
+        'n_random_seeds': 1,
+        'capacities': 'compute',
+        'capacity_weights': 'voronoi'
+    }
+    tree_config = {
+        'max_sample_tries': 25,
+        'n_samples': 3,
+        'n_root_samples': 1,
+        'max_n_splits': 5,
+        'min_n_splits': 2,
+        'max_split_population_difference': 1.5,
+        'event_logging': False,
+        'verbose': True,
+    }
+    gurobi_config = {
+        'master_abs_gap': 1e-3,
+        'master_max_time': 5,
+        'IP_gap_tol': 1e-3,
+        'IP_timeout': 10,
+    }
+    pdp_config = {
+        'state': 'TX',
+        'n_districts': 36,
+        'population_tolerance': .01,
+    }
+    base_config = {**center_selection_config,
+                   **tree_config,
+                   **gurobi_config,
+                   **pdp_config}
+    cg = ColumnGenerator(base_config)
+    cg.generate()

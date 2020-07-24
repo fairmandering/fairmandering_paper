@@ -7,8 +7,8 @@ from scipy.spatial.distance import pdist, squareform
 from gerrypy.optimize.master import make_master
 import gpytorch
 from gerrypy.gp import exact
-from gerrypy.analyze import districts
 from gerrypy.analyze.districts import *
+from gerrypy.analyze.plan import *
 from gerrypy.data.load import load_opt_data
 from scipy.stats import norm
 
@@ -107,7 +107,7 @@ def solve(config):
             block_district_matrix[d, ix] = 1
 
     gen_t = time.time() - gen_t_start
-    district_df = districts.create_district_df(block_district_matrix, state_df)
+    district_df = create_district_df(block_district_matrix, state_df)
     mean, pred_lb, pred_ub = state_gp_results(district_df)
     std = (pred_ub - pred_lb) / 2
 
@@ -176,7 +176,7 @@ def solve(config):
             'roeck': np.abs(district_roeck - 1)[list(cols.keys())].mean(),
             'comp': competitiveness(district_df.loc[cols], threshold=.05),
             'eg': efficiency_gap(district_df.loc[cols]),
-            'ess': empirical_seat_share(district_df.loc[cols]),
+            'ess': historical_seat_share(district_df.loc[cols]),
             'gp_obj': expected_diff[list(cols.keys())].sum(),
             'runtime': opt_time[k],
             'gen_time': gen_t

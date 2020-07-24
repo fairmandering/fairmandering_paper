@@ -1,4 +1,4 @@
-from gerrypy.optimize.partition import ColumnGenerator
+from gerrypy.optimize.generate import ColumnGenerator
 from copy import deepcopy
 import time
 import os
@@ -99,56 +99,3 @@ if __name__ == '__main__':
     experiment = Experiment(base_config, experiment_config)
     experiment.run()
 
-# Capacity matching
-# [(('center_selection_config', 'capacity_kwargs'),
-#   {'weights': 'fractional', 'dist_penalty': 1, 'capacities': 'compute', 'capacity_constraint': 1.5})],
-# [(('center_selection_config', 'capacity_kwargs'),
-#   {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'compute'})],
-# [(('center_selection_config', 'capacity_kwargs'),
-#   {'weights': 'voronoi', 'dist_penalty': 1, 'capacities': 'match'})],
-# [(('center_selection_config', 'capacity_kwargs'),
-#   {'weights': 'fractional', 'dist_penalty': 1, 'capacities': 'match'})],
-# [(('center_selection_config', 'capacity_kwargs'),
-#   {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'compute', 'capacity_constraint': 1.5})],
-# [(('center_selection_config', 'capacity_kwargs'),
-#   {'weights': 'voronoi', 'dist_penalty': 1, 'capacities': 'compute'})],
-# [(('center_selection_config', 'capacity_kwargs'),
-#   {'weights': 'fractional', 'dist_penalty': 1, 'capacities': 'compute'})],
-# [(('center_selection_config', 'capacity_kwargs'),
-#   {'weights': 'fractional', 'dist_penalty': 2, 'capacities': 'match'})],
-# [(('center_selection_config', 'capacity_kwargs'),
-#   {'weights': 'voronoi', 'dist_penalty': 1, 'capacities': 'compute', 'capacity_constraint': 1.5})],
-
-# Center selection sweep
-# [(('center_selection_config', 'perturbation_scale'), .25),
-#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-# [(('center_selection_config', 'perturbation_scale'), .5),
-#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-# [(('center_selection_config', 'perturbation_scale'), .75),
-#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-# [(('center_selection_config', 'perturbation_scale'), 1),
-#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-# [(('center_selection_config', 'perturbation_scale'), 1.5),
-#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-# [(('center_selection_config', 'perturbation_scale'), 2),
-#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-#
-# [(('center_selection_config', 'n_random_seeds'), .25),
-#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-# [(('center_selection_config', 'n_random_seeds'), .5),
-#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-# [(('center_selection_config', 'n_random_seeds'), .75),
-#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-# [(('center_selection_config', 'n_random_seeds'), 1),
-#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-# [(('center_selection_config', 'n_random_seeds'), 1.25),
-#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-# [(('center_selection_config', 'n_random_seeds'), 1.5),
-#  (('center_selection_config', 'selection_method'), 'uncapacitated_kmeans')],
-#
-# [(('center_selection_config', 'center_assignment_order'), 'ascending'),
-#  (('center_selection_config', 'selection_method'), 'random_iterative')],
-# [(('center_selection_config', 'center_assignment_order'), 'descending'),
-#  (('center_selection_config', 'selection_method'), 'random_iterative')],
-# [(('center_selection_config', 'center_assignment_order'), 'random'),
-#  (('center_selection_config', 'selection_method'), 'random_iterative')],

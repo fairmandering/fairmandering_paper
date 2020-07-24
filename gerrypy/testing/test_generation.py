@@ -54,6 +54,7 @@ def test_gen():
     assert len(cg.leaf_nodes) == base_config['n_districts']
     assert cg.sample_queue == []
     assert 0 < len(cg.internal_nodes) <= len(cg.leaf_nodes)
+
     print('test_gen success')
 
 
@@ -82,6 +83,7 @@ def test_metrics():
     assert len(ddf) == len(cg.leaf_nodes)
     pop_error = np.abs(ddf['population'] - cg.config['ideal_pop'])
     assert np.all(pop_error < cg.config['max_pop_variation'])
+    assert len(cg.failed_regions) == cg.failed_root_samples
     print('test_metrics success')
 
 

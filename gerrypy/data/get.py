@@ -23,8 +23,7 @@ acs.download_all_tract_data(years=DATA_YEARS)
 
 # Preprocess
 os.makedirs(constants.COUNTY_DATA_PATH, exist_ok=True)
-n_district_df = pd.read_csv('states.csv')
-for ix, row in n_district_df.iterrows():
-    if row['cong_districts'] > 1:
-        preprocess.preprocess_tracts(row['STUSAB'])
+for state, seats_dict in constants.seats.items():
+    if seats_dict['house'] > 1:
+        preprocess.preprocess_tracts(state)
 

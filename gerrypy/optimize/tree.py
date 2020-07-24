@@ -6,7 +6,7 @@ import numpy as np
 class SHPNode:
     def __init__(self, n_districts, area, is_root=False):
         self.is_root = is_root
-        self.n_districts = n_districts
+        self.n_districts = n_districts  # size
         self.area = area
         self.children_ids = []
 
@@ -14,8 +14,8 @@ class SHPNode:
         self.area_hash = hash(frozenset(area))
         self.id = self.area_hash + self.pepper
 
-        self.n_sample_failures = 0
         self.n_infeasible_samples = 0
+        self.partition_times = []
 
     def sample_n_splits_and_child_sizes(self, config):
         n_distrs = self.n_districts
