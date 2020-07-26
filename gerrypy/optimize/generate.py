@@ -106,8 +106,6 @@ class ColumnGenerator:
 
         return [node for sample in samples for node in sample]
 
-
-
     def make_partition(self, area_df, node):
         """Using a random seed, try w times to sample one split from a
         compatibility tree node."""
@@ -119,15 +117,23 @@ class ColumnGenerator:
         tp_lengths = {i: {j: self.lengths[i, j] for j in node.area}
                       for i in children_centers}
 
+        if self.config['use_subgraph'] and not node.is_root:
+            G = nx.subgraph(self.G, node.area)
+            edge_dists = {center: nx.shortest_path_length(G, source=center)
+                          for center in tp_lengths}
+        else:
+            G = self.G
+            edge_dists = self.edge_dists
+
         pop_bounds = self.make_pop_bounds(children_centers)
 
         partition_IP, xs = make_partition_IP(tp_lengths,
-                                         self.edge_dists,
-                                         self.G,
-                                         area_df.population.to_dict(),
-                                         pop_bounds,
-                                         1 + random.random())
-        #partition_IP.Params.MIPGap = self.config['IP_gap_tol']
+                                             edge_dists,
+                                             G,
+                                             area_df.population.to_dict(),
+                                             pop_bounds,
+                                             1 + random.random())
+        # partition_IP.Params.MIPGap = self.config['IP_gap_tol']
         partition_IP.update()
         partition_IP.optimize()
         try:
@@ -168,7 +174,7 @@ class ColumnGenerator:
         method = self.config['selection_method']
         if method == 'random_iterative':
             pop_capacity = self.config['ideal_pop'] * np.array(children_sizes)
-            centers = iterative_random(self.config, area_df, pop_capacity, self.lengths)
+            centers = iterative_random(area_df, pop_capacity, self.lengths)
         elif method == 'uncapacitated_kmeans':
             weight_perturbation_scale = self.config['perturbation_scale']
             n_random_seeds = self.config['n_random_seeds']

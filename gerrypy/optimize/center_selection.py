@@ -72,6 +72,19 @@ def weight_perturbation(weights, scale):
     return weights * np.random.pareto(scale, len(weights))
 
 
+def furthest_centers(area_df, lengths, children_sizes):
+    blocks = list(area_df.index)
+    area_lengths = lengths[np.ix_(blocks, blocks)]
+    pair = np.argmax(area_lengths)
+    c1 = pair // len(area_lengths)
+    c2 = pair % len(area_lengths)
+    centers = [c1, c2]
+    while len(centers) < len(children_sizes):
+        dists = area_lengths[centers].sum(axis=0)
+        centers.append(np.argmax(dists))
+    return [blocks[c] for c in centers]
+
+
 def get_capacities(centers, child_sizes, area_df, config):
     n_children = len(child_sizes)
     total_seats = int(sum(child_sizes))
@@ -120,5 +133,6 @@ def get_capacities(centers, child_sizes, area_df, config):
                 in zip(center_order, capacities_order)}
     else:
         raise ValueError('Invalid capacity domain')
+
 
 

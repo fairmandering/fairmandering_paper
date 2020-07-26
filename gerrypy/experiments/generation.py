@@ -1,4 +1,5 @@
 from gerrypy.optimize.generate import ColumnGenerator
+from gerrypy.analyze.districts import *
 from copy import deepcopy
 import time
 import os
@@ -26,25 +27,23 @@ class Experiment:
                         trial_config[k] = v
 
                 print('Starting trial', trial_config)
-                cg = ColumnGenerator(trial_config, state)
+                cg = ColumnGenerator(trial_config)
                 generation_start_t = time.time()
                 cg.generate()
                 generation_t = time.time() - generation_start_t
                 analysis_start_t = time.time()
-                metrics, sigma, bdm = cg.district_metrics()
+                metrics = generation_metrics(cg)
                 analysis_t = time.time() - analysis_start_t
 
                 trial_results = {
                     'generation_time': generation_t,
                     'analysis_time': analysis_t,
-                    'cg_metrics': metrics,
-                    'singular_values': sigma,
-                    'block_district_matrix': bdm,
-                    'n_unique_districtings': cg.number_of_districtings(),
                     'leaf_nodes': cg.leaf_nodes,
                     'internal_nodes': cg.internal_nodes,
                     'trial_config': trial_config,
-                    'trial_values': trial_values
+                    'trial_values': trial_values,
+                    'metrics': metrics,
+                    'n_plans': number_of_districtings(cg.leaf_nodes, cg.internal_nodes)
                 }
 
                 def process(val):
@@ -62,37 +61,47 @@ class Experiment:
 if __name__ == '__main__':
     center_selection_config = {
         'selection_method': 'uncapacitated_kmeans',  # one of
-        'center_assignment_order': 'descending',
         'perturbation_scale': 1,
         'n_random_seeds': 1,
-        'capacity_kwargs': {'weights': 'voronoi', 'capacities': 'match'}
+        'capacities': 'match',
+        'capacity_weights': 'voronoi',
+        'use_subgraph': True
     }
-
-    base_config = {
-        'n_districts': 18,
-        'enforce_connectivity': True,
-        'population_tolerance': .01,
-        'center_selection_config': center_selection_config,
-        'master_abs_gap': 1e-3,
-        'master_max_time': 5,
-        'IP_gap_tol': 1e-4,
-        'IP_timeout': 10,
-        'event_logging': False,
-        'verbose': False,
+    tree_config = {
         'max_sample_tries': 30,
-        'n_samples': 7,
+        'n_samples': 3,
         'n_root_samples': 10,
         'max_n_splits': 5,
         'min_n_splits': 2,
-        'max_split_population_difference': 1.5
+        'max_split_population_difference': 1.5,
+        'event_logging': False,
+        'verbose': False,
     }
+    gurobi_config = {
+        'master_abs_gap': 1e-3,
+        'master_max_time': 5,
+        'IP_gap_tol': 1e-3,
+        'IP_timeout': 10,
+    }
+    pdp_config = {
+        'state': 'IL',
+        'n_districts': 18,
+        'population_tolerance': .01,
+    }
+    base_config = {**center_selection_config,
+                   **tree_config,
+                   **gurobi_config,
+                   **pdp_config}
     experiment_config = {
-        'name': 'IL_opt_cols',
+        'name': 'IL_test_connected',
         'states': ['IL'],
         'trial_parameters': [
-            [('n_samples', 7)],
-            [(('center_selection_config', 'capacity_kwargs'),
-              {'weights': 'voronoi', 'capacities': 'compute'})],
+            [('perturbation_scale', .5), ('n_random_seeds', 0)],
+            [('perturbation_scale', 0), ('n_random_seeds', 1)],
+            [('perturbation_scale', 1), ('n_random_seeds', 1)],
+            [('center_selection_method', 'random_iterative')],
+            [('capacities', 'match'), ('weights', 'fractional')],
+            [('capacities', 'compute'), ('weights', 'voronoi')],
         ]
     }
 
