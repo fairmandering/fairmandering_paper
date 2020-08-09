@@ -5,6 +5,8 @@ import pandas as pd
 from pysal.lib.weights import Queen
 from matplotlib.colors import LinearSegmentedColormap as LSC
 import matplotlib.pyplot as plt
+import seaborn as sns
+from gerrypy.analyze.plan import *
 
 
 def color_map(gdf, districting):
@@ -133,3 +135,27 @@ def politics_map(gdf, politics, districting):
     gdf.plot(ax=ax, facecolor='none', edgecolor='white', lw=.05)
     ax.axis('off')
     return map_gdf
+
+
+def plot_seat_vote_curve(plan_df, n_samples=1000, height=10):
+    xs, ys, stds = seat_vote_curve_t_estimate_with_seat_std(plan_df)
+    seats, votes = sample_elections(plan_df, n=n_samples, p_seats=True)
+    g = sns.jointplot(votes, seats, kind='kde', space=0, height=height)
+
+    g.ax_joint.plot(xs, ys, color='red', linestyle=':', label='E[S]')
+    g.ax_joint.fill_between(xs, np.maximum(ys - stds, 0), np.minimum(ys + stds, 1), alpha=0.2, color='red',
+                            label='$E[S] \pm \sigma$')
+    g.ax_joint.fill_between(xs, np.maximum(ys - 2 * stds, 0), np.minimum(ys + 2 * stds, 1), alpha=0.08, color='red',
+                            label='$E[S] \pm 2\sigma$')
+    g.ax_joint.axvline(x=.5, linestyle='--', color='black', lw=1)
+    g.ax_joint.axhline(y=.5, linestyle='--', color='black', lw=1)
+
+
+def plot_result_distribution(plan_df, n_samples=5000, symmetry=True):
+    seats, votes = sample_elections(plan_df, n=n_samples, p_seats=True)
+    plt.figure(figsize=(10, 10))
+    sns.kdeplot(votes, seats, cmap='Reds', shade_lowest=False, shade=True)
+    if symmetry:
+        ax = sns.kdeplot(1 - votes, 1 - seats, cmap='Blues', shade_lowest=False, shade=True)
+    ax.axvline(x=.5, linestyle='--', color='black', lw=1)
+    ax.axhline(y=.5, linestyle='--', color='black', lw=1)
