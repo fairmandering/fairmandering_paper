@@ -124,12 +124,9 @@
                         ['==', ['feature-state', 'district_n'], 4], colors[4],
                         ['==', ['feature-state', 'district_n'], 5], colors[5],
                         ['==', ['feature-state', 'district_n'], 6], colors[6],
-                        'rgba(0,0,0,0)'
+                        'rgba(0,0,0,255)'
                     ],
-                    "fill-opacity": [
-                        'case',
-                        ['boolean', ['feature-state', 'is_center'], false], 1, .75
-                    ]
+                    "fill-opacity": .75
                 },
             });
 
@@ -148,10 +145,14 @@
             function mod(n, m) {
                 return ((n % m) + m) % m;
             }
+
+
+
+
             document.addEventListener('update', function (e) {
                 var algo_step = run_data[run_index];
-                map.removeFeatureState(
-                    {source: 'precincts'});
+                map.removeFeatureState({source: 'precincts'});
+                for (let i = 0; i < 100000; i++){}
 
             if (algo_step.feasible){
                 let district_ix = 0;
@@ -181,8 +182,6 @@
                     ));
             }
             console.log(map.queryRenderedFeatures({layers:['precinct-color']}));
-
-            map._render();
         }, false);
 
         var running = false;
