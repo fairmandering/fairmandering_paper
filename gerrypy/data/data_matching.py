@@ -1,3 +1,5 @@
+"""Deprecated, see PrecinctDataWrapper"""
+
 import os
 import json
 import numpy as np
@@ -5,15 +7,16 @@ import pandas as pd
 import geopandas as gpd
 from shapely.errors import TopologicalError
 from scipy.spatial.distance import cdist
+from gerrypy.constants import CRS
 
 
 def annotate_precincts(precinct_shape_path, census_shape_path,
                        census_data_path, census_column_path):
 
-    precincts = gpd.read_file(precinct_shape_path).to_crs(epsg=3078)
+    precincts = gpd.read_file(precinct_shape_path).to_crs(epsg=CRS)
     precincts.columns = [c.upper() if c != 'geometry' else c
                          for c in precincts.columns]
-    tracts = gpd.read_file(census_shape_path).to_crs(epsg=3078)
+    tracts = gpd.read_file(census_shape_path).to_crs(epsg=CRS)
 
     tracts['center_x'] = tracts.centroid.x
     tracts['center_y'] = tracts.centroid.y

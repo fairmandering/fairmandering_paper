@@ -23,7 +23,9 @@ class StatePrecinctWrapper:
                      for (office, year), (d_col, _) in self.main_source['elections'].items()}
         r_columns = {r_col: '_'.join(['R', office, str(year)])
                      for (office, year), (_, r_col) in self.main_source['elections'].items()}
-        name_dict = {**d_columns, **r_columns, 'geometry': 'geometry'}
+        name_dict = {**d_columns, **r_columns,
+                     self.main_source['county_column']: 'county',
+                     'geometry': 'geometry'}
 
         precinct_gdf = gpd.read_file(self.main_source['path']).rename(columns=name_dict).to_crs(epsg=constants.CRS)
         return precinct_gdf[list(name_dict.values())]
@@ -44,9 +46,7 @@ class StatePrecinctWrapper:
             tgeo = row.geometry
             tarea = tgeo.area
             pix = 0
-            while ratio_tract_covered < .99 and pix < len(p_centers) / 4:
-                if pix % 10 == 0:
-                    print(tix, pix)
+            while ratio_tract_covered < .99 and pix < len(p_centers) / 10:
                 precinct_id = dists[tix, pix]
                 precinct_row = precincts.iloc[precinct_id]
                 pgeo = precinct_row.geometry
@@ -71,20 +71,46 @@ class StatePrecinctWrapper:
         election_columns.remove('geometry')
         for t, plist in tract_coverage.items():
             tract_precincts, coverage_ratio = zip(*plist)
-            results_mat = precincts.loc[tract_precincts, election_columns].values
+            results_mat = precincts.loc[tract_precincts, election_columns].fillna(0).values
             tract_election_results[t] = pd.Series(np.average(results_mat, weights=coverage_ratio, axis=0))
 
         col_names = {ix: estr for ix, estr in enumerate(election_columns)}
-        tract_election_df = pd.DataFrame(tract_election_results).T.rename(columns=col_names)
+        tract_election_df = pd.DataFrame(tract_election_results).T.rename(columns=col_names).fillna(0)
 
         election_vote_shares = {e: tract_election_df['R_' + e] /
                                    (tract_election_df['R_' + e] + tract_election_df['D_' + e])
                                 for e in self.election_strings()}
 
-        return pd.DataFrame(election_vote_shares)
+        tract_vote_shares = pd.DataFrame(election_vote_shares)
 
-    def infer_w_county_data(self):
-        pass
+        return tract_vote_shares
+
+    def infer_w_county_data(self, tract_vote_shares, county_data):
+        missing_rows = tract_vote_shares.isna().sum(axis=1) == len(tract_vote_shares.columns)
+        missing_row_county_data = county_data.loc[tract_vote_shares.loc[missing_rows].counties]
+        tract_vote_shares.loc[missing_rows,
+                              self.election_strings()] = missing_row_county_data.mean(axis=1)
+
+
+    def impute_w_county_data(self, precinct_gdf, tract_results, use_county_threshold=.5):
+        nans_ratio = tract_results.isna().mean(axis=1)
+        tract_results['nans_ratio'] = nans_ratio
+        impute_rows = (0 < nans_ratio) & (nans_ratio <= use_county_threshold)
+        missing_rows = nans_ratio > use_county_threshold
+
+        imputed = tract_results[impute_rows].T.fillna(tract_results[impute_rows].mean(axis=1)).T
+        tract_results[impute_rows] = imputed
+
+        # missing_row_county_data = county_data.loc[tract_results.loc[missing_rows].counties]
+        # tract_results.loc[missing_rows,
+        #                       self.election_strings()] = missing_row_county_data.mean(axis=1)
+        #
+        # missing_rows = tract_results.isna().sum(axis=1) == len(tract_results.columns)
+        # tract_results[missing_rows]
+
 
     def election_strings(self):
         return [office + '_' + str(year) for office, year in self.main_source['elections']]
+
+    def validate(self):
+        raise NotImplementedError
