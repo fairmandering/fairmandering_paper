@@ -62,18 +62,39 @@ class ARPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'AR'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'ar_2016'),
+            'precincts': True,
+            'county_column': 'COUNTY_FIP',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('senate', 2016): ('G16USSDELD', 'G16USSRBOO'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class CAPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'CA'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'ar_2016'),
+            'precincts': True,
+            'county_column': 'COUNTY',
+            'elections': {
+                ('pres', 2016): ('G16PREDCli', 'G16PRERTru'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class COPrecinctWrapper(StatePrecinctWrapper):
@@ -129,18 +150,45 @@ class DEPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'DE'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'mggg_states', 'DE'),
+            'precincts': True,
+            'county_column': None,
+            'elections': {
+                ('senate', 2018): ('SEN18D', 'SEN18R'),
+                ('AG', 2018): ('AG18D', 'AG18R'),
+                ('gov', 2016): ('GOV16D', 'GOV16R'),
+                ('pres', 2016): ('PRES16D', 'PRES16R'),
+                ('senate', 2014): ('SEN14D', 'SEN14R'),
+                ('AG', 2014): ('AG14D', 'AG14R'),
+                ('gov', 2012): ('GOV12D', 'GOV12R'),
+                ('pres', 2012): ('PRES12D', 'PRES12R'),
+                ('senate', 2012): ('SEN12D', 'SEN12R'),
+            }
+        }]
+        self.county_inference = {
+            ('pres', 2012): ('pres', 2008)
+        }
 
 
 class FLPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'FL'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'fl_2016'),
+            'precincts': True,
+            'county_column': None,
+            'elections': {
+                ('pres', 2016): ('G16PREDCli', 'G16PRERTru'),
+                ('senate', 2016): ('G16USSDMur', 'G16USSRRub'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class GAPrecinctWrapper(StatePrecinctWrapper):
@@ -167,27 +215,61 @@ class HIPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'HI'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'mggg_states', 'HI'),
+            'precincts': True,
+            'county_column': None,
+            'elections': {
+                ('senate', 2018): ('SEN18D', 'SEN18R'),
+                ('gov', 2018): ('GOV18D', 'GOV18R'),
+                ('pres', 2016): ('PRES16D', 'PRES16R'),
+                ('senate', 2016): ('SEN16D', 'SEN16R'),
+            }
+        }]
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class IDPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'ID'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'id_2016'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('senate', 2016): ('G16USSDSTU', 'G16USSRCRA'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class ILPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'IL'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'il_2016'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('senate', 2016): ('G16USSDDUC', 'G16USSRKIR'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class INPrecinctWrapper(StatePrecinctWrapper):
@@ -203,45 +285,99 @@ class IAPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'IA'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'ia_2016'),
+            'precincts': True,
+            'county_column': None,
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('senate', 2016): ('G16USSDJUD', 'G16USSRGRA'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class KSPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'KS'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'ks_2016'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('senate', 2016): ('G16USSDWIE', 'G16USSRMOR'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class KYPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'KY'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'ky_2016'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('senate', 2016): ('G16USSDGRA', 'G16USSRPAU'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class LAPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'LA'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'ar_2016'),
+            'precincts': True,
+            'county_column': 'COUNTYFP10',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('senate', 2016): ('R16USSDCAM', 'R16USSRKEN'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class MEPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'ME'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'me_2016'),
+            'precincts': True,
+            'county_column': None,
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class MDPrecinctWrapper(StatePrecinctWrapper):
@@ -359,45 +495,102 @@ class MOPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'MO'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'mo_2016'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('senate', 2016): ('G16USSDKAN', 'G16USSRBLU'),
+                ('gov', 2016): ('G16GOVDKOS', 'G16GOVRGRE')
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class MTPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'MT'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'ar_2016'),
+            'precincts': True,
+            'county_column': 'COUNTYFP10',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('gov', 2016): ('G16GOVDBUL', 'G16GOVRGIA'),
+                ('AG', 2016): ('G16ATGDJEN', 'G16GATGRFOX'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class NEPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'NE'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'ne_2016'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class NVPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'NV'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'nv_2016'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('senate', 2016): ('G16USSDCOR', 'G16USSRHEC'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class NHPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'NH'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'nh_2016'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('senate', 2016): ('G16USSDHAS', 'G16USSRAYO'),
+                ('gov', 2016): ('G16GOVDVAN', 'G16GOVRSUN')
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class NJPrecinctWrapper(StatePrecinctWrapper):
@@ -465,9 +658,21 @@ class NDPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'ND'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'nv_2016'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('senate', 2016): ('G16USSDGLA', 'G16USSRHOE'),
+                ('gov', 2016): ('G16GOVDNEL', 'G16GOVRBUR')
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class OHPrecinctWrapper(StatePrecinctWrapper):
@@ -591,27 +796,59 @@ class SCPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'SC'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'sc_2016'),
+            'precincts': True,
+            'county_column': 'COUNTY',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('senate', 2016): ('G16USSDDIX', 'G16USSRSCO'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class SDPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'SD'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'sd_2016'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('senate', 2016): ('G16USSDCOR', 'G16USSRHEC'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class TNPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'TN'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'tn_2016'),
+            'precincts': True,
+            'county_column': None,
+            'elections': {
+                ('pres', 2016): ('G16PREDCli', 'G16PRERTru'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class TXPrecinctWrapper(StatePrecinctWrapper):
@@ -704,9 +941,22 @@ class WAPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'WA'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'wa_2016'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('senate', 2016): ('G16USSDMUR', 'G16USSRVAN'),
+                ('gov', 2016): ('G16GOVDINS', 'G16GOVRBRY'),
+                ('AG', 2016): ('G16ATGDFER', 'G16ATGRTRU')
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
 
 
 class WVPrecinctWrapper(StatePrecinctWrapper):
@@ -745,6 +995,16 @@ class WYPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'WY'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'wv_2016'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2016): ('pres', 2012)
+        }
