@@ -8,9 +8,20 @@ class ALPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'AL'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'al_2010'),
+            'precincts': True,
+            'county_column': 'COUNTYFP10',
+            'elections': {
+                ('pres', 2008): ('USP_D_08', 'USP_R_08'),
+                ('senate', 2008): ('USS_D_08', 'USS_R_08'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2008): ('pres', 2012)
+        }
 
 
 class AKPrecinctWrapper(StatePrecinctWrapper):
@@ -20,7 +31,7 @@ class AKPrecinctWrapper(StatePrecinctWrapper):
         self.main_sources = [{
             'path': os.path.join(constants.PRECINCT_PATH, 'mggg_states', 'AK'),
             'precincts': True,
-            'county_column': 'COUNTY',
+            'county_column': None,
             'elections': {
                 ('gov', 2018): ('GOV18D', 'GOV18R'),
                 ('senate', 2016): ('SEN16D', 'SEN16R'),
@@ -83,7 +94,7 @@ class CAPrecinctWrapper(StatePrecinctWrapper):
         super().__init__()
         self.state = 'CA'
         self.main_sources = [{
-            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'ar_2016'),
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'ca_2016'),
             'precincts': True,
             'county_column': 'COUNTY',
             'elections': {
@@ -104,7 +115,7 @@ class COPrecinctWrapper(StatePrecinctWrapper):
         self.main_sources = [{
             'path': os.path.join(constants.PRECINCT_PATH, 'mggg_states', 'CO'),
             'precincts': True,
-            'county_column': 'COUNTY',
+            'county_column': 'COUNTYFP',
             'elections': {
                 ('gov', 2018): ('GOV18D', 'GOV18R'),
                 ('AG', 2018): ('AG18D', 'AG18R')
@@ -276,9 +287,19 @@ class INPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'IN'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'in_2010'),
+            'precincts': True,
+            'county_column': 'COUNTYFP10',
+            'elections': {
+                ('pres', 2008): ('OBAMA', 'MCCAIN'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2008): ('pres', 2012)
+        }
 
 
 class IAPrecinctWrapper(StatePrecinctWrapper):
@@ -346,7 +367,7 @@ class LAPrecinctWrapper(StatePrecinctWrapper):
         super().__init__()
         self.state = 'LA'
         self.main_sources = [{
-            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'ar_2016'),
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'la_2016'),
             'precincts': True,
             'county_column': 'COUNTYFP10',
             'elections': {
@@ -418,7 +439,6 @@ class MAPrecinctWrapper(StatePrecinctWrapper):
                 ('gov', 2018): ('GOV18D', 'GOV18R'),
                 ('senate', 2018): ('SEN18D', 'SEN18R'),
                 ('pres', 2016): ('PRES16D', 'PRES16R'),
-                ('senate', 2016): ('SEN16D', 'SEN16R'),
                 ('gov', 2014): ('GOV14D', 'GOV14R'),
                 ('senate', 2014): ('SEN14D', 'SEN14R'),
                 ('senate', 2013): ('SEN13D', 'SEN13R'),
@@ -486,9 +506,21 @@ class MSPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'MS'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'ms_2010'),
+            'precincts': True,
+            'county_column': 'COUNTYFP10',
+            'elections': {
+                ('pres', 2008): ('USP_D_08', 'USP_R_08'),
+                ('senate1', 2008): ('USS_1_D_08', 'USS_1_R_08'),
+                ('senate2', 2008): ('USS_2_D_08', 'USS_R_2_08'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2008): ('pres', 2012)
+        }
 
 
 class MOPrecinctWrapper(StatePrecinctWrapper):
@@ -517,13 +549,13 @@ class MTPrecinctWrapper(StatePrecinctWrapper):
         super().__init__()
         self.state = 'MT'
         self.main_sources = [{
-            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'ar_2016'),
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'mt_2016'),
             'precincts': True,
             'county_column': 'COUNTYFP10',
             'elections': {
                 ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
                 ('gov', 2016): ('G16GOVDBUL', 'G16GOVRGIA'),
-                ('AG', 2016): ('G16ATGDJEN', 'G16GATGRFOX'),
+                ('AG', 2016): ('G16ATGDJEN', 'G16ATGRFOX'),
             }
         }]
 
@@ -597,9 +629,20 @@ class NJPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'NJ'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'nj_2010'),
+            'precincts': True,
+            'county_column': 'COUNTYFP10',
+            'elections': {
+                ('pres', 2008): ('USP_DV_08', 'USP_RV_08'),
+                ('senate', 2008): ('USS_DV_08', 'USS_RV_08'),
+            }
+        }]
+
+        self.county_inference = {
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2008): ('pres', 2012)
+        }
 
 
 class NMPrecinctWrapper(StatePrecinctWrapper):
@@ -627,9 +670,23 @@ class NYPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'NY'
-        self.main_sources = [{}]
-        self.county_inference = {}
-        raise NotImplementedError
+        self.main_sources = [{
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'ny_2010'),
+            'precincts': True,
+            'county_column': 'COUNTYFP10',
+            'elections': {
+                ('gov', 2010): ('GOV_DVOTE_', 'GOV_RVOTE_'),
+                ('AG', 2010): ('AG_DVOTE_1', 'AG_RVOTE_1'),
+                ('senate1', 2010): ('USS_2_DVOT', 'USS_2_DVOT'),
+                ('senate2', 2010): ('USS_6_DVOT', 'USS_6_DVOT')
+            }
+        }]
+
+        self.county_inference = {
+            ('gov', 2010): ('pres', 2016),
+            ('gov', 2010): ('pres', 2012),
+            ('gov', 2010): ('pres', 2008),
+        }
 
 
 class NCPrecinctWrapper(StatePrecinctWrapper):
@@ -641,15 +698,15 @@ class NCPrecinctWrapper(StatePrecinctWrapper):
             'precincts': True,
             'county_column': 'County',
             'elections': {
-                ('gov', 2016): ('EL16_GV_D', 'EL16_GV_R'),
-                ('senate', 2016): ('EL16_US_1', 'EL16_USS_'),
-                ('pres', 2016): ('EL16_PR_D', 'EL16_PR_R'),
-                ('senate', 2014): ('EL14_USS_', 'EL14_US_1'),
-                ('pres', 2012): ('EL12_PR_D', 'EL12_PR_R'),
-                ('gov', 2012): ('EL12_GV_D', 'EL12_GV_R'),
-                ('senate', 2010): ('EL10_USS_', 'EL10_US_1'),
-                ('senate', 2008): ('EL08_USS_', 'EL08_US_1'),
-                ('gov', 2008): ('EL08_GV_D', 'EL08_GV_R'),
+                ('gov', 2016): ('EL16G_GV_D', 'EL16G_GV_R'),
+                ('senate', 2016): ('EL16G_US_1', 'EL16G_USS_'),
+                ('pres', 2016): ('EL16G_PR_D', 'EL16G_PR_R'),
+                ('senate', 2014): ('EL14G_USS_', 'EL14G_US_1'),
+                ('pres', 2012): ('EL12G_PR_D', 'EL12G_PR_R'),
+                ('gov', 2012): ('EL12G_GV_D', 'EL12G_GV_R'),
+                ('senate', 2010): ('EL10G_USS_', 'EL10G_US_1'),
+                ('senate', 2008): ('EL08G_USS_', 'EL08G_US_1'),
+                ('gov', 2008): ('EL08G_GV_D', 'EL08G_GV_R'),
             }
         }]
 
@@ -659,7 +716,7 @@ class NDPrecinctWrapper(StatePrecinctWrapper):
         super().__init__()
         self.state = 'ND'
         self.main_sources = [{
-            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'nv_2016'),
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'nd_2016'),
             'precincts': True,
             'county_column': 'COUNTYFP',
             'elections': {
@@ -701,7 +758,7 @@ class OKPrecinctWrapper(StatePrecinctWrapper):
         self.main_sources = [{
             'path': os.path.join(constants.PRECINCT_PATH, 'mggg_states', 'OK'),
             'precincts': True,
-            'county_column': 'COUNTY',
+            'county_column': 'CNTYFIPS',
             'elections': {
                 ('gov', 2018): ('GOV18D', 'GOV18R'),
                 ('AG', 2018): ('AG18D', 'AG18R')
@@ -709,10 +766,10 @@ class OKPrecinctWrapper(StatePrecinctWrapper):
         }, {
             'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'ok_2016'),
             'precincts': True,
-            'county_column': 'COUNTY',
+            'county_column': None,
             'elections': {
-                ('senate', 2016): ('G16USSDBen', 'G16USSRGle'),
-                ('pres', 2016): ('G16PREDCli', 'G16PRERTru'),
+                ('senate', 2016): ('G16USSDWOR', 'G16USSRLAN'),
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
             }
         }]
 
@@ -822,7 +879,7 @@ class SDPrecinctWrapper(StatePrecinctWrapper):
             'county_column': 'COUNTYFP',
             'elections': {
                 ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
-                ('senate', 2016): ('G16USSDCOR', 'G16USSRHEC'),
+                ('senate', 2016): ('G16USSDWIL', 'G16USSRTHU'),
             }
         }]
 
@@ -904,7 +961,7 @@ class VTPrecinctWrapper(StatePrecinctWrapper):
                 ('pres', 2016): ('PRES16D', 'PRES16R'),
                 ('senate', 2016): ('SEN16D', 'SEN16R'),
                 ('pres', 2012): ('PRES12D', 'PRES12R'),
-                ('senate', 2012): ('SEN16B', 'SEN16R'),
+                ('senate', 2012): ('SEN12B', 'SEN12R'),
 
             }
         }]
@@ -926,7 +983,6 @@ class VAPrecinctWrapper(StatePrecinctWrapper):
                 ('senate', 2018): ('G18DSEN', 'G18RSEN'),
                 ('gov', 2017): ('G17DGOV', 'G17RGOV'),
                 ('AG', 2017): ('G17DATG', 'G17RATG'),
-                ('senate', 2016): ('SEN16D', 'SEN16R'),
                 ('pres', 2016): ('G16DPRS', 'G16RPRS')
             }
         }]
@@ -944,7 +1000,7 @@ class WAPrecinctWrapper(StatePrecinctWrapper):
         self.main_sources = [{
             'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'wa_2016'),
             'precincts': True,
-            'county_column': 'COUNTYFP',
+            'county_column': None,
             'elections': {
                 ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
                 ('senate', 2016): ('G16USSDMUR', 'G16USSRVAN'),
@@ -966,6 +1022,7 @@ class WVPrecinctWrapper(StatePrecinctWrapper):
         self.main_sources = [{}]
         self.county_inference = {}
         raise NotImplementedError
+
 
 
 class WIPrecinctWrapper(StatePrecinctWrapper):
@@ -996,7 +1053,7 @@ class WYPrecinctWrapper(StatePrecinctWrapper):
         super().__init__()
         self.state = 'WY'
         self.main_sources = [{
-            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'wv_2016'),
+            'path': os.path.join(constants.PRECINCT_PATH, 'fsu_data', 'wy_2016'),
             'precincts': True,
             'county_column': 'COUNTYFP',
             'elections': {
@@ -1008,3 +1065,57 @@ class WYPrecinctWrapper(StatePrecinctWrapper):
             ('pres', 2016): ('pres', 2008),
             ('pres', 2016): ('pres', 2012)
         }
+
+
+wrappers = {
+    'AL': ALPrecinctWrapper,
+    'AK': AKPrecinctWrapper,
+    'AZ': AZPrecinctWrapper,
+    'AR': ARPrecinctWrapper,
+    'CA': CAPrecinctWrapper,
+    'CO': COPrecinctWrapper,
+    'CT': CTPrecinctWrapper,
+    'DE': DEPrecinctWrapper,
+    'FL': FLPrecinctWrapper,
+    'GA': GAPrecinctWrapper,
+    'HI': HIPrecinctWrapper,
+    'ID': IDPrecinctWrapper,
+    'IL': ILPrecinctWrapper,
+    'IN': INPrecinctWrapper,
+    'IA': IAPrecinctWrapper,
+    'KS': KSPrecinctWrapper,
+    'KY': KYPrecinctWrapper,
+    'LA': LAPrecinctWrapper,
+    'ME': MEPrecinctWrapper,
+    'MD': MDPrecinctWrapper,
+    'MA': MAPrecinctWrapper,
+    'MI': MIPrecinctWrapper,
+    'MN': MNPrecinctWrapper,
+    'MS': MSPrecinctWrapper,
+    'MO': MOPrecinctWrapper,
+    'MT': MTPrecinctWrapper,
+    'NE': NEPrecinctWrapper,
+    'NV': NVPrecinctWrapper,
+    'NH': NHPrecinctWrapper,
+    'NJ': NJPrecinctWrapper,
+    'NM': NMPrecinctWrapper,
+    'NY': NYPrecinctWrapper,
+    'NC': NCPrecinctWrapper,
+    'ND': NDPrecinctWrapper,
+    'OH': OHPrecinctWrapper,
+    'OK': OKPrecinctWrapper,
+    'OR': ORPrecinctWrapper,
+    'PA': PAPrecinctWrapper,
+    'RI': RIPrecinctWrapper,
+    'SC': SCPrecinctWrapper,
+    'SD': SDPrecinctWrapper,
+    'TN': TNPrecinctWrapper,
+    'TX': TXPrecinctWrapper,
+    'UT': UTPrecinctWrapper,
+    'VT': VTPrecinctWrapper,
+    'VA': VAPrecinctWrapper,
+    'WA': WAPrecinctWrapper,
+    'WV': WVPrecinctWrapper,
+    'WI': WIPrecinctWrapper,
+    'WY': WYPrecinctWrapper,
+}
