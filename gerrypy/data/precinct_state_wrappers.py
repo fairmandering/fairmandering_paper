@@ -19,8 +19,8 @@ class ALPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2008): ('pres', 2016),
-            ('pres', 2008): ('pres', 2012)
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2012): ('pres', 2008)
         }
 
 
@@ -34,7 +34,6 @@ class AKPrecinctWrapper(StatePrecinctWrapper):
             'county_column': None,
             'elections': {
                 ('gov', 2018): ('GOV18D', 'GOV18R'),
-                ('senate', 2016): ('SEN16D', 'SEN16R'),
                 ('pres', 2016): ('PRES16D', 'PRES16R')
             }
         }]
@@ -64,8 +63,8 @@ class AZPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -84,8 +83,8 @@ class ARPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -103,8 +102,8 @@ class CAPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -131,8 +130,8 @@ class COPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -152,8 +151,8 @@ class CTPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('gov', 2018): ('pres', 2008),
-            ('gov', 2018): ('pres', 2012)
+            ('pres', 2008): ('gov', 2018),
+            ('pres', 2012): ('gov', 2018)
         }
 
 
@@ -178,7 +177,7 @@ class DEPrecinctWrapper(StatePrecinctWrapper):
             }
         }]
         self.county_inference = {
-            ('pres', 2012): ('pres', 2008)
+            ('pres', 2008): ('pres', 2012),
         }
 
 
@@ -197,8 +196,8 @@ class FLPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -217,8 +216,8 @@ class GAPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2012),
-            ('pres', 2016): ('pres', 2008)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -238,8 +237,8 @@ class HIPrecinctWrapper(StatePrecinctWrapper):
             }
         }]
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -258,8 +257,8 @@ class IDPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -278,8 +277,8 @@ class ILPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -297,8 +296,8 @@ class INPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2008): ('pres', 2016),
-            ('pres', 2008): ('pres', 2012)
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2012): ('pres', 2008)
         }
 
 
@@ -317,8 +316,8 @@ class IAPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -337,8 +336,8 @@ class KSPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -357,8 +356,8 @@ class KYPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -377,8 +376,8 @@ class LAPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -396,8 +395,8 @@ class MEPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -423,7 +422,7 @@ class MDPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2012): ('pres', 2008)
+            ('pres', 2008): ('pres', 2012)
         }
 
 
@@ -471,8 +470,8 @@ class MIPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2012),
-            ('pres', 2016): ('pres', 2008),
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -498,7 +497,7 @@ class MNPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2012): ('pres', 2008)
+            ('pres', 2008): ('pres', 2012)
         }
 
 
@@ -518,8 +517,8 @@ class MSPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2008): ('pres', 2016),
-            ('pres', 2008): ('pres', 2012)
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2012): ('pres', 2008)
         }
 
 
@@ -539,8 +538,8 @@ class MOPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -560,8 +559,8 @@ class MTPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -579,8 +578,8 @@ class NEPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -599,8 +598,8 @@ class NVPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -620,8 +619,8 @@ class NHPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -640,8 +639,8 @@ class NJPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2008): ('pres', 2016),
-            ('pres', 2008): ('pres', 2012)
+            ('pres', 2016): ('pres', 2008),
+            ('pres', 2012): ('pres', 2008)
         }
 
 
@@ -661,8 +660,8 @@ class NMPrecinctWrapper(StatePrecinctWrapper):
             }
         }]
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -677,15 +676,15 @@ class NYPrecinctWrapper(StatePrecinctWrapper):
             'elections': {
                 ('gov', 2010): ('GOV_DVOTE_', 'GOV_RVOTE_'),
                 ('AG', 2010): ('AG_DVOTE_1', 'AG_RVOTE_1'),
-                ('senate1', 2010): ('USS_2_DVOT', 'USS_2_DVOT'),
-                ('senate2', 2010): ('USS_6_DVOT', 'USS_6_DVOT')
+                ('senate1', 2010): ('USS_2_DVOT', 'USS_2_RVOT'),
+                ('senate2', 2010): ('USS_6_DVOT', 'USS_6_RVOT')
             }
         }]
 
         self.county_inference = {
-            ('gov', 2010): ('pres', 2016),
-            ('gov', 2010): ('pres', 2012),
-            ('gov', 2010): ('pres', 2008),
+            ('pres', 2016): ('gov', 2010),
+            ('pres', 2012): ('gov', 2010),
+            ('pres', 2008): ('gov', 2010),
         }
 
 
@@ -701,7 +700,7 @@ class NCPrecinctWrapper(StatePrecinctWrapper):
                 ('gov', 2016): ('EL16G_GV_D', 'EL16G_GV_R'),
                 ('senate', 2016): ('EL16G_US_1', 'EL16G_USS_'),
                 ('pres', 2016): ('EL16G_PR_D', 'EL16G_PR_R'),
-                ('senate', 2014): ('EL14G_USS_', 'EL14G_US_1'),
+                ('senate', 2014): ('EL14G_US_1', 'EL14G_USS_'),
                 ('pres', 2012): ('EL12G_PR_D', 'EL12G_PR_R'),
                 ('gov', 2012): ('EL12G_GV_D', 'EL12G_GV_R'),
                 ('senate', 2010): ('EL10G_USS_', 'EL10G_US_1'),
@@ -727,8 +726,8 @@ class NDPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -736,7 +735,7 @@ class OHPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'OH'
-        self.main_source = [{
+        self.main_sources = [{
             'path': os.path.join(constants.PRECINCT_PATH, 'mggg_states', 'OH'),
             'precincts': True,
             'county_column': 'COUNTY',
@@ -747,7 +746,8 @@ class OHPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2012): ('pres', 2008)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -774,8 +774,8 @@ class OKPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -797,8 +797,8 @@ class ORPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -806,7 +806,7 @@ class PAPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'PA'
-        self.main_source = {
+        self.main_sources = {
             'path': os.path.join(constants.PRECINCT_PATH, 'mggg_states', 'PA'),
             'precincts': True,
             'county_column': 'COUNTYFP10',
@@ -824,7 +824,7 @@ class PAPrecinctWrapper(StatePrecinctWrapper):
         }
 
         self.county_inference = {
-            ('pres', 2012): ('pres', 2008)
+            ('pres', 2008): ('pres', 2012)
         }
 
 
@@ -844,8 +844,8 @@ class RIPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2012),
-            ('pres', 2016): ('pres', 2008),
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -864,8 +864,8 @@ class SCPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -884,8 +884,8 @@ class SDPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -903,8 +903,8 @@ class TNPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -925,7 +925,7 @@ class TXPrecinctWrapper(StatePrecinctWrapper):
             }
         }]
         self.county_inference = {
-            ('gov', 2012): ('pres', 2012)
+            ('pres', 2008): ('pres', 2012)
         }
 
 
@@ -944,8 +944,8 @@ class UTPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('gov', 2016): ('pres', 2008),
-            ('gov', 2016): ('pres', 2012)
+            ('pres', 2008): ('gov', 2016),
+            ('pres', 2012): ('gov', 2016)
         }
 
 
@@ -967,7 +967,7 @@ class VTPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2012): ('pres', 2008),
+            ('pres', 2008): ('pres', 2012),
         }
 
 
@@ -988,10 +988,9 @@ class VAPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
-
 
 class WAPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
@@ -1010,8 +1009,8 @@ class WAPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -1041,11 +1040,10 @@ class WIPrecinctWrapper(StatePrecinctWrapper):
                 ('gov', 2012): ('GOVDEM12', 'GOVREP12'),
                 ('pres', 2012): ('PREDEM12', 'PREREP12'),
                 ('senate', 2012): ('USSDEM12', 'USSREP12'),
-                ('AG', 2012): ('WAGDEM12', 'WAGREP12'),
             }
         }]
         self.county_inference = {
-            ('pres', 2012): ('pres', 2008)
+            ('pres', 2008): ('pres', 2012)
         }
 
 class WYPrecinctWrapper(StatePrecinctWrapper):
@@ -1062,8 +1060,8 @@ class WYPrecinctWrapper(StatePrecinctWrapper):
         }]
 
         self.county_inference = {
-            ('pres', 2016): ('pres', 2008),
-            ('pres', 2016): ('pres', 2012)
+            ('pres', 2008): ('pres', 2016),
+            ('pres', 2012): ('pres', 2016)
         }
 
 
@@ -1119,3 +1117,8 @@ wrappers = {
     'WI': WIPrecinctWrapper,
     'WY': WYPrecinctWrapper,
 }
+
+if __name__ == '__main__':
+    w = OKPrecinctWrapper()
+    ps = w.load_precincts()
+    shares = [w.compute_tract_results(p, i)[1] for i, p in enumerate(ps)]
