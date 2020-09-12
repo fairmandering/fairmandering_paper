@@ -4,9 +4,8 @@ from scipy.integrate import simps
 from gerrypy.analyze.poibin import PoiBin
 
 
-def seat_vote_curve_point_estimate(plan_df, perturb=0, years=['2008', '2012', '2016']):
-    past_elections = plan_df[years].values
-    mean = past_elections.mean(axis=1)
+def seat_vote_curve_point_estimate(plan_df, perturb=0):
+    mean = plan_df['mean'].values
     if perturb:
         mean += np.random.random(size=mean.size) * perturb
     xs = []
@@ -23,12 +22,12 @@ def seat_vote_curve_point_estimate(plan_df, perturb=0, years=['2008', '2012', '2
 
 
 def seat_vote_curve_t_estimate_with_seat_std(plan_df, step_size=.001):
-    past_elections = plan_df[['2008', '2012', '2016']].values
-    mean = past_elections.mean(axis=1)
-    std = past_elections.std(axis=1, ddof=1)
+    mean = plan_df['mean'].values
+    std = plan_df['std_dev'].values
+    DoF = plan_df['DoF'].values
     means_by_state_share = district_votes_given_state_vote(plan_df, step_size)
     std = np.tile(std, (means_by_state_share.shape[1], 1)).T
-    win_p = 1 - t.cdf(.5, 2, means_by_state_share, std)
+    win_p = 1 - t.cdf(.5, DoF, means_by_state_share, std)
     ys = win_p.mean(axis=0)
     xs = means_by_state_share.mean(axis=0)
     poission_binomial_variance = np.multiply(win_p, 1 - win_p).sum(axis=0)

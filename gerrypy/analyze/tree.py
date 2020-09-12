@@ -31,21 +31,21 @@ def query_tree(leaf_nodes, internal_nodes, query_vals):
 
 
 def party_step_advantage_query_fn(district_df, minimize=False):
-    past_elections = district_df[['2008', '2012', '2016']].values
-    mean = past_elections.mean(axis=1)
+    mean = district_df['mean'].values
     return mean < .50 * (-1 if minimize else 1)
 
 
 def party_advantage_query_fn(district_df, minimize=False):
-    past_elections = district_df[['2008', '2012', '2016']].values
-    mean = past_elections.mean(axis=1)
-    std = past_elections.std(axis=1, ddof=1)
-    (1 - t.cdf(.5, 2, mean, std)) - mean * (-1 if minimize else 1)
+    mean = district_df['mean'].values
+    std_dev = district_df['std_dev'].values
+    DoF = district_df['DoF'].values
+    return (1 - t.cdf(.5, DoF, mean, std_dev)) * (-1 if minimize else 1)
 
 
 def competitive_query_fn(district_df, minimize=False):
-    past_elections = district_df[['2008', '2012', '2016']].values
-    mean = past_elections.mean(axis=1)
-    std = past_elections.std(axis=1, ddof=1)
-    flip_prob = min(1 - t.cdf(.5, 2, mean, std), t.cdf(.5, 2, mean, std))
-    return flip_prob.sum() * (-1 if minimize else 1)
+    mean = district_df['mean'].values
+    std_dev = district_df['std_dev'].values
+    DoF = district_df['DoF'].values
+    lose_p = t.cdf(.5, DoF, mean, std_dev)
+    variance = (1 - lose_p) * lose_p
+    return variance * (-1 if minimize else 1)

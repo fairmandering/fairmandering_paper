@@ -144,17 +144,38 @@ def dispersion_compactness(districts, state_df):
     return compactness_scores
 
 
-def create_district_df(bdm, state_df):
+def create_district_df(bdm, state_df, election_df):
     district_list = []
-    sum_columns = ['area', 'population']
+    if election_df is not None:
+        vote_total_columns = list(election_df.columns)
+        state_df = pd.concat([state_df, election_df], axis=1)
+    else:
+        vote_total_columns = []
+    sum_columns = ['area', 'population'] + vote_total_columns
     bdm = bdm.astype(bool)
     for row in bdm.T:
-        district_df = state_df.iloc[row]
-        distr_series = pd.Series(np.average(district_df, weights=district_df['population'], axis=0),
+        district_tract_df = state_df.iloc[row]
+        distr_series = pd.Series(np.average(district_tract_df,
+                                            weights=district_tract_df['population'], axis=0),
                                  index=state_df.columns)
-        distr_series[sum_columns] = district_df[sum_columns].sum()
+        distr_series[sum_columns] = district_tract_df[sum_columns].sum(axis=0)
         district_list.append(distr_series)
-    return pd.DataFrame(district_list)
+
+    district_df = pd.DataFrame(district_list)
+    if vote_total_columns:
+        elections = list(set([e[2:] for e in vote_total_columns]))
+        share_df = pd.DataFrame({
+            e: district_df['R_' + e] / (district_df['R_' + e] + district_df['D_' + e])
+            for e in elections
+        })
+    else:  # If no precinct election data use county
+        elections = ['2008', '2012', '2016']
+        share_df = district_df[elections]
+
+    district_df['mean'] = share_df.mean(axis=1)
+    district_df['std_dev'] = share_df.std(ddof=1, axis=1)
+    district_df['DoF'] = len(elections) - 1
+    return district_df
 
 
 def enumerate_distribution(plans, bdm, state_df, type):
