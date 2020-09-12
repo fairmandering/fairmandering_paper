@@ -1,3 +1,5 @@
+# WARNING: DEPRECATED
+# Using old affiliation model, not accurate
 import pickle
 import os
 import time

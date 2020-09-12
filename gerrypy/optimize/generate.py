@@ -11,7 +11,39 @@ import gerrypy.constants as consts
 
 
 class ColumnGenerator:
+    """
+    Generates columns with the Stochastic Hierarchical Paritioning algorithm.
+    Maintains samples tree and logging data.
+    """
     def __init__(self, config):
+        """
+        Initalized with configuration dict
+        Args:
+            config: (dict) the following are the required keys
+                state: (str) 2 letter abbreviation
+                n_districts: (int)
+                population_tolerance: (float) ideal population +/- epsilon
+                max_sample_tries: (int) number of attempts at each node
+                n_samples: (int) the split width
+                n_root_samples: (int) the split width of the root node w
+                max_n_splits: (int) max split size z
+                min_n_splits: (int) min split size z
+                max_split_population_difference: (float) maximum
+                    capacity difference between 2 sibling nodes
+                event_logging: (bool) log events for visualize
+                verbose: (bool) print runtime information
+                selection_method: (str) seed selection method to use
+                perturbation_scale: (float) pareto distribution parameter
+                n_random_seeds: (int) number of fixed seeds in seed selection
+                capacities: (str) style of capacity matching/computing
+                capacity_weights: (str) 'voronoi' or 'fractional'
+                use_subgraph: (bool) True TODO: deprecate
+                master_abs_gap: TODO: deprecate, not used in this module
+                master_max_time: TODO: deprecate, not used in this module
+                IP_gap_tol: (float) partition IP gap tolerance
+                IP_timeout: (float) maximum seconds to spend solving IP
+
+        """
         state_abbrev = config['state']
         state_df, G, lengths, edge_dists = load_opt_data(state_abbrev)
         lengths /= 1000
@@ -43,6 +75,12 @@ class ColumnGenerator:
         self.event_list = []
 
     def generate(self):
+        """
+        Main method for running the generation process.
+
+        Returns: None
+
+        """
         completed_root_samples = 0
         n_root_samples = self.config['n_root_samples']
 
@@ -53,6 +91,9 @@ class ColumnGenerator:
         self.internal_nodes.append(root)
 
         while completed_root_samples < n_root_samples:
+            # For each root partition, we attempt to populate the sample tree
+            # If failure in particular root, prune all work from that root
+            # partition. If successful, commit subtree to whole tree.
             self.sample_queue = [root]
             sample_leaf_nodes = []
             sample_internal_nodes = []
@@ -83,7 +124,15 @@ class ColumnGenerator:
                 self.failed_root_samples += 1
 
     def sample_node(self, node):
-        """From a node in the compatibility tree, sample k children"""
+        """
+        Generate children partitions of a region contained by [node].
+
+        Args:
+            node: (SHPnode) Node to be samples
+
+        Returns:
+
+        """
         area_df = self.state_df.loc[node.area]
         samples = []
         n_trials = 0
@@ -107,8 +156,15 @@ class ColumnGenerator:
         return [node for sample in samples for node in sample]
 
     def make_partition(self, area_df, node):
-        """Using a random seed, try w times to sample one split from a
-        compatibility tree node."""
+        """
+        Using a random seed, attempt one split from a sample tree node.
+        Args:
+            area_df: (DataFrame) Subset of rows of state_df for the node region
+            node: (SHPnode) the node to sample from
+
+        Returns: (list) of shape nodes for each sub-region in the partition.
+
+        """
         children_sizes = node.sample_n_splits_and_child_sizes(self.config)
 
         # dict : {center_ix : child size}
@@ -117,7 +173,7 @@ class ColumnGenerator:
         tp_lengths = {i: {j: self.lengths[i, j] for j in node.area}
                       for i in children_centers}
 
-        if self.config['use_subgraph'] and not node.is_root:
+        if not node.is_root:
             G = nx.subgraph(self.G, node.area)
             edge_dists = {center: nx.shortest_path_length(G, source=center)
                           for center in tp_lengths}
@@ -133,7 +189,7 @@ class ColumnGenerator:
                                              area_df.population.to_dict(),
                                              pop_bounds,
                                              1 + random.random())
-        # partition_IP.Params.MIPGap = self.config['IP_gap_tol']
+        partition_IP.Params.MIPGap = self.config['IP_gap_tol']
         partition_IP.update()
         partition_IP.optimize()
         try:
@@ -171,6 +227,14 @@ class ColumnGenerator:
             return []
 
     def select_centers(self, area_df, children_sizes):
+        """
+        Routes arguments to the right seed selection function.
+        Args:
+            area_df: (DataFrame) Subset of rows of state_df of the node region
+            children_sizes: (int list) Capacity of the child regions
+        Returns: (dict) {center index: # districts assigned to that center}
+
+        """
         method = self.config['selection_method']
         if method == 'random_iterative':
             pop_capacity = self.config['ideal_pop'] * np.array(children_sizes)
@@ -189,8 +253,15 @@ class ColumnGenerator:
         return center_capacities
 
     def make_pop_bounds(self, children_centers):
-        """Create a dictionary that records upper and lower bounds for
-        population in addition to the number of districts the area contains."""
+        """
+        Finds the upper and lower population bounds of a dict of center sizes
+        Args:
+            children_centers: (dict) {center index: # districts}
+
+        Returns: (dict) center index keys and upper/lower population bounds
+            and # districts as values in nested dict
+
+        """
         pop_deviation = self.config['max_pop_variation']
         pop_bounds = {}
         # Make the bounds for an area considering # area districts and tree level
@@ -210,6 +281,11 @@ class ColumnGenerator:
         return pop_bounds
 
     def make_viz_list(self):
+        """
+        Saves logging information useful for the SHP viz flask app
+
+        Returns: None
+        """
         n_districtings = 'nd' + str(number_of_districtings(self))
         n_leaves = 'nl' + str(len(self.leaf_nodes))
         n_interior = 'ni' + str(len(self.internal_nodes))
@@ -230,15 +306,16 @@ class ColumnGenerator:
 if __name__ == '__main__':
     center_selection_config = {
         'selection_method': 'uncapacitated_kmeans',  # one of
-        'perturbation_scale': 0,
+        'perturbation_scale': 1,
         'n_random_seeds': 1,
         'capacities': 'compute',
-        'capacity_weights': 'voronoi'
+        'capacity_weights': 'voronoi',
+        'use_subgraph': True
     }
     tree_config = {
         'max_sample_tries': 25,
         'n_samples': 3,
-        'n_root_samples': 1,
+        'n_root_samples': 3,
         'max_n_splits': 5,
         'min_n_splits': 2,
         'max_split_population_difference': 1.5,
@@ -252,8 +329,8 @@ if __name__ == '__main__':
         'IP_timeout': 10,
     }
     pdp_config = {
-        'state': 'TX',
-        'n_districts': 36,
+        'state': 'NH',
+        'n_districts': 2,
         'population_tolerance': .01,
     }
     base_config = {**center_selection_config,

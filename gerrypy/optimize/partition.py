@@ -2,17 +2,36 @@ from gurobipy import *
 
 
 def make_partition_IP(lengths, edge_dists, G, population, pop_bounds, alpha):
+    """
+    Creates the Gurobi model to partition a region.
+    Args:
+        lengths: (dict) {center: {tract: distance}} The keys of the outer dict
+            are the only centers that are considered in the partition.
+             I.e. len(lengths) = z.
+        edge_dists: (dict) {center: {tract: hop_distance}} Same as lengths but
+            value is the shortest path hop distance (# edges between i and j)
+        G: (nx.Graph) The block adjacency graph
+        population: (dict) {tract int id: population}
+        pop_bounds: (dict) {center int id: {'lb': district population lower
+            bound, 'ub': tract population upper bound}
+        alpha: (int) The exponential cost term
+
+    Returns: (tuple (Gurobi partition model, model variables as a dict)
+
+    """
     splitter = Model('partition')
     districts = {}
+    # Create the variables
     for center, tracts in lengths.items():
         districts[center] = {}
         for tract in tracts:
             districts[center][tract] = splitter.addVar(vtype=GRB.BINARY)
-
+    # Each tract belongs to exactly one district
     for j in population:
         splitter.addConstr(quicksum(districts[i][j] for i in districts
                                     if j in districts[i]) == 1,
                            name='exactlyOne')
+    # Population tolerances
     for i in districts:
         splitter.addConstr(quicksum(districts[i][j] * population[j]
                                     for j in districts[i])
