@@ -4,7 +4,7 @@ Fixing gerrymandering by optimizing for fairness
 ## Setup
 ### Code setup
 `git clone https://github.com/wesg52/gerrypy.git`  
-Make sure that you have [conda] (https://www.anaconda.com/products/individual) installed.  
+Make sure that you have [conda](https://www.anaconda.com/products/individual) installed.  
 `conda env create -f environment.yml`  
 `conda active gerry`  
 `python setup.py develop`  
