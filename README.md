@@ -1,6 +1,20 @@
 # gerrypy
 Fixing gerrymandering by optimizing for fairness
 
+## Setup
+### Code setup
+`git clone https://github.com/wesg52/gerrypy.git`  
+Make sure that you have [conda](https://www.anaconda.com/products/individual) installed.  
+`conda env create -f environment.yml`  
+`conda active gerry`  
+`python setup.py develop`  
+### Data setup
+There is large amount of data that we is underlying our project. Some of this can be downloaded programattically and some can not be. To simplify the downloading process. I have included all of the neccesary data in Cornell Box. Download and all of the data in the fairmandering_data folder and put each data folder in the `data` directory of this repository.
+
+To test that code setup and data download went smoothly try in a shell or notebook (make sure you are using the gerry env) run  
+`from gerrypy.data.load import *`  
+`load_precinct_df('OK')`  
+
 ## Package Overview
 The package is organized as follows.
 ### Data collection
