@@ -24,9 +24,11 @@ class StatePrecinctWrapper:
                            for precincts in precinct_gdfs]
         tract_votes = [self.compute_tract_votes(precincts, coverage)
                        for precincts, coverage in zip(precinct_gdfs, tract_coverages)]
-        tract_votes = pd.concat(tract_votes, axis=1)
+        tract_votes = pd.concat(tract_votes, axis=1).fillna(0)
+        if self.county_inference is None:
+            return tract_votes
         inferred_elections = self.infer_w_county_data(tract_votes)
-        return pd.concat([tract_votes, inferred_elections], axis=1)
+        return pd.concat([tract_votes, inferred_elections], axis=1).fillna(0)
 
     def load_precincts(self):
         precincts_gdfs = []
@@ -100,10 +102,10 @@ class StatePrecinctWrapper:
         election_columns = list(precincts.columns)
         election_columns.remove('geometry')
         try:
-            precincts[election_columns] = precincts[election_columns].astype(np.float64)
+            precincts[election_columns] = precincts[election_columns].astype(np.float64).fillna(0)
         except ValueError:
             for column in election_columns:
-                precincts[column] = precincts[column].str.replace(',', '').astype(np.float64)
+                precincts[column] = precincts[column].str.replace(',', '').astype(np.float64).fillna(0)
         for t, plist in tract_coverage.items():
             try:
                 tract_precincts, coverage_ratio = zip(*plist)
@@ -116,12 +118,6 @@ class StatePrecinctWrapper:
 
         col_names = {ix: estr for ix, estr in enumerate(election_columns)}
         tract_election_df = pd.DataFrame(tract_election_results).T.rename(columns=col_names).fillna(0)
-
-        # election_vote_shares = {e: tract_election_df['R_' + e] /
-        #                            (tract_election_df['R_' + e] + tract_election_df['D_' + e])
-        #                         for e in self.election_strings(source_ix)}
-        #
-        # tract_vote_shares = pd.DataFrame(election_vote_shares)
 
         return tract_election_df
 
@@ -153,9 +149,20 @@ class StatePrecinctWrapper:
         votes_df.drop(columns=['county', 'population'], inplace=True)
         return pd.concat(inferred_dfs, axis=1)
 
-    def election_strings(self):
-        return [office + '_' + str(year) for s in self.main_sources
-                for office, year in s['elections']]
+    def election_columns(self, include_party=True):
+        election_list = []
+        for source in self.main_sources:
+            for election in source['elections']:
+                election_list.append(election)
+        if self.county_inference is not None:
+            for election in self.county_inference:
+                election_list.append(election)
+        election_strs = [office + '_' + str(year) for office, year in election_list]
+        if include_party:
+            return list(map(lambda x: 'D_' + x, election_strs))\
+                   + list(map(lambda x: 'R_' + x, election_strs))
+        else:
+            return election_strs
 
     def data_report(self):
         precincts = self.load_precincts()

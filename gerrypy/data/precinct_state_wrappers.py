@@ -38,6 +38,7 @@ class AKPrecinctWrapper(StatePrecinctWrapper):
             }
         }]
 
+        self.county_inference = None
 
 class AZPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
@@ -435,10 +436,8 @@ class MAPrecinctWrapper(StatePrecinctWrapper):
             'precincts': True,
             'county_column': None,
             'elections': {
-                ('gov', 2018): ('GOV18D', 'GOV18R'),
                 ('senate', 2018): ('SEN18D', 'SEN18R'),
                 ('pres', 2016): ('PRES16D', 'PRES16R'),
-                ('gov', 2014): ('GOV14D', 'GOV14R'),
                 ('senate', 2014): ('SEN14D', 'SEN14R'),
                 ('senate', 2013): ('SEN13D', 'SEN13R'),
                 ('pres', 2012): ('PRES12D', 'PRES12R'),
@@ -454,6 +453,7 @@ class MAPrecinctWrapper(StatePrecinctWrapper):
                 ('pres', 2008): ('PRES08D', 'PRES08R'),
             }
         }]
+        self.county_inference = None
 
 
 class MIPrecinctWrapper(StatePrecinctWrapper):
@@ -708,6 +708,7 @@ class NCPrecinctWrapper(StatePrecinctWrapper):
                 ('gov', 2008): ('EL08G_GV_D', 'EL08G_GV_R'),
             }
         }]
+        self.county_inference = None
 
 
 class NDPrecinctWrapper(StatePrecinctWrapper):
@@ -806,7 +807,7 @@ class PAPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
         super().__init__()
         self.state = 'PA'
-        self.main_sources = {
+        self.main_sources = [{
             'path': os.path.join(constants.PRECINCT_PATH, 'mggg_states', 'PA'),
             'precincts': True,
             'county_column': 'COUNTYFP10',
@@ -821,7 +822,7 @@ class PAPrecinctWrapper(StatePrecinctWrapper):
                 ('senate', 2010): ('SEN10D', 'SEN10R'),
                 ('gov', 2010): ('GOV10D', 'GOV10R'),
             }
-        }
+        }]
 
         self.county_inference = {
             ('pres', 2008): ('pres', 2012)
