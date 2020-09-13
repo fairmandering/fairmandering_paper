@@ -6,12 +6,21 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 
+
 def load_state_df(state_abbrev):
     state_df_path = os.path.join(constants.OPT_DATA_PATH,
                                  state_abbrev,
                                  'state_df.csv')
     df = pd.read_csv(state_df_path)
     return df.sort_values(by='GEOID').reset_index(drop=True)
+
+
+def load_election_df(state_abbrev):
+    election_df_path = os.path.join(constants.OPT_DATA_PATH,
+                                    state_abbrev,
+                                    'election_df.csv')
+    df = pd.read_csv(election_df_path)
+    return df  # Indices are equal to state_df integer indices
 
 
 def load_acs(state_abbrev, year=None, county=False):
@@ -57,6 +66,3 @@ def load_opt_data(state_abbrev):
         edge_dists = dict(nx.all_pairs_shortest_path_length(G))
 
     return state_df, G, lengths, edge_dists
-
-
-

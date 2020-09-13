@@ -16,7 +16,8 @@ from scipy.spatial.distance import pdist, squareform
 
 
 def load_county_political_data():
-    county_results = pd.read_csv('countypres_2000-2016.tab', sep='\t')
+    path = os.path.join(constants.GERRYPY_BASE_PATH, 'data', 'countypres_2000-2016.tab')
+    county_results = pd.read_csv(path, sep='\t')
     county_results = county_results.query('party == "democrat" or party == "republican"')
     county_results['FIPS'] = county_results['FIPS'].fillna(0).astype(int).astype(str).apply(lambda x: x.zfill(5))
     calt = county_results.groupby(['year', 'FIPS', 'party']).sum()
