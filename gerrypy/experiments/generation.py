@@ -28,6 +28,7 @@ class Experiment:
                     else:
                         trial_config[k] = v
                 trial_config['n_districts'] = constants.seats[state]['house']
+                trial_config['state'] = state
 
                 print('Starting trial', trial_config)
                 cg = ColumnGenerator(trial_config)
@@ -73,7 +74,7 @@ if __name__ == '__main__':
     tree_config = {
         'max_sample_tries': 30,
         'n_samples': 3,
-        'n_root_samples': 1,
+        'n_root_samples': 150,
         'max_n_splits': 5,
         'min_n_splits': 2,
         'max_split_population_difference': 1.5,
