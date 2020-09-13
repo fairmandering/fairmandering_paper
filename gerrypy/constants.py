@@ -7,9 +7,12 @@ CENSUS_SHAPE_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'shapes')
 TRACT_DATA_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'acs_tract_data')
 COUNTY_DATA_PATH = os.path.join(GERRYPY_BASE_PATH, 'data', 'acs_county_data')
 COLUMNS_PATH = os.path.join(GERRYPY_BASE_PATH, 'results', 'columns')
-APP_PATH = os.path.join(GERRYPY_BASE_PATH, 'analyze', 'viz', 'gerryapp')
+RESULTS_PATH = os.path.join(GERRYPY_BASE_PATH, 'results')
+APP_PATH = os.path.join(GERRYPY_BASE_PATH, 'analyze', 'app', 'gerryapp')
 
 ACS_BASE_YEAR = 2018
+
+CRS = 3078
 
 NAME_IX = 0
 ABBREV_IX = 1

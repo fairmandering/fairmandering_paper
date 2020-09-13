@@ -4,7 +4,8 @@ from scipy.stats import t
 import math
 import itertools
 from scipy.spatial.distance import pdist
-
+from gerrypy.data.load import load_election_df
+from gerrypy.analyze.tree import *
 
 def average_entropy(M):
     return (- M * np.ma.log(M).filled(0) - (1 - M) *
@@ -50,8 +51,19 @@ def generation_metrics(cg):
 
     conditional_entropy = average_entropy(precinct_conditional_p)
 
-    dispersion = dispersion_compactness(districts, cg.state_df)
-    roeck = roeck_compactness(districts, cg.state_df, cg.lengths)
+    dispersion = np.array(dispersion_compactness(districts, cg.state_df))
+    roeck = np.array(roeck_compactness(districts, cg.state_df, cg.lengths))
+    min_compactness, _ = query_tree(cg.leaf_nodes, cg.internal_nodes, dispersion)
+    max_compactness, _ = query_tree(cg.leaf_nodes, cg.internal_nodes, -dispersion)
+    compactness_disparity = - min_compactness / max_compactness
+
+    election_df = load_election_df(cg.config['state'])
+    district_df = create_district_df(block_district_matrix, cg.state_df, election_df)
+
+    expected_seats = party_advantage_query_fn(district_df)
+    max_seats, _ = query_tree(cg.leaf_nodes, cg.internal_nodes, expected_seats)
+    min_seats, _ = query_tree(cg.leaf_nodes, cg.internal_nodes, -expected_seats)
+    seat_disparity = max_seats + min_seats  # Min seats is negative
 
     metrics = {
         'n_root_failures': cg.failed_root_samples,
@@ -68,7 +80,9 @@ def generation_metrics(cg):
         'lambda_2': e[1],
         'lambda_k': e[cg.config['n_districts']],
         'dispersion': np.array(dispersion).mean(),
-        'roeck': np.array(roeck).mean()
+        'roeck': np.array(roeck).mean(),
+        'compactness_disparity': compactness_disparity,
+        'seat_disparity': seat_disparity
     }
 
     return metrics
@@ -178,13 +192,14 @@ def create_district_df(bdm, state_df, election_df):
     return district_df
 
 
-def enumerate_distribution(plans, bdm, state_df, type):
+def enumerate_distribution(plans, bdm, state_df, type, state):
     if type == 'compactness':
         district_blocks = [np.nonzero(d)[0] for d in bdm.T]
         d_compactness = np.array(dispersion_compactness(district_blocks, state_df))
         return d_compactness[np.array(plans)].mean(axis=1)
     elif type == 'politics':
-        district_df = create_district_df(bdm, state_df)
+        election_df = load_election_df(state)
+        district_df = create_district_df(bdm, state_df, election_df)
         mu = district_df[['2008', '2012', '2016']].mean(axis=1).values
         std = np.maximum(district_df[['2008', '2012', '2016']].std(axis=1), .04).values
         p_win = 1 - t.cdf(.5, df=2, loc=mu, scale=std)

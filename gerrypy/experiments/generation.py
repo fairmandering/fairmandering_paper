@@ -1,5 +1,6 @@
 from gerrypy.optimize.generate import ColumnGenerator
 from gerrypy.analyze.districts import *
+from gerrypy import constants
 from copy import deepcopy
 import time
 import os
@@ -14,7 +15,8 @@ class Experiment:
 
     def run(self):
         name = self.experiment_config['name']
-        save_dir = '%s_results_%s' % (name, str(int(time.time())))
+        experiment_dir = '%s_results_%s' % (name, str(int(time.time())))
+        save_dir = os.path.join(constants.RESULTS_PATH, experiment_dir)
         os.mkdir(save_dir)
         for state in self.experiment_config['states']:
             print('############## Starting %s trials ##############' % state)
@@ -25,6 +27,7 @@ class Experiment:
                         trial_config[k[0]][k[1]] = v
                     else:
                         trial_config[k] = v
+                trial_config['n_districts'] = constants.seats[state]['house']
 
                 print('Starting trial', trial_config)
                 cg = ColumnGenerator(trial_config)
@@ -61,8 +64,8 @@ class Experiment:
 if __name__ == '__main__':
     center_selection_config = {
         'selection_method': 'uncapacitated_kmeans',  # one of
-        'perturbation_scale': 1,
-        'n_random_seeds': 1,
+        'perturbation_scale': 0,
+        'n_random_seeds': 0,
         'capacities': 'match',
         'capacity_weights': 'voronoi',
         'use_subgraph': True
@@ -70,7 +73,7 @@ if __name__ == '__main__':
     tree_config = {
         'max_sample_tries': 30,
         'n_samples': 3,
-        'n_root_samples': 10,
+        'n_root_samples': 1,
         'max_n_splits': 5,
         'min_n_splits': 2,
         'max_split_population_difference': 1.5,
@@ -84,8 +87,8 @@ if __name__ == '__main__':
         'IP_timeout': 10,
     }
     pdp_config = {
-        'state': 'IL',
-        'n_districts': 18,
+        'state': 'NC',
+        'n_districts': 13,
         'population_tolerance': .01,
     }
     base_config = {**center_selection_config,
@@ -93,15 +96,89 @@ if __name__ == '__main__':
                    **gurobi_config,
                    **pdp_config}
     experiment_config = {
-        'name': 'IL_test_connected',
-        'states': ['IL'],
+        'name': 'PNAS_test',
+        'states': ['NC', 'IL'],
         'trial_parameters': [
-            [('perturbation_scale', .5), ('n_random_seeds', 0)],
-            [('perturbation_scale', 0), ('n_random_seeds', 1)],
-            [('perturbation_scale', 1), ('n_random_seeds', 1)],
-            [('center_selection_method', 'random_iterative')],
-            [('capacities', 'match'), ('weights', 'fractional')],
-            [('capacities', 'compute'), ('weights', 'voronoi')],
+            [('selection_method', 'uncapacitated_kmeans'),
+              ('perturbation_scale', 0.5),
+              ('capacities', 'match'),
+              ('weights', 'voronoi')],
+             [('selection_method', 'uncapacitated_kmeans'),
+              ('perturbation_scale', 0.5),
+              ('capacities', 'match'),
+              ('weights', 'fractional')],
+             [('selection_method', 'uncapacitated_kmeans'),
+              ('perturbation_scale', 0.5),
+              ('capacities', 'compute'),
+              ('weights', 'voronoi')],
+             [('selection_method', 'uncapacitated_kmeans'),
+              ('perturbation_scale', 0.5),
+              ('capacities', 'compute'),
+              ('weights', 'fractional')],
+             [('selection_method', 'uncapacitated_kmeans'),
+              ('perturbation_scale', 1),
+              ('capacities', 'match'),
+              ('weights', 'voronoi')],
+             [('selection_method', 'uncapacitated_kmeans'),
+              ('perturbation_scale', 1),
+              ('capacities', 'match'),
+              ('weights', 'fractional')],
+             [('selection_method', 'uncapacitated_kmeans'),
+              ('perturbation_scale', 1),
+              ('capacities', 'compute'),
+              ('weights', 'voronoi')],
+             [('selection_method', 'uncapacitated_kmeans'),
+              ('perturbation_scale', 1),
+              ('capacities', 'compute'),
+              ('weights', 'fractional')],
+             [('selection_method', 'uncapacitated_kmeans'),
+              ('n_random_seeds', 1),
+              ('capacities', 'match'),
+              ('weights', 'voronoi')],
+             [('selection_method', 'uncapacitated_kmeans'),
+              ('n_random_seeds', 1),
+              ('capacities', 'match'),
+              ('weights', 'fractional')],
+             [('selection_method', 'uncapacitated_kmeans'),
+              ('n_random_seeds', 1),
+              ('capacities', 'compute'),
+              ('weights', 'voronoi')],
+             [('selection_method', 'uncapacitated_kmeans'),
+              ('n_random_seeds', 1),
+              ('capacities', 'compute'),
+              ('weights', 'fractional')],
+             [('selection_method', 'uncapacitated_kmeans'),
+              ('perturbation_scale', 1),
+              ('n_random_seeds', 1),
+              ('capacities', 'match'),
+              ('weights', 'voronoi')],
+             [('selection_method', 'uncapacitated_kmeans'),
+              ('perturbation_scale', 1),
+              ('n_random_seeds', 1),
+              ('capacities', 'match'),
+              ('weights', 'fractional')],
+             [('selection_method', 'uncapacitated_kmeans'),
+              ('perturbation_scale', 1),
+              ('n_random_seeds', 1),
+              ('capacities', 'compute'),
+              ('weights', 'voronoi')],
+             [('selection_method', 'uncapacitated_kmeans'),
+              ('perturbation_scale', 1),
+              ('n_random_seeds', 1),
+              ('capacities', 'compute'),
+              ('weights', 'fractional')],
+             [('selection_method', 'random_iterative'),
+              ('capacities', 'match'),
+              ('weights', 'voronoi')],
+             [('selection_method', 'random_iterative'),
+              ('capacities', 'match'),
+              ('weights', 'fractional')],
+             [('selection_method', 'random_iterative'),
+              ('capacities', 'compute'),
+              ('weights', 'voronoi')],
+             [('selection_method', 'random_iterative'),
+              ('capacities', 'compute'),
+              ('weights', 'fractional')]
         ]
     }
 
