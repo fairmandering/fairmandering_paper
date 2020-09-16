@@ -7,6 +7,7 @@ from scipy.spatial.distance import pdist
 from gerrypy.data.load import load_election_df
 from gerrypy.analyze.tree import *
 
+
 def average_entropy(M):
     return (- M * np.ma.log(M).filled(0) - (1 - M) *
             np.ma.log(1 - M).filled(0)).sum() / (M.shape[0] * M.shape[1])
@@ -135,6 +136,31 @@ def enumerate_partitions(leaf_nodes, interior_nodes):
     return feasible_partitions(root, node_dict)
 
 
+def enumerate_distribution(leaf_nodes, interior_nodes, leaf_values):
+    def feasible_partitions(node, node_dict):
+        if not node.children_ids:
+            return [[leaf_dict[node.id]]]
+
+        partitions = []
+        for disjoint_sibling_set in node.children_ids:
+            sibling_partitions = []
+            for child in disjoint_sibling_set:
+                sibling_partitions.append(feasible_partitions(node_dict[child],
+                                                              node_dict))
+            combinations = [list(itertools.chain.from_iterable(combo))
+                            for combo in itertools.product(*sibling_partitions)]
+            partitions.append(combinations)
+        return [[sum(c)] for c in list(itertools.chain.from_iterable(partitions))]
+
+    root = interior_nodes[0] if interior_nodes[0].is_root \
+        else [n for n in interior_nodes if n.is_root][0]
+
+    leaf_dict = {n.id: leaf_values[ix] for ix, n in enumerate(leaf_nodes)}
+    node_dict = {n.id: n for n in interior_nodes + leaf_nodes}
+    plan_values = feasible_partitions(root, node_dict)
+    return np.array([item for sublist in plan_values for item in sublist])
+
+
 def roeck_compactness(districts, state_df, lengths):
     compactness_scores = []
     for d in districts:
@@ -152,13 +178,13 @@ def dispersion_compactness(districts, state_df):
         population = state_df.loc[d]['population'].values
         dlocs = state_df.loc[d][['x', 'y']].values
         centroid = np.average(dlocs, weights=population, axis=0)
-        geo_dispersion = (np.subtract(dlocs, centroid)**2).sum(axis=1)**.5 / 1000
+        geo_dispersion = (np.subtract(dlocs, centroid) ** 2).sum(axis=1) ** .5 / 1000
         dispersion = np.average(geo_dispersion, weights=population)
         compactness_scores.append(dispersion)
     return compactness_scores
 
 
-def create_district_df(bdm, state_df, election_df):
+def create_district_df(bdm, state_df, election_df, calculate_dispersion=True):
     district_list = []
     if election_df is not None:
         vote_total_columns = list(election_df.columns)
@@ -189,21 +215,9 @@ def create_district_df(bdm, state_df, election_df):
     district_df['mean'] = share_df.mean(axis=1)
     district_df['std_dev'] = share_df.std(ddof=1, axis=1)
     district_df['DoF'] = len(elections) - 1
+
+    if calculate_dispersion:
+        dispersion = dispersion_compactness([list(np.nonzero(row)[0]) for row in bdm.T],
+                                            state_df)
+        district_df['dispersion'] = dispersion
     return district_df
-
-
-def enumerate_distribution(plans, bdm, state_df, type, state):
-    if type == 'compactness':
-        district_blocks = [np.nonzero(d)[0] for d in bdm.T]
-        d_compactness = np.array(dispersion_compactness(district_blocks, state_df))
-        return d_compactness[np.array(plans)].mean(axis=1)
-    elif type == 'politics':
-        election_df = load_election_df(state)
-        district_df = create_district_df(bdm, state_df, election_df)
-        mu = district_df[['2008', '2012', '2016']].mean(axis=1).values
-        std = np.maximum(district_df[['2008', '2012', '2016']].std(axis=1), .04).values
-        p_win = 1 - t.cdf(.5, df=2, loc=mu, scale=std)
-        expected_diff = p_win - mu
-        return expected_diff[np.array(plans)].sum(axis=1)
-    else:
-        raise ValueError('Invalid distribution type')
