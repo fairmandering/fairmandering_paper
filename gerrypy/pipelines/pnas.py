@@ -1,5 +1,6 @@
 import os
 import glob
+import time
 import pickle
 import pandas as pd
 import numpy as np
@@ -20,21 +21,28 @@ def run_all_states_result_pipeline(result_path, test=False):
 
     pipeline_result = {}
     for state in states:
-        state_results = {}
-        tree_path = glob.glob(os.path.join(result_path, '%s_*.p' % state))[0]
+        state_start_t = time.time()
+        tree_path = glob.glob(os.path.join(result_path, '%s_[0-9]*.p' % state))[0]
         tree_data = pickle.load(open(tree_path, 'rb'))
-        district_df = pd.read_csv(os.path.join(result_path, '%s.csv', 'rb'))
+        district_df = pd.read_csv(os.path.join(result_path, '%s.csv' % state))
 
         leaf_nodes = tree_data['leaf_nodes']
         internal_nodes = tree_data['internal_nodes']
 
         if 'dispersion' not in set(district_df.columns):
             state_df = load_state_df(state)
-            district_list = [d.area for d in internal_nodes]
+            district_list = [d.area for d in leaf_nodes]
             district_df['dispersion'] = districts.dispersion_compactness(district_list, state_df)
 
-        extreme_data = extreme_solutions(leaf_nodes, internal_nodes)
-        
+        extreme_data = extreme_solutions(leaf_nodes, internal_nodes, district_df)
+        distributions = subsampled_distributions(leaf_nodes, internal_nodes, district_df, state)
+
+        pipeline_result[state] = {**extreme_data, **distributions}
+        elapsed_time = round((time.time() - state_start_t) / 60, 2)
+        print('Pipeline finished for %s taking %f mins' % (state, elapsed_time))
+
+    return pipeline_result
+
 
 def extreme_solutions(leaf_nodes, internal_nodes, district_df):
     extreme_data = {}
@@ -76,6 +84,27 @@ def extreme_solutions(leaf_nodes, internal_nodes, district_df):
         'objective_value': competitive_val,
         'solution': {n.id: n.area for n in leaf_nodes if n.id in set(competitive_sol)}
     }
-
     return extreme_data
+
+
+def subsampled_distributions(leaf_nodes, internal_nodes, district_df, state):
+    subsample_constant = 1000 * constants.seats[state]['house'] ** 2
+
+    solution_count, parent_nodes = subsample.get_node_info(leaf_nodes, internal_nodes)
+    pruned_internal_nodes = subsample.prune_sample_space(internal_nodes,
+                                                         solution_count,
+                                                         parent_nodes,
+                                                         subsample_constant)
+
+    r_advantage_vals = tree.party_advantage_query_fn(district_df)
+    compactness_vals = district_df.dispersion.values
+    competitive_vals = tree.competitive_query_fn(district_df)
+
+    return {
+        'seat_share': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes, r_advantage_vals),
+        'compactness': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes, compactness_vals),
+        'competitiveness': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes, competitive_vals),
+    }
+
+
 

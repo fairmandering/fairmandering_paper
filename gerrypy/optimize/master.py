@@ -1,5 +1,6 @@
 from gurobipy import *
 import numpy as np
+from scipy.stats import t
 
 
 def make_master(k, block_district_matrix, costs,
@@ -39,3 +40,38 @@ def make_master(k, block_district_matrix, costs,
     return master, x
 
 
+def efficiency_gap_coefficients(district_df):
+    mean = district_df['mean'].values
+    std_dev = district_df['std_dev'].values
+    DoF = district_df['DoF'].values
+    expected_seats = 1 - t.cdf(.5, DoF, mean, std_dev)
+    ideal_seats = (mean - .5) * 2 + .5
+    return ideal_seats - expected_seats
+
+
+def make_root_partition_to_leaf_map(leaf_nodes, internal_nodes):
+    def add_children(node, root_partition_id):
+        if node.n_districts > 1:
+            for partition in node.children_ids:
+                for child in partition:
+                    add_children(node_dict[child], root_partition_id)
+        else:
+            node_to_root_partition[id_to_ix[node.id]] = root_partition_id
+
+    node_to_root_partition = {}
+    node_dict = {n.id: n for n in internal_nodes + leaf_nodes}
+    id_to_ix = {n.id: ix for ix, n in enumerate(leaf_nodes)}
+    root = internal_nodes[0]
+    for ix, root_partition in enumerate(root.children_ids):
+        for child in root_partition:
+            add_children(node_dict[child], ix)
+
+    partition_map = {}
+    for node_ix, partition_ix in node_to_root_partition.items():
+        try:
+            partition_map[partition_ix].append(node_ix)
+        except KeyError:
+            partition_map[partition_ix] = [node_ix]
+    partition_map = {ix: np.array(leaf_list) for ix, leaf_list in partition_map.items()}
+
+    return partition_map

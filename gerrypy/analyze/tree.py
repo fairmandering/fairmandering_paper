@@ -47,5 +47,5 @@ def competitive_query_fn(district_df, minimize=False):
     std_dev = district_df['std_dev'].values
     DoF = district_df['DoF'].values
     lose_p = t.cdf(.5, DoF, mean, std_dev)
-    variance = (1 - lose_p) * lose_p
-    return variance * (-1 if minimize else 1)
+    expected_flips = 2 * (1 - lose_p) * lose_p
+    return expected_flips * (-1 if minimize else 1)
