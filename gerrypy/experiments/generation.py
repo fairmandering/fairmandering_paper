@@ -97,14 +97,20 @@ if __name__ == '__main__':
                    **gurobi_config,
                    **pdp_config}
     experiment_config = {
-        'name': 'PNAS_population_tolerance',
-        'states': ['NC', 'IL'],
+        'name': 'PNAS_NC_k',
+        'states': ['NC'],
         'trial_parameters': [
-            [('population_tolerance', .005)],
-            [('population_tolerance', .01)],
-            [('population_tolerance', .025)],
-            [('population_tolerance', .05)],
-            [('population_tolerance', .1)],
+            [('n_districts', 5), ('population_tolerance', .0025), ('n_samples', 5), ('n_root_samples', 100)],
+            [('n_districts', 10), ('population_tolerance', .005), ('n_samples', 4), ('n_root_samples', 200)],
+            [('n_districts', 13), ('population_tolerance', .01), ('n_samples', 4), ('n_root_samples', 150)],
+            [('n_districts', 20), ('population_tolerance', .02), ('n_samples', 3), ('n_root_samples', 100)],
+            [('n_districts', 40), ('population_tolerance', .025), ('n_samples', 3), ('n_root_samples', 60)],
+            [('n_districts', 50), ('population_tolerance', .03), ('n_samples', 3), ('n_root_samples', 50)],
+            [('n_districts', 60), ('population_tolerance', .035), ('n_samples', 3), ('n_root_samples', 40)],
+            [('n_districts', 80), ('population_tolerance', .04), ('n_samples', 2.4), ('n_root_samples', 30)],
+            [('n_districts', 100), ('population_tolerance', .045), ('n_samples', 2.1), ('n_root_samples', 50)],
+            [('n_districts', 120), ('population_tolerance', .05), ('n_samples', 2), ('n_root_samples', 40)],
+            [('n_districts', 140), ('population_tolerance', .05), ('n_samples', 2), ('n_root_samples', 30)],
         ]
     }
 

@@ -138,7 +138,7 @@ class ColumnGenerator:
         n_trials = 0
         n_samples = 1 if node.is_root else self.config['n_samples']
         if not isinstance(n_samples, int):
-            n_samples = int(n_samples // 1 + random.random() < n_samples % 1)
+            n_samples = int((n_samples // 1) + (random.random() < n_samples % 1))
         while len(samples) < n_samples and n_trials < self.config['max_sample_tries']:
             partition_start_t = time.time()
             child_nodes = self.make_partition(area_df, node)
