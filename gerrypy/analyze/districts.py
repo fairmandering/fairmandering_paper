@@ -158,7 +158,7 @@ def enumerate_distribution(leaf_nodes, interior_nodes, leaf_values):
     leaf_dict = {n.id: leaf_values[ix] for ix, n in enumerate(leaf_nodes)}
     node_dict = {n.id: n for n in interior_nodes + leaf_nodes}
     plan_values = feasible_partitions(root, node_dict)
-    return np.array([item for sublist in plan_values for item in sublist])
+    return [item for sublist in plan_values for item in sublist]
 
 
 def roeck_compactness(districts, state_df, lengths):
