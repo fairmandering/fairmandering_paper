@@ -58,6 +58,7 @@ def make_root_partition_to_leaf_map(leaf_nodes, internal_nodes):
         else:
             node_to_root_partition[id_to_ix[node.id]] = root_partition_id
 
+    # Create mapping from leaf ix to root partition ix
     node_to_root_partition = {}
     node_dict = {n.id: n for n in internal_nodes + leaf_nodes}
     id_to_ix = {n.id: ix for ix, n in enumerate(leaf_nodes)}
@@ -66,6 +67,7 @@ def make_root_partition_to_leaf_map(leaf_nodes, internal_nodes):
         for child in root_partition:
             add_children(node_dict[child], ix)
 
+    # Create inverse mapping
     partition_map = {}
     for node_ix, partition_ix in node_to_root_partition.items():
         try:

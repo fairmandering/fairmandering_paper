@@ -1,6 +1,7 @@
 import os
 import glob
 import time
+import json
 import pickle
 import pandas as pd
 import numpy as np
@@ -10,16 +11,21 @@ from gerrypy.analyze import tree
 from gerrypy.analyze import subsample
 from gerrypy.analyze import districts
 from gerrypy.data.load import *
+from gerrypy.optimize import master
 
 
 def run_all_states_result_pipeline(result_path, test=False):
+    try:
+        os.mkdir(os.path.join(result_path, 'pnas_results'))
+    except FileExistsError:
+        pass
+
     if test:
-        states = ['AL', 'CO', 'WV']
+        states = ['CO', 'WV']
     else:
         states = [state for state in constants.seats
                   if constants.seats[state]['house'] > 1]
 
-    pipeline_result = {}
     for state in states:
         state_start_t = time.time()
         tree_path = glob.glob(os.path.join(result_path, '%s_[0-9]*.p' % state))[0]
@@ -36,12 +42,13 @@ def run_all_states_result_pipeline(result_path, test=False):
 
         extreme_data = extreme_solutions(leaf_nodes, internal_nodes, district_df)
         distributions = subsampled_distributions(leaf_nodes, internal_nodes, district_df, state)
+        solutions = master_solutions(leaf_nodes, internal_nodes, district_df, state)
 
-        pipeline_result[state] = {**extreme_data, **distributions}
+        pipeline_result = {**extreme_data, **distributions, **solutions}
         elapsed_time = round((time.time() - state_start_t) / 60, 2)
+        save_file = os.path.join(result_path, 'pnas_results', '%s.p' % state)
+        pickle.dump(pipeline_result, open(save_file, 'wb'))
         print('Pipeline finished for %s taking %f mins' % (state, elapsed_time))
-
-    return pipeline_result
 
 
 def extreme_solutions(leaf_nodes, internal_nodes, district_df):
@@ -107,4 +114,39 @@ def subsampled_distributions(leaf_nodes, internal_nodes, district_df, state):
     }
 
 
+def master_solutions(leaf_nodes, internal_nodes, district_df, state):
+    bdm = districts.make_bdm(leaf_nodes)
+    cost_coeffs = master.efficiency_gap_coefficients(district_df)
+    root_map = master.make_root_partition_to_leaf_map(leaf_nodes, internal_nodes)
+    sol_dict = {}
+    for partition_ix, leaf_slice in root_map.items():
+        start_t = time.time()
+        model, dvars = master.make_master(constants.seats[state]['house'],
+                                          bdm[:, leaf_slice],
+                                          cost_coeffs[leaf_slice])
+        construction_t = time.time()
+
+        model.Params.LogToConsole = 0
+        model.Params.MIPGapAbs = 1e-4
+        model.Params.TimeLimit = len(leaf_nodes) / 10
+        model.optimize()
+        opt_cols = [j for j, v in dvars.items() if v.X > .5]
+        solve_t = time.time()
+
+        sol_dict[partition_ix] = {
+            'construction_time': construction_t - start_t,
+            'solve_time': solve_t - construction_t,
+            'n_leaves': len(leaf_slice),
+            'solution_ixs': root_map[partition_ix][opt_cols],
+            'optimal_objective': cost_coeffs[leaf_slice][opt_cols]
+        }
+    return {'master_solutions': sol_dict}
+
+
+if __name__ == '__main__':
+    for dir in [
+        os.path.join(constants.RESULTS_PATH, 'allstates', 'aaai_columns1595813019'),
+        os.path.join(constants.RESULTS_PATH, 'allstates', 'aaai_columns1595891125')
+    ]:
+        run_all_states_result_pipeline(dir)
 
