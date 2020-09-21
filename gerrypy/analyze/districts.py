@@ -29,14 +29,7 @@ def make_bdm(leaf_nodes, n_blocks=None):
     return block_district_matrix
 
 
-def generation_metrics(cg):
-    p_infeasible = cg.n_infeasible_partitions / \
-                   (cg.n_infeasible_partitions + cg.n_successful_partitions)
-    n_interior_nodes = len(cg.internal_nodes)
-    districts = [d.area for d in cg.leaf_nodes]
-    duplicates = len(districts) - len(set([frozenset(d) for d in districts]))
-
-    block_district_matrix = make_bdm(cg.leaf_nodes)
+def bdm_metrics(block_district_matrix, k):
     ubdm = np.unique(block_district_matrix, axis=1)
     max_rank = min(ubdm.shape)
     U, Sigma, Vt = np.linalg.svd(ubdm)
@@ -52,12 +45,32 @@ def generation_metrics(cg):
 
     conditional_entropy = average_entropy(precinct_conditional_p)
 
+    return {
+        'conditional_entropy': conditional_entropy,
+        'average_district_sim': k * np.average(Dsim),
+        'svd_entropy': svd_entropy(Sigma),
+        '50p_approx_rank': sum(np.cumsum(Sigma / Sigma.sum()) < .5) / max_rank,
+        '95p_approx_rank': sum(np.cumsum(Sigma / Sigma.sum()) < .95) / max_rank,
+        '99p_approx_rank': sum(np.cumsum(Sigma / Sigma.sum()) < .99) / max_rank,
+        'lambda_2': e[1],
+        'lambda_k': e[k],
+    }
+
+
+def generation_metrics(cg, low_memory=False):
+    p_infeasible = cg.n_infeasible_partitions / \
+                   (cg.n_infeasible_partitions + cg.n_successful_partitions)
+    n_interior_nodes = len(cg.internal_nodes)
+    districts = [d.area for d in cg.leaf_nodes]
+    duplicates = len(districts) - len(set([frozenset(d) for d in districts]))
+
     dispersion = np.array(dispersion_compactness(districts, cg.state_df))
     roeck = np.array(roeck_compactness(districts, cg.state_df, cg.lengths))
     min_compactness, _ = query_tree(cg.leaf_nodes, cg.internal_nodes, dispersion)
     max_compactness, _ = query_tree(cg.leaf_nodes, cg.internal_nodes, -dispersion)
     compactness_disparity = - min_compactness / max_compactness
 
+    block_district_matrix = make_bdm(cg.leaf_nodes)
     election_df = load_election_df(cg.config['state'])
     district_df = create_district_df(block_district_matrix, cg.state_df, election_df)
 
@@ -72,21 +85,15 @@ def generation_metrics(cg):
         'n_interior_nodes': n_interior_nodes,
         'n_districts': len(districts),
         'p_duplicates': duplicates / len(districts),
-        'conditional_entropy': conditional_entropy,
-        'average_district_sim': cg.config['n_districts'] * np.average(Dsim),
-        'svd_entropy': svd_entropy(Sigma),
-        '50p_approx_rank': sum(np.cumsum(Sigma / Sigma.sum()) < .5) / max_rank,
-        '95p_approx_rank': sum(np.cumsum(Sigma / Sigma.sum()) < .95) / max_rank,
-        '99p_approx_rank': sum(np.cumsum(Sigma / Sigma.sum()) < .99) / max_rank,
-        'lambda_2': e[1],
-        'lambda_k': e[cg.config['n_districts']],
         'dispersion': np.array(dispersion).mean(),
         'roeck': np.array(roeck).mean(),
         'compactness_disparity': compactness_disparity,
         'seat_disparity': seat_disparity
     }
-
-    return metrics
+    if low_memory:
+        return metrics
+    else:
+        return {**metrics, **bdm_metrics(block_district_matrix, cg.config['n_districts'])}
 
 
 def number_of_districtings(leaf_nodes, interior_nodes):

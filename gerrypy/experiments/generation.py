@@ -36,7 +36,7 @@ class Experiment:
                 cg.generate()
                 generation_t = time.time() - generation_start_t
                 analysis_start_t = time.time()
-                metrics = generation_metrics(cg)
+                metrics = generation_metrics(cg, low_memory=self.experiment_config['low_memory'])
                 analysis_t = time.time() - analysis_start_t
 
                 trial_results = {
@@ -99,11 +99,12 @@ if __name__ == '__main__':
     experiment_config = {
         'name': 'PNAS_IL_k',
         'states': ['IL'],
+        'low_memory': True,
         'trial_parameters': [
             [('n_districts', 5), ('population_tolerance', .0025), ('n_samples', 5), ('n_root_samples', 100)],
             [('n_districts', 10), ('population_tolerance', .005), ('n_samples', 4), ('n_root_samples', 200)],
-            [('n_districts', 17), ('population_tolerance', .01), ('n_samples', 3), ('n_root_samples', 150)],
-            [('n_districts', 20), ('population_tolerance', .02), ('n_samples', 3), ('n_root_samples', 100)],
+            [('n_districts', 18), ('population_tolerance', .01), ('n_samples', 3), ('n_root_samples', 150)],
+            [('n_districts', 30), ('population_tolerance', .02), ('n_samples', 3), ('n_root_samples', 80)],
             [('n_districts', 40), ('population_tolerance', .025), ('n_samples', 3), ('n_root_samples', 60)],
             [('n_districts', 50), ('population_tolerance', .03), ('n_samples', 3), ('n_root_samples', 50)],
             [('n_districts', 59), ('population_tolerance', .035), ('n_samples', 3), ('n_root_samples', 40)],
