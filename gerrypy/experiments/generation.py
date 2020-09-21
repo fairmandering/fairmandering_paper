@@ -1,5 +1,6 @@
 from gerrypy.optimize.generate import ColumnGenerator
 from gerrypy.analyze.districts import *
+from gerrypy.utils.dir_processing import district_df_of_tree_dir
 from gerrypy import constants
 from copy import deepcopy
 import time
@@ -60,6 +61,9 @@ class Experiment:
                 save_name = '_'.join([state, config_str, str(int(time.time()))]) + '.npy'
                 # json.dump(trial_results, open(os.path.join(save_dir, save_name), 'w'))
                 np.save(os.path.join(save_dir, save_name), trial_results)
+        if self.experiment_config['create_district_df']:
+            district_df_of_tree_dir(save_dir)
+
 
 
 if __name__ == '__main__':
@@ -100,6 +104,7 @@ if __name__ == '__main__':
         'name': 'PNAS_IL_k',
         'states': ['IL'],
         'low_memory': True,
+        'create_district_df': True,
         'trial_parameters': [
             [('n_districts', 5), ('population_tolerance', .0025), ('n_samples', 5), ('n_root_samples', 100)],
             [('n_districts', 10), ('population_tolerance', .005), ('n_samples', 4), ('n_root_samples', 200)],
