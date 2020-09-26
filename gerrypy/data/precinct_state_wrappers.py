@@ -1,6 +1,7 @@
 import os
 from gerrypy import constants
 from gerrypy.data.precincts import StatePrecinctWrapper
+from builtins import None
 
 # TODO: add validation sources where available
 
@@ -35,6 +36,13 @@ class AKPrecinctWrapper(StatePrecinctWrapper):
             'elections': {
                 ('gov', 2018): ('GOV18D', 'GOV18R'),
                 ('pres', 2016): ('PRES16D', 'PRES16R')
+            }, 
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'ak_2018'),
+            'precincts': True,
+            'county_column': None,
+            'elections': {
+                ('gov', 2018): ('G18GOVDBEG', 'G18GOVRDUN')
             }
         }]
 
@@ -80,6 +88,14 @@ class ARPrecinctWrapper(StatePrecinctWrapper):
             'elections': {
                 ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
                 ('senate', 2016): ('G16USSDELD', 'G16USSRBOO'),
+            }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'ar_2018'),
+            'precincts': True,
+            'county_column': 'COUNTY_FIP',
+            'elections': {
+                ('gov', 2018): ('G18GOVDHEN', 'G18GOVRHUT'),
+                ('AG', 2018): ('G18ATGDLEE', 'G18ATGRRUT')
             }
         }]
 
@@ -128,8 +144,15 @@ class COPrecinctWrapper(StatePrecinctWrapper):
                 ('senate', 2016): ('G16USSDBen', 'G16USSRGle'),
                 ('pres', 2016): ('G16PREDCli', 'G16PRERTru'),
             }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'co_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('gov', 2018): ('G18GOVDPOL', 'G18GOVRSTA'),
+                ('AG', 2018): ('G18ATGDWEI', 'G18ATGRBRA')
+            }
         }]
-
         self.county_inference = {
             ('pres', 2008): ('pres', 2016),
             ('pres', 2012): ('pres', 2016)
@@ -176,11 +199,18 @@ class DEPrecinctWrapper(StatePrecinctWrapper):
                 ('pres', 2012): ('PRES12D', 'PRES12R'),
                 ('senate', 2012): ('SEN12D', 'SEN12R'),
             }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'de_2018'),
+            'precincts': True,
+            'county_column': None,
+            'elections': {
+                ('senate', 2018): ('G18USSDCAR', 'G18USSRARL'),
+                ('AG', 2018): ('G18ATGDJEN', 'G18ATGRPEP')
+            }
         }]
         self.county_inference = {
             ('pres', 2008): ('pres', 2012),
         }
-
 
 class FLPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
@@ -193,6 +223,14 @@ class FLPrecinctWrapper(StatePrecinctWrapper):
             'elections': {
                 ('pres', 2016): ('G16PREDCli', 'G16PRERTru'),
                 ('senate', 2016): ('G16USSDMur', 'G16USSRRub'),
+            }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'fl_2018'),
+            'precincts': True,
+            'county_column': 'County',
+            'elections': {
+                ('gov', 2018): ('G18GOVDGIL', 'G18GOVRDES'),
+                ('AG', 2018): ('G18ATGDSHA', 'G18ATGRMOO')
             }
         }]
 
@@ -213,6 +251,14 @@ class GAPrecinctWrapper(StatePrecinctWrapper):
             'elections': {
                 ('pres', 2016): ('PRES16D', 'PRES16R'),
                 ('senate', 2016): ('SEN16D', 'SEN16R'),
+            }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'ga_2018'),
+            'precincts': True,
+            'county_column': 'FIPS2',
+            'elections': {
+                ('gov', 2018): ('G18GOVDABR', 'G18GOVRKEM'),
+                ('AG', 2018): ('G18ATGDBAI', 'G18ATGRCAR')
             }
         }]
 
@@ -236,6 +282,14 @@ class HIPrecinctWrapper(StatePrecinctWrapper):
                 ('pres', 2016): ('PRES16D', 'PRES16R'),
                 ('senate', 2016): ('SEN16D', 'SEN16R'),
             }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'hi_2018'),
+            'precincts': True,
+            'county_column': 'COUNTY',
+            'elections': {
+                ('senate', 2018): ('G18USSDHIR', 'G18USSRCUR'),
+                ('gov', 2018): ('G18GOVDIGE', 'G18GOVRTUP')
+            }
         }]
         self.county_inference = {
             ('pres', 2008): ('pres', 2016),
@@ -254,6 +308,14 @@ class IDPrecinctWrapper(StatePrecinctWrapper):
             'elections': {
                 ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
                 ('senate', 2016): ('G16USSDSTU', 'G16USSRCRA'),
+            }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'id_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('AG', 2018): ('G18ATGDBIS', 'G18ATGRWAS'),
+                ('gov', 2018): ('G18GOVDJOR', 'G18GOVRLIT')
             }
         }]
 
@@ -314,6 +376,13 @@ class IAPrecinctWrapper(StatePrecinctWrapper):
                 ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
                 ('senate', 2016): ('G16USSDJUD', 'G16USSRGRA'),
             }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'ia_2018'),
+            'precincts': True,
+            'county_column': 'COUNTY',
+            'elections': {
+                ('gov', 2018): ('G18GOVDHUB', 'G18GOVRREY')
+            }
         }]
 
         self.county_inference = {
@@ -333,6 +402,14 @@ class KSPrecinctWrapper(StatePrecinctWrapper):
             'elections': {
                 ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
                 ('senate', 2016): ('G16USSDWIE', 'G16USSRMOR'),
+            }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'ks_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('AG', 2018): ('G18ATGDSWA', 'G18ATGRSCH'),
+                ('gov', 2018): ('G18GOVDKEL', 'G18GOVRKOB')
             }
         }]
 
@@ -393,6 +470,14 @@ class MEPrecinctWrapper(StatePrecinctWrapper):
             'elections': {
                 ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
             }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'me_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('senate', 2018): ('G18USSDRIN', 'G18USSRBRA'),
+                ('gov', 2018): ('G18GOVDMIL', 'G18GOVRMOO')
+            }
         }]
 
         self.county_inference = {
@@ -452,6 +537,14 @@ class MAPrecinctWrapper(StatePrecinctWrapper):
                 ('senate', 2008): ('SEN08D', 'SEN08R'),
                 ('pres', 2008): ('PRES08D', 'PRES08R'),
             }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'ma_2018'),
+            'precincts': True,
+            'county_column': None,
+            'elections': {
+                ('AG', 2018): ('G18ATGDHEA', 'G18ATGRMCM'),
+                ('gov', 2018): ('G18GOVDGON', 'G18GOVRBAK')
+            }
         }]
         self.county_inference = None
 
@@ -466,6 +559,15 @@ class MIPrecinctWrapper(StatePrecinctWrapper):
             'county_column': 'CountyFips',
             'elections': {
                 ('pres', 2016): ('PRES16D', 'PRES16R'),
+            }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'mi_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYFIPS',
+            'elections': {
+                ('senate', 2018): ('G18USSDSTA', 'G18USSRJAM'),
+                ('AG', 2018): ('G18ATGDNES', 'G18ATGRLEO'),
+                ('gov', 2018): ('G18GOVDWHI', 'G18GOVRSCH')
             }
         }]
 
@@ -493,6 +595,15 @@ class MNPrecinctWrapper(StatePrecinctWrapper):
                 ('AG', 2014): ('AG14D', 'AG14R'),
                 ('pres', 2012): ('PRES12D', 'PRES12R'),
                 ('senate', 2012): ('SEN12D', 'SEN12R'),
+            }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'mn_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYFIPS',
+            'elections': {
+                ('senate', 2018): ('G18USSDKLO', 'G18USSRNEW'),
+                ('AG', 2018): ('G18ATGDELL', 'G18ATGRWAR'),
+                ('gov', 2018): ('G18GOVDWAL', 'G18GOVRJOH')
             }
         }]
 
@@ -556,6 +667,13 @@ class MTPrecinctWrapper(StatePrecinctWrapper):
                 ('gov', 2016): ('G16GOVDBUL', 'G16GOVRGIA'),
                 ('AG', 2016): ('G16ATGDJEN', 'G16ATGRFOX'),
             }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'mt_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYFP10',
+            'elections': {
+                ('senate', 2018): ('G18USSDTES', 'G18USSRROS')
+            }
         }]
 
         self.county_inference = {
@@ -573,7 +691,15 @@ class NEPrecinctWrapper(StatePrecinctWrapper):
             'precincts': True,
             'county_column': 'COUNTYFP',
             'elections': {
-                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+                ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU')
+            }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'ne_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('senate', 2018): ('G18USSDRAY', 'G18USSRFIS'),
+                ('gov', 2018): ('G18GOVDKRI', 'G18GOVRRIC')
             }
         }]
 
@@ -593,7 +719,16 @@ class NVPrecinctWrapper(StatePrecinctWrapper):
             'county_column': 'COUNTYFP',
             'elections': {
                 ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
-                ('senate', 2016): ('G16USSDCOR', 'G16USSRHEC'),
+                ('senate', 2016): ('G16USSDCOR', 'G16USSRHEC')
+            }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'ne_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('senate', 2018): ('G18USSDROS', 'G18USSRHEL'),
+                ('gov', 2018): ('G18GOVDSIS', 'G18GOVRLAX'),
+                ('AG', 2018): ('G18ATGDFOR', 'G18ATGRDUN')
             }
         }]
 
@@ -616,6 +751,13 @@ class NHPrecinctWrapper(StatePrecinctWrapper):
                 ('senate', 2016): ('G16USSDHAS', 'G16USSRAYO'),
                 ('gov', 2016): ('G16GOVDVAN', 'G16GOVRSUN')
             }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'nh_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('gov', 2018): ('G18GOVDKEL', 'G18GOVRSUN')
+            }
         }]
 
         self.county_inference = {
@@ -634,7 +776,7 @@ class NJPrecinctWrapper(StatePrecinctWrapper):
             'county_column': 'COUNTYFP10',
             'elections': {
                 ('pres', 2008): ('USP_DV_08', 'USP_RV_08'),
-                ('senate', 2008): ('USS_DV_08', 'USS_RV_08'),
+                ('senate', 2008): ('USS_DV_08', 'USS_RV_08')
             }
         }]
 
@@ -723,6 +865,14 @@ class NDPrecinctWrapper(StatePrecinctWrapper):
                 ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
                 ('senate', 2016): ('G16USSDGLA', 'G16USSRHOE'),
                 ('gov', 2016): ('G16GOVDNEL', 'G16GOVRBUR')
+            }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'nd_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('senate', 2018): ('G18USSDHEI', 'G18USSRCRA'),
+                ('AG', 2018): ('G18ATGDTHO', 'G18ATGRSTE')
             }
         }]
 
@@ -862,6 +1012,14 @@ class SCPrecinctWrapper(StatePrecinctWrapper):
                 ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
                 ('senate', 2016): ('G16USSDDIX', 'G16USSRSCO'),
             }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'sc_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('gov', 2018): ('G18GOVDSMI', 'G18GOVRMCM'),
+                ('AG', 2018): ('G18ATGDANA', 'G18ATGRWIL')
+            }
         }]
 
         self.county_inference = {
@@ -881,6 +1039,14 @@ class SDPrecinctWrapper(StatePrecinctWrapper):
             'elections': {
                 ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
                 ('senate', 2016): ('G16USSDWIL', 'G16USSRTHU'),
+            }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'sd_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('gov', 2018): ('G18GOVDSUT', 'G18GOVRNOE'),
+                ('AG', 2018): ('G18ATGDSEI', 'G18ATGRRAV')
             }
         }]
 
@@ -942,6 +1108,13 @@ class UTPrecinctWrapper(StatePrecinctWrapper):
                 ('gov', 2016): ('GOV16D', 'GOV16R'),
                 ('senate', 2016): ('SEN16D', 'SEN16R')
             }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'sd_2018'),
+            'precincts': True,
+            'county_column': 'CountyID',
+            'elections': {
+                ('senate', 2018): ('G18USSDWIL', 'G18USSRROM')
+            }
         }]
 
         self.county_inference = {
@@ -964,6 +1137,14 @@ class VTPrecinctWrapper(StatePrecinctWrapper):
                 ('pres', 2012): ('PRES12D', 'PRES12R'),
                 ('senate', 2012): ('SEN12B', 'SEN12R'),
 
+            }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'vt_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('AG', 2018): ('G18ATGDDON', 'G18ATGRWIL'),
+                ('gov', 2018): ('G18GOVDHAL', 'G18GOVRSCO')
             }
         }]
 
@@ -1007,6 +1188,13 @@ class WAPrecinctWrapper(StatePrecinctWrapper):
                 ('gov', 2016): ('G16GOVDINS', 'G16GOVRBRY'),
                 ('AG', 2016): ('G16ATGDFER', 'G16ATGRTRU')
             }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'wa_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYCD',
+            'elections': {
+                ('senate', 2018): ('G18USSDCAN', 'G18USSRHUT')
+            }
         }]
 
         self.county_inference = {
@@ -1042,6 +1230,15 @@ class WIPrecinctWrapper(StatePrecinctWrapper):
                 ('pres', 2012): ('PREDEM12', 'PREREP12'),
                 ('senate', 2012): ('USSDEM12', 'USSREP12'),
             }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'wi_2018'),
+            'precincts': True,
+            'county_column': 'CNTY_FIPS',
+            'elections': {
+                ('senate', 2018): ('G18USSDBAL', 'G18USSRVUK'),
+                ('gov', 2018): ('G18GOVDEVE', 'G18GOVRWAL'),
+                ('AG', 2018): ('G18ATGDKAU', 'G18ATGRSCH')
+            }
         }]
         self.county_inference = {
             ('pres', 2008): ('pres', 2012)
@@ -1057,6 +1254,14 @@ class WYPrecinctWrapper(StatePrecinctWrapper):
             'county_column': 'COUNTYFP',
             'elections': {
                 ('pres', 2016): ('G16PREDCLI', 'G16PRERTRU'),
+            }
+        }, {
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'wy_2018'),
+            'precincts': True,
+            'county_column': 'COUNTYFP',
+            'elections': {
+                ('senate', 2018): ('G18USSDTRA', 'G18USSRBAR'),
+                ('gov', 2018): ('G18GOVDTHR', 'G18GOVRGOR')
             }
         }]
 
