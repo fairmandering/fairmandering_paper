@@ -44,6 +44,17 @@ def load_tract_shapes(state_abbrev, year=None):
     return tract_shapes.sort_values(by='GEOID').reset_index(drop=True)
 
 
+def load_district_shapes(state=None, year=2018):
+    path = os.path.join(constants.GERRYPY_BASE_PATH, 'data',
+                        'congressional_districts', str(year))
+    gdf = gpd.read_file(path).sort_values('GEOID').to_crs("EPSG:3078")  # meters
+    if state is not None:
+        state_geoid = str(constants.ABBREV_DICT[state][constants.FIPS_IX])
+        return gdf[gdf.STATEFP == state_geoid]
+    else:
+        return gdf
+
+
 def load_opt_data(state_abbrev):
     data_base_path = os.path.join(constants.OPT_DATA_PATH, state_abbrev)
     state_df_path = os.path.join(data_base_path, 'state_df.csv')
