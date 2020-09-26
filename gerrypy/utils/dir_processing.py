@@ -24,13 +24,10 @@ def district_df_of_tree_dir(dir_path):
         state_abbrev = state_file[:2]
 
         state_df = load_state_df(state_abbrev)
-        try:
-            election_df = load_election_df(state_abbrev)
-        except FileNotFoundError:
-            election_df = None
 
         block_district_matrix = make_bdm(tree_data['leaf_nodes'], len(state_df))
-        district_df = create_district_df(block_district_matrix, state_df, election_df)
+        district_df = create_district_df(state_abbrev, block_district_matrix,
+                                         calculate_compactness=True)
         
         district_df.to_csv(os.path.join(dir_path, 'district_dfs', save_name), index=False)
         elapsed_t = str(round((time.time() - start_t) / 60, 2))
@@ -39,8 +36,7 @@ def district_df_of_tree_dir(dir_path):
 
 if __name__ == '__main__':
     paths_to_process = [
-        os.path.join(constants.RESULTS_PATH, 'PNAS', 'PNAS_generation_trials_results_1599960957'),
-        os.path.join(constants.RESULTS_PATH, 'PNAS', 'PNAS_population_tolerance_results_1600392876')
+        os.path.join(constants.RESULTS_PATH, 'allstates', 'aaai_columns1595813019'),
     ]
     for path in paths_to_process:
         district_df_of_tree_dir(path)

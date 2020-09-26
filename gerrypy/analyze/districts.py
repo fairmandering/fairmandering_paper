@@ -3,8 +3,8 @@ import numpy as np
 from scipy.stats import t
 import math
 import itertools
-from scipy.spatial.distance import pdist
-from gerrypy.data.load import load_election_df
+from scipy.spatial.distance import pdist, cdist
+from gerrypy.data.load import *
 from gerrypy.analyze.tree import *
 
 
@@ -64,6 +64,7 @@ def generation_metrics(cg, low_memory=False):
     districts = [d.area for d in cg.leaf_nodes]
     duplicates = len(districts) - len(set([frozenset(d) for d in districts]))
 
+    # TODO: deduplicate compactness computation
     dispersion = np.array(dispersion_compactness(districts, cg.state_df))
     roeck = np.array(roeck_compactness(districts, cg.state_df, cg.lengths))
     min_compactness, _ = query_tree(cg.leaf_nodes, cg.internal_nodes, dispersion)
@@ -71,8 +72,7 @@ def generation_metrics(cg, low_memory=False):
     compactness_disparity = - min_compactness / max_compactness
 
     block_district_matrix = make_bdm(cg.leaf_nodes)
-    election_df = load_election_df(cg.config['state'])
-    district_df = create_district_df(block_district_matrix, cg.state_df, election_df)
+    district_df = create_district_df(cg.config['state'], block_district_matrix)
 
     expected_seats = party_advantage_query_fn(district_df)
     max_seats, _ = query_tree(cg.leaf_nodes, cg.internal_nodes, expected_seats)
@@ -179,6 +179,27 @@ def roeck_compactness(districts, state_df, lengths):
     return compactness_scores
 
 
+def roeck_more_exact(districts, state_df, tracts, lengths):
+    def unwind_coords(poly):
+        try:
+            return np.array(poly.exterior.coords)
+        except AttributeError:
+            return np.concatenate([p.exterior.coords for p in poly])
+    compactness_scores = []
+    for d in districts:
+        area = state_df.loc[d]['area'].sum()
+        pairwise_dists = lengths[np.ix_(d, d)]
+        max_pts = np.unravel_index(np.argmax(pairwise_dists), pairwise_dists.shape)
+        t1, t2 = max_pts
+        p1 = unwind_coords(tracts.loc[d[t1]].geometry)
+        p2 = unwind_coords(tracts.loc[d[t2]].geometry)
+        radius = np.max(cdist(p1, p2)) / 2000
+        circle_area = radius ** 2 * math.pi
+        roeck = area / circle_area
+        compactness_scores.append(roeck)
+    return compactness_scores
+
+
 def dispersion_compactness(districts, state_df):
     compactness_scores = []
     for d in districts:
@@ -191,7 +212,9 @@ def dispersion_compactness(districts, state_df):
     return compactness_scores
 
 
-def create_district_df(bdm, state_df, election_df, calculate_dispersion=True):
+def create_district_df(state, bdm, calculate_compactness=True):
+    election_df = load_election_df(state)
+    state_df = load_state_df(state)
     district_list = []
     if election_df is not None:
         vote_total_columns = list(election_df.columns)
@@ -223,8 +246,18 @@ def create_district_df(bdm, state_df, election_df, calculate_dispersion=True):
     district_df['std_dev'] = share_df.std(ddof=1, axis=1)
     district_df['DoF'] = len(elections) - 1
 
-    if calculate_dispersion:
-        dispersion = dispersion_compactness([list(np.nonzero(row)[0]) for row in bdm.T],
-                                            state_df)
+    if calculate_compactness:
+        state_df, G, lengths, _ = load_opt_data(state)
+        districts = [list(np.nonzero(row)[0]) for row in bdm.T]
+
+        dispersion = dispersion_compactness(districts, state_df)
+        roeck = roeck_compactness(districts, state_df, lengths)
+        edge_ratio = list(map(lambda x: len(G.subgraph(x).edges) / len(x), districts))
+        cut_edges = list(map(lambda x: sum(1 for _ in nx.edge_boundary(G, x)), districts))
+
         district_df['dispersion'] = dispersion
+        district_df['roeck'] = roeck
+        district_df['edge_ratio'] = edge_ratio
+        district_df['cut_edges'] = cut_edges
+
     return district_df

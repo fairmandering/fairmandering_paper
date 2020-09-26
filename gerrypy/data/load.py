@@ -19,7 +19,10 @@ def load_election_df(state_abbrev):
     election_df_path = os.path.join(constants.OPT_DATA_PATH,
                                     state_abbrev,
                                     'election_df.csv')
-    df = pd.read_csv(election_df_path)
+    try:
+        df = pd.read_csv(election_df_path)
+    except FileNotFoundError:
+        df = None
     return df  # Indices are equal to state_df integer indices
 
 
