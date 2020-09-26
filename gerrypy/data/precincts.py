@@ -43,7 +43,14 @@ class StatePrecinctWrapper:
             precinct_gdf = gpd.read_file(source['path'])
             precinct_gdf.rename(columns={c: c.strip() for c in precinct_gdf.columns})
             precinct_gdf = precinct_gdf.rename(columns=name_dict).to_crs(epsg=constants.CRS)
-            precincts_gdfs.append(precinct_gdf[list(name_dict.values())])
+            precinct_gdf = precinct_gdf[list(name_dict.values())]
+            numeric_columns = [c for c in precinct_gdf if c != 'geometry']
+            try:
+                precinct_gdf[numeric_columns] = precinct_gdf[numeric_columns].astype(np.float64)
+            except ValueError:
+                for column in numeric_columns:
+                    precinct_gdf[column] = precinct_gdf[column].str.replace(',', '').astype(np.float64)
+            precincts_gdfs.append(precinct_gdf)
         return precincts_gdfs
 
     def create_probability_state_df(self):
@@ -171,6 +178,18 @@ class StatePrecinctWrapper:
                 print(column, (gdf[column] == 0).sum())
             coverage, shares = self.compute_tract_results(gdf)
             shares.isna()
+
+    def check_state_mean_and_std(self):
+        precincts = self.load_precincts()
+        results = {}
+        for precinct_gdf in precincts:
+            results.update(precinct_gdf.sum(axis=0).to_dict())
+        columns = self.election_columns(include_party=False)
+        election_shares = {c: results['R_' + c] / (results['D_' + c] + results['R_' + c])
+                           for c in columns if 'R_' + c in results}
+        shares = np.array(list(election_shares.values()))
+        print(election_shares)
+        print('Mean', round(shares.mean(), 4), 'STD', round(shares.std(ddof=1), 4))
 
     def test_self(self):
         print('Testing %s precinct wrapper' % self.state)

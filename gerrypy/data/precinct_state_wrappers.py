@@ -1,7 +1,7 @@
 import os
 from gerrypy import constants
 from gerrypy.data.precincts import StatePrecinctWrapper
-from builtins import None
+
 
 # TODO: add validation sources where available
 
@@ -475,7 +475,6 @@ class MEPrecinctWrapper(StatePrecinctWrapper):
             'precincts': True,
             'county_column': 'COUNTYFP',
             'elections': {
-                ('senate', 2018): ('G18USSDRIN', 'G18USSRBRA'),
                 ('gov', 2018): ('G18GOVDMIL', 'G18GOVRMOO')
             }
         }]
@@ -543,7 +542,6 @@ class MAPrecinctWrapper(StatePrecinctWrapper):
             'county_column': None,
             'elections': {
                 ('AG', 2018): ('G18ATGDHEA', 'G18ATGRMCM'),
-                ('gov', 2018): ('G18GOVDGON', 'G18GOVRBAK')
             }
         }]
         self.county_inference = None
@@ -722,7 +720,7 @@ class NVPrecinctWrapper(StatePrecinctWrapper):
                 ('senate', 2016): ('G16USSDCOR', 'G16USSRHEC')
             }
         }, {
-            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'ne_2018'),
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'nv_2018'),
             'precincts': True,
             'county_column': 'COUNTYFP',
             'elections': {
@@ -1109,7 +1107,7 @@ class UTPrecinctWrapper(StatePrecinctWrapper):
                 ('senate', 2016): ('SEN16D', 'SEN16R')
             }
         }, {
-            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'sd_2018'),
+            'path': os.path.join(constants.PRECINCT_PATH, 'harvard_data', 'ut_2018'),
             'precincts': True,
             'county_column': 'CountyID',
             'elections': {
