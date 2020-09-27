@@ -40,18 +40,22 @@ def run_all_states_result_pipeline(result_path, test=False):
             district_list = [d.area for d in leaf_nodes]
             district_df['dispersion'] = districts.dispersion_compactness(district_list, state_df)
 
-        extreme_data = extreme_solutions(leaf_nodes, internal_nodes, district_df)
+        extreme_electoral_data = extreme_electoral_solutions(leaf_nodes, internal_nodes, district_df)
+        extreme_compactness_data = extreme_electoral_solutions(leaf_nodes, internal_nodes, district_df)
         distributions = subsampled_distributions(leaf_nodes, internal_nodes, district_df, state)
         solutions = master_solutions(leaf_nodes, internal_nodes, district_df, state)
 
-        pipeline_result = {**extreme_data, **distributions, **solutions}
+        pipeline_result = {**extreme_electoral_data,
+                           **extreme_compactness_data,
+                           **distributions,
+                           **solutions}
         elapsed_time = round((time.time() - state_start_t) / 60, 2)
         save_file = os.path.join(result_path, 'pnas_results', '%s.p' % state)
         pickle.dump(pipeline_result, open(save_file, 'wb'))
         print('Pipeline finished for %s taking %f mins' % (state, elapsed_time))
 
 
-def extreme_solutions(leaf_nodes, internal_nodes, district_df):
+def extreme_electoral_solutions(leaf_nodes, internal_nodes, district_df):
     extreme_data = {}
     r_advantage_query_vals = tree.party_advantage_query_fn(district_df)
     d_advantage_query_vals = 1 - r_advantage_query_vals
@@ -64,19 +68,6 @@ def extreme_solutions(leaf_nodes, internal_nodes, district_df):
     extreme_data['d_advantage'] = {
         'objective_value': d_val,
         'solution': {n.id: n.area for n in leaf_nodes if n.id in set(d_sol)}
-    }
-
-    uncompact_query_vals = district_df.dispersion.values
-    compact_query_vals = 1 - uncompact_query_vals
-    uncompact_val, uncompact_sol = tree.query_tree(leaf_nodes, internal_nodes, uncompact_query_vals)
-    compact_val, compact_sol = tree.query_tree(leaf_nodes, internal_nodes, compact_query_vals)
-    extreme_data['uncompact'] = {
-        'objective_value': uncompact_val,
-        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(uncompact_sol)}
-    }
-    extreme_data['compact'] = {
-        'objective_value': compact_val,
-        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(compact_sol)}
     }
 
     competitive_query_vals = tree.competitive_query_fn(district_df)
@@ -94,6 +85,96 @@ def extreme_solutions(leaf_nodes, internal_nodes, district_df):
     return extreme_data
 
 
+def extreme_compactness_solutions(leaf_nodes, internal_nodes, district_df):
+    extreme_compact_data = {}
+    dispersion = district_df.dispersion.values
+    # Negative since lower dispersion is better
+    dispersion_val, dispersion_sol = tree.query_tree(leaf_nodes, internal_nodes, -dispersion)
+    anti_dispersion_val, anti_dispersion_sol = tree.query_tree(leaf_nodes, internal_nodes, dispersion)
+    extreme_compact_data['dispersion'] = {
+        'objective_value': -dispersion_val,
+        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(dispersion_sol)}
+    }
+    extreme_compact_data['anti_dispersion'] = {
+        'objective_value': anti_dispersion_val,
+        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(anti_dispersion_sol)}
+    }
+
+    roeck = district_df.roeck.values
+    roeck_val, roeck_sol = tree.query_tree(leaf_nodes, internal_nodes, roeck)
+    anti_roeck_val, anti_roeck_sol = tree.query_tree(leaf_nodes, internal_nodes, -roeck)
+    extreme_compact_data['roeck'] = {
+        'objective_value': roeck_val,
+        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(roeck_sol)}
+    }
+    extreme_compact_data['anti_roeck'] = {
+        'objective_value': -anti_roeck_val,
+        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(anti_roeck_sol)}
+    }
+
+    roeck_squared = district_df.roeck.values ** 2
+    roeck_squared_val, roeck_squared_sol = tree.query_tree(leaf_nodes, internal_nodes, roeck_squared)
+    anti_roeck_squared_val, anti_roeck_squared_sol = tree.query_tree(leaf_nodes, internal_nodes, -roeck_squared)
+    extreme_compact_data['roeck_squared'] = {
+        'objective_value': roeck_squared_val,
+        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(roeck_squared_sol)}
+    }
+    extreme_compact_data['anti_roeck_squared'] = {
+        'objective_value': -anti_roeck_squared_val,
+        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(anti_roeck_squared_sol)}
+    }
+
+    edge_ratio = district_df.edge_ratio.values
+    edge_ratio_val, edge_ratio_sol = tree.query_tree(leaf_nodes, internal_nodes, edge_ratio)
+    anti_edge_ratio_val, anti_edge_ratio_sol = tree.query_tree(leaf_nodes, internal_nodes, -edge_ratio)
+    extreme_compact_data['edge_ratio'] = {
+        'objective_value': edge_ratio_val,
+        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(edge_ratio_sol)}
+    }
+    extreme_compact_data['anti_edge_ratio'] = {
+        'objective_value': -anti_edge_ratio_val,
+        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(anti_edge_ratio_sol)}
+    }
+
+    edge_ratio_squared = district_df.edge_ratio.values ** 2
+    edge_ratio_squared_val, edge_ratio_squared_sol = tree.query_tree(leaf_nodes, internal_nodes, edge_ratio_squared)
+    anti_edge_ratio_squared_val, anti_edge_ratio_squared_sol = tree.query_tree(leaf_nodes,
+                                                                               internal_nodes, -edge_ratio_squared)
+    extreme_compact_data['edge_ratio_squared'] = {
+        'objective_value': edge_ratio_squared_val,
+        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(edge_ratio_squared_sol)}
+    }
+    extreme_compact_data['anti_edge_ratio_squared'] = {
+        'objective_value': -anti_edge_ratio_squared_val,
+        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(anti_edge_ratio_squared_sol)}
+    }
+
+    cut_edges = district_df.cut_edges.values
+    cut_edges_val, cut_edges_sol = tree.query_tree(leaf_nodes, internal_nodes, -cut_edges)
+    anti_cut_edges_val, anti_cut_edges_sol = tree.query_tree(leaf_nodes, internal_nodes, cut_edges)
+    extreme_compact_data['cut_edges'] = {
+        'objective_value': -cut_edges_val,
+        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(cut_edges_sol)}
+    }
+    extreme_compact_data['anti_cut_edges'] = {
+        'objective_value': anti_cut_edges_val,
+        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(anti_cut_edges_sol)}
+    }
+
+    cut_edges_squared = district_df.cut_edges.values ** 2
+    cut_edges_squared_val, cut_edges_squared_sol = tree.query_tree(leaf_nodes, internal_nodes, -cut_edges_squared)
+    anti_cut_edges_squared_val, anti_cut_edges_squared_sol = tree.query_tree(leaf_nodes,
+                                                                             internal_nodes, cut_edges_squared)
+    extreme_compact_data['cut_edges_squared'] = {
+        'objective_value': -cut_edges_squared_val,
+        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(cut_edges_squared_sol)}
+    }
+    extreme_compact_data['anti_cut_edges_squared'] = {
+        'objective_value': anti_cut_edges_squared_val,
+        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(anti_cut_edges_squared_sol)}
+    }
+
+
 def subsampled_distributions(leaf_nodes, internal_nodes, district_df, state):
     subsample_constant = 1000 * constants.seats[state]['house'] ** 2
 
@@ -104,13 +185,33 @@ def subsampled_distributions(leaf_nodes, internal_nodes, district_df, state):
                                                          subsample_constant)
 
     r_advantage_vals = tree.party_advantage_query_fn(district_df)
-    compactness_vals = district_df.dispersion.values
+    dispersion_vals = district_df.dispersion.values
+    roeck_vals = district_df.roeck.values
+    roeck_squared_vals = district_df.roeck.values ** 2
+    edge_ratio_vals = district_df.edge_ratio.values
+    edge_ratio_squared_vals = district_df.edge_ratio.values ** 2
+    cut_edges_vals = district_df.cut_edges.values
+    cut_edges_squared_vals = district_df.cut_edges.values ** 2
     competitive_vals = tree.competitive_query_fn(district_df)
 
     return {
-        'seat_share': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes, r_advantage_vals),
-        'compactness': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes, compactness_vals),
-        'competitiveness': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes, competitive_vals),
+        'seat_share_distribution': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes,
+                                                                    r_advantage_vals),
+        'dispersion_distribution': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes, dispersion_vals),
+        'roeck_distribution': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes,
+                                                               roeck_vals),
+        'roeck_squared_distribution': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes,
+                                                                       roeck_squared_vals),
+        'edge_ratio_distribution': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes,
+                                                                    edge_ratio_vals),
+        'edge_ratio_squared_distribution': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes,
+                                                                            edge_ratio_squared_vals),
+        'cut_edges_distribution': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes,
+                                                                   cut_edges_vals),
+        'cut_edges_squared_distribution': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes,
+                                                                           cut_edges_squared_vals),
+        'competitiveness_distribution': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes,
+                                                                         competitive_vals),
     }
 
 
@@ -149,4 +250,3 @@ if __name__ == '__main__':
         os.path.join(constants.RESULTS_PATH, 'allstates', 'aaai_columns1595891125')
     ]:
         run_all_states_result_pipeline(dir)
-
