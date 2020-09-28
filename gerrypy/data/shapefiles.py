@@ -76,6 +76,50 @@ def download_state_shapes(states=None, year=constants.ACS_BASE_YEAR):
         zipfile.extractall(dir_name)
         print("Successfully downloaded and extracted state", state_abbr)
 
+def download_district_shapes(year):
+    """Download census shapefiles for districts from 2010 - 2019"""
+    
+    dirname = os.path.dirname(__file__)
+    district_shapes_dir = os.path.join(dirname, "district_shapes")
+    year = str(year)
+    TIGER_URL = "https://www2.census.gov/geo/tiger/TIGER%s/CD/" % year
+
+    try:
+        os.mkdir(district_shapes_dir)
+    except FileExistsError:
+        pass
+    
+    # Check if already have
+    downloaded_files = os.listdir(district_shapes_dir)
+    for fname in downloaded_files:
+        if year in fname:
+            print("You've already downloaded data for year " + year)
+            return
+    
+    # Login to census FTP server
+    ftp = FTP("ftp.census.gov")
+    ftp.login()
+    ftp.cwd("/geo/tiger/TIGER%s/CD/" % year)
+    print("Successfully made FTP connection")
+    
+    # Download and extract all files for states in states
+    for file_name in ftp.nlst():
+
+        dir_name = os.path.join(district_shapes_dir, "_".join(['cd', year]))
+        try:
+            os.mkdir(dir_name)
+        except FileExistsError:
+            continue
+        
+        resp = urlopen(TIGER_URL + file_name)
+        zipfile = ZipFile(BytesIO(resp.read()))
+
+        zipfile.extractall(dir_name)
+        print("Successfully downloaded and extracted congressional data for ", year)
+
+def download_all_district_shapes():
+    for i in range(2010, 2020):
+        download_district_shapes(i)
 
 if __name__ == "__main__":
     download_state_shapes()
