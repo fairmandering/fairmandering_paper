@@ -77,7 +77,7 @@ def download_state_shapes(states=None, year=constants.ACS_BASE_YEAR):
         print("Successfully downloaded and extracted state", state_abbr)
 
 def download_district_shapes(year):
-    """Download census shapefiles for districts from 2010 - 2019"""
+    """Download census shapefiles for districts from 2011 - 2019"""
     
     dirname = os.path.dirname(__file__)
     district_shapes_dir = os.path.join(dirname, "district_shapes")
@@ -118,7 +118,7 @@ def download_district_shapes(year):
         print("Successfully downloaded and extracted congressional data for ", year)
 
 def download_all_district_shapes():
-    for i in range(2010, 2020):
+    for i in range(2011, 2020):
         download_district_shapes(i)
 
 if __name__ == "__main__":
