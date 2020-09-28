@@ -117,9 +117,11 @@ def download_district_shapes(year):
         zipfile.extractall(dir_name)
         print("Successfully downloaded and extracted congressional data for ", year)
 
+
 def download_all_district_shapes():
-    for i in range(2010, 2020):
+    for i in range(2012, 2020, 2):
         download_district_shapes(i)
 
+
 if __name__ == "__main__":
-    download_state_shapes()
+    download_all_district_shapes()

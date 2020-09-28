@@ -49,7 +49,7 @@ def load_tract_shapes(state_abbrev, year=None):
 
 def load_district_shapes(state=None, year=2018):
     path = os.path.join(constants.GERRYPY_BASE_PATH, 'data',
-                        'congressional_districts', str(year))
+                        'district_shapes', 'cd_' + str(year))
     gdf = gpd.read_file(path).sort_values('GEOID').to_crs("EPSG:3078")  # meters
     if state is not None:
         state_geoid = str(constants.ABBREV_DICT[state][constants.FIPS_IX])
