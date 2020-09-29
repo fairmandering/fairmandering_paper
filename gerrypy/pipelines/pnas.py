@@ -1,6 +1,7 @@
 import os
 import glob
 import time
+import ntpath
 import json
 import pickle
 import pandas as pd
@@ -31,15 +32,10 @@ def run_all_states_result_pipeline(result_path, test=False):
         tree_path = glob.glob(os.path.join(result_path, '%s_[0-9]*.p' % state))[0]
         tree_data = pickle.load(open(tree_path, 'rb'))
         district_df = pd.read_csv(os.path.join(result_path, 'district_dfs',
-                                               tree_path[:-2] + '_district_df.csv'))
+                                               ntpath.basename(tree_path)[:-2] + '_district_df.csv'))
 
         leaf_nodes = tree_data['leaf_nodes']
         internal_nodes = tree_data['internal_nodes']
-
-        if 'dispersion' not in set(district_df.columns):
-            state_df = load_state_df(state)
-            district_list = [d.area for d in leaf_nodes]
-            district_df['dispersion'] = districts.dispersion_compactness(district_list, state_df)
 
         extreme_electoral_data = extreme_electoral_solutions(leaf_nodes, internal_nodes, district_df)
         extreme_compactness_data = extreme_electoral_solutions(leaf_nodes, internal_nodes, district_df)
