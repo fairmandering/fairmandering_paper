@@ -30,7 +30,8 @@ def run_all_states_result_pipeline(result_path, test=False):
         state_start_t = time.time()
         tree_path = glob.glob(os.path.join(result_path, '%s_[0-9]*.p' % state))[0]
         tree_data = pickle.load(open(tree_path, 'rb'))
-        district_df = pd.read_csv(os.path.join(result_path, '%s.csv' % state))
+        district_df = pd.read_csv(os.path.join(result_path, 'district_dfs',
+                                               tree_path[:-2] + '_district_df.csv'))
 
         leaf_nodes = tree_data['leaf_nodes']
         internal_nodes = tree_data['internal_nodes']
