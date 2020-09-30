@@ -7,10 +7,14 @@ from gerrypy.data.load import load_state_df, load_election_df
 from gerrypy.analyze.districts import make_bdm, create_district_df
 
 
-def district_df_of_tree_dir(dir_path):
+def district_df_of_tree_dir(dir_path, states=None):
     os.makedirs(os.path.join(dir_path, 'district_dfs'), exist_ok=True)
     tree_files = os.listdir(dir_path)
     for state_file in tree_files:
+        if states is not None:
+            if state_file[:2] not in states:
+                continue
+
         if state_file[-2:] == '.p':
             save_name = state_file[:-2] + '_district_df.csv'
             tree_data = pickle.load(open(os.path.join(dir_path, state_file), 'rb'))
@@ -36,7 +40,7 @@ def district_df_of_tree_dir(dir_path):
 
 if __name__ == '__main__':
     paths_to_process = [
-        os.path.join(constants.RESULTS_PATH, 'allstates', 'aaai_columns1595813019'),
+        os.path.join(constants.RESULTS_PATH, 'allstates', 'aaai_columns1595891125'),
     ]
     for path in paths_to_process:
-        district_df_of_tree_dir(path)
+        district_df_of_tree_dir(path, states={'MN'})
