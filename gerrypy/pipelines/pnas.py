@@ -170,6 +170,7 @@ def extreme_compactness_solutions(leaf_nodes, internal_nodes, district_df):
         'objective_value': anti_cut_edges_squared_val,
         'solution': {n.id: n.area for n in leaf_nodes if n.id in set(anti_cut_edges_squared_sol)}
     }
+    return extreme_compact_data
 
 
 def subsampled_distributions(leaf_nodes, internal_nodes, district_df, state):
