@@ -38,7 +38,7 @@ def run_all_states_result_pipeline(result_path, test=False):
         internal_nodes = tree_data['internal_nodes']
 
         extreme_electoral_data = extreme_electoral_solutions(leaf_nodes, internal_nodes, district_df)
-        extreme_compactness_data = extreme_electoral_solutions(leaf_nodes, internal_nodes, district_df)
+        extreme_compactness_data = extreme_compactness_solutions(leaf_nodes, internal_nodes, district_df)
         distributions = subsampled_distributions(leaf_nodes, internal_nodes, district_df, state)
         solutions = master_solutions(leaf_nodes, internal_nodes, district_df, state)
 
@@ -68,9 +68,8 @@ def extreme_electoral_solutions(leaf_nodes, internal_nodes, district_df):
     }
 
     competitive_query_vals = tree.competitive_query_fn(district_df)
-    uncompetitive_query_vals = -competitive_query_vals
-    uncompetitive_val, uncompetitive_sol = tree.query_tree(leaf_nodes, internal_nodes, competitive_query_vals)
-    competitive_val, competitive_sol = tree.query_tree(leaf_nodes, internal_nodes, uncompetitive_query_vals)
+    competitive_val, competitive_sol = tree.query_tree(leaf_nodes, internal_nodes, competitive_query_vals)
+    uncompetitive_val, uncompetitive_sol = tree.query_tree(leaf_nodes, internal_nodes, -competitive_query_vals)
     extreme_data['uncompetitive'] = {
         'objective_value': -uncompetitive_val,
         'solution': {n.id: n.area for n in leaf_nodes if n.id in set(uncompetitive_sol)}
