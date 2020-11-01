@@ -6,7 +6,6 @@ import pandas as pd
 import itertools
 
 # Main Functions
-
 def k_most_dissimilar(plans, num_blocks, k):
     """ Given a set of plans represented as a list of list of lists,
     returns the k most dissimilar plans
@@ -59,7 +58,6 @@ def compute_dist_matrix(maps):
     i = 0
     j = 0
 
-
     for two_maps in itertools.product(maps, transposed_maps):
         if i >= j:
             dist = two_map_distance(two_maps[0], two_maps[1])
@@ -88,6 +86,11 @@ def furthest_maps(dist_matrix, maps, num_maps):
     Given a distance matrix of size maps.shape[0] by maps.shape[0],
     a 3-d tensor representing the set of maps, and num_maps to return,
     returns num_maps most distant maps in the set of maps
+
+    Algorithm:
+    1. Add to the solution the 2 points with the greatest distance between them in S
+    2. Until the algorithm reachs a solution of size num_maps, add to the solution the point for
+       which the sum of distances from it to all the points already in the solution is the greatest.
     Args:
         dist_matrix: distance matrix
         maps: the set of maps
@@ -116,7 +119,9 @@ def furthest_maps(dist_matrix, maps, num_maps):
         output_indices.append(next_max)
         output_maps.append(maps[next_max])
 
-    return np.asarray(output_maps)
+    output_maps = np.asarray(output_maps)
+    assert (len(np.unique(output_maps, axis=0)) == num_maps), "Re-using previous found maps"
+    return output_maps
 
 def dist_to_optimal(dist_matrix, output_indices, elem):
     """
@@ -124,9 +129,12 @@ def dist_to_optimal(dist_matrix, output_indices, elem):
     and then sum the result
     """
     dist = 0
-    for i in range(0, len(output_indices)):
-        dist += dist_matrix[output_indices[i], elem]
-    return dist
+    if elem in output_indices:
+        return dist
+    else:
+        for i in range(0, len(output_indices)):
+            dist += dist_matrix[output_indices[i], elem]
+        return dist
 
 def convert_back(plans):
     """
