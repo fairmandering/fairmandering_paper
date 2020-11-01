@@ -120,7 +120,7 @@ def furthest_maps(dist_matrix, maps, num_maps):
         output_maps.append(maps[next_max])
 
     output_maps = np.asarray(output_maps)
-    assert (len(np.unique(output_maps, axis=0)) == num_maps), "Re-using previous found maps"
+    assert (len(np.unique(output_maps, axis=0)) == num_maps), "Re-using previously found maps"
     return output_maps
 
 def dist_to_optimal(dist_matrix, output_indices, elem):
