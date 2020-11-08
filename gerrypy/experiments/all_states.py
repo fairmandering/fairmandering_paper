@@ -54,7 +54,8 @@ if __name__ == '__main__':
         'perturbation_scale': 1,
         'n_random_seeds': 1,
         'capacities': 'match',
-        'capacity_weights': 'voronoi'
+        'capacity_weights': 'voronoi',
+        'use_subgraph': True
     }
     tree_config = {
         'max_sample_tries': 30,

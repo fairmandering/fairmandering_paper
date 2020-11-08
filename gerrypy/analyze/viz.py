@@ -52,6 +52,7 @@ def draw_adjacency_graph(gdf, G, size=(200, 150)):
                      linewidths=.5,
                      with_labels=False,
                      edge_color=edge_colors)
+    base.axis('off')
 
 
 def color_synthetic_map(config, districting):
@@ -93,21 +94,6 @@ def plot_percentiles(xs, ys):
 
 
 def politics_map(gdf, politics, districting):
-    def result_to_color(vote):
-        if vote < .4:
-            return 0
-        elif vote < .45:
-            return 1
-        elif vote < .49:
-            return 2
-        elif vote < .51:
-            return 3
-        elif vote < .55:
-            return 4
-        elif vote < .6:
-            return 5
-        else:
-            return 6
     # Takes a few seconds
 
     # block : distr num
@@ -120,18 +106,13 @@ def politics_map(gdf, politics, districting):
     colors = []
     for name, group in gdf.groupby('district'):
         shapes.append(group.geometry.unary_union)
-        colors.append(result_to_color(politics[name]))
+        colors.append(politics[name])
     shape_series = gpd.GeoSeries(shapes)
-
-    # TODO: better colors
-    color_map = ["#0000ffff", "#0000ff90", "#0000ff50", '#a00ff0f0', '#ff000050',
-                              '#ff000090', '#ff0000ff']
 
     map_gdf = gpd.GeoDataFrame({'geometry': shape_series,
                                 'color': pd.Series(colors)})
-    ax = map_gdf.plot(color='none', figsize=(15, 15), edgecolor='black', lw=1)
-    for name, group in map_gdf.groupby('color'):
-        group.plot(ax=ax, color=color_map[name], edgecolor='black', lw=1)
+    ax = map_gdf.plot(column='color', figsize=(15, 15), edgecolor='black', lw=1,
+                      cmap='seismic', vmin=.25, vmax=.75)
     gdf.plot(ax=ax, facecolor='none', edgecolor='white', lw=.05)
     ax.axis('off')
     return map_gdf

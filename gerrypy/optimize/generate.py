@@ -204,6 +204,7 @@ class ColumnGenerator:
             if feasible:
                 self.event_list.append({
                     'partition': districting,
+                    'sizes': pop_bounds,
                     'feasible': True,
                 })
             else:
@@ -244,6 +245,8 @@ class ColumnGenerator:
             n_random_seeds = self.config['n_random_seeds']
             centers = kmeans_seeds(area_df, len(children_sizes),
                                    n_random_seeds, weight_perturbation_scale)
+        elif method == 'uniform_random':
+            centers = uniform_random(area_df, len(children_sizes))
         else:
             raise ValueError('center selection_method not valid')
 
@@ -286,21 +289,16 @@ class ColumnGenerator:
 
         Returns: None
         """
-        n_districtings = 'nd' + str(number_of_districtings(self))
+        n_districtings = 'nd' + str(number_of_districtings(self.leaf_nodes, self.internal_nodes))
         n_leaves = 'nl' + str(len(self.leaf_nodes))
         n_interior = 'ni' + str(len(self.internal_nodes))
         width = 'w' + str(self.config['n_samples'])
-        sample_tries = 'st' + str(self.config['n_sample_tries'])
         n_districts = 'ndist' + str(self.config['n_districts'])
         save_time = str(int(time.time()))
         save_name = '_'.join([self.state_abbrev, n_districtings, n_leaves,
-                              n_interior, width, sample_tries, n_districts, save_time])
+                              n_interior, width, n_districts, save_time])
 
-        save_path = os.path.join(consts.COLUMNS_PATH,
-                                 self.state_abbrev,
-                                 save_name)
-
-        json.dump(self.event_list, open(save_path, 'w'))
+        json.dump(self.event_list, open(save_name + '.json', 'w'))
 
 
 if __name__ == '__main__':

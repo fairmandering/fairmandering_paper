@@ -67,8 +67,9 @@ def generation_metrics(cg, low_memory=False):
     # TODO: deduplicate compactness computation
     dispersion = np.array(dispersion_compactness(districts, cg.state_df))
     roeck = np.array(roeck_compactness(districts, cg.state_df, cg.lengths))
-    min_compactness, _ = query_tree(cg.leaf_nodes, cg.internal_nodes, dispersion)
-    max_compactness, _ = query_tree(cg.leaf_nodes, cg.internal_nodes, -dispersion)
+    cut_edges = np.array(list(map(lambda x: sum(1 for _ in nx.edge_boundary(cg.G, x)), districts)))
+    min_compactness, _ = query_tree(cg.leaf_nodes, cg.internal_nodes, cut_edges)
+    max_compactness, _ = query_tree(cg.leaf_nodes, cg.internal_nodes, -cut_edges)
     compactness_disparity = - min_compactness / max_compactness
 
     block_district_matrix = make_bdm(cg.leaf_nodes)
@@ -87,6 +88,7 @@ def generation_metrics(cg, low_memory=False):
         'p_duplicates': duplicates / len(districts),
         'dispersion': np.array(dispersion).mean(),
         'roeck': np.array(roeck).mean(),
+        'cut_edges': np.array(cut_edges).mean(),
         'compactness_disparity': compactness_disparity,
         'seat_disparity': seat_disparity
     }
@@ -172,7 +174,7 @@ def roeck_compactness(districts, state_df, lengths):
     compactness_scores = []
     for d in districts:
         area = state_df.loc[d]['area'].sum()
-        radius = lengths[np.ix_(d, d)].max() / 2000
+        radius = lengths[np.ix_(d, d)].max() / 2
         circle_area = radius ** 2 * math.pi
         roeck = area / circle_area
         compactness_scores.append(roeck)

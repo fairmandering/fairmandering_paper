@@ -1,8 +1,10 @@
 from flask import render_template, url_for, flash, jsonify, request
-from gerrypy.analyze.viz.gerryapp import app
 import gerrypy.constants as consts
 import os
 import json
+
+from flask import Flask
+app = Flask(__name__)
 
 
 US_BB = {
@@ -15,6 +17,7 @@ US_BB = {
 
 @app.route('/', methods=['GET'])
 def home():
+    print('reached home')
     run_info = request.args.get('run_info')
     print('$$$$ri$$$$', run_info)
     if run_info:

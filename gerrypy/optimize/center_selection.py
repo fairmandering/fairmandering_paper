@@ -5,6 +5,10 @@ from sklearn.cluster import KMeans
 from gerrypy.utils.spatial_utils import *
 
 
+def uniform_random(area_df, n_centers):
+    return np.random.choice(np.array(area_df.index), size=n_centers, replace=False)
+
+
 def iterative_random(area_df, capacities, pdists):
     unassigned_blocks = list(area_df.index)
     np.random.shuffle(capacities)
@@ -95,7 +99,7 @@ def get_capacities(centers, child_sizes, area_df, config):
 
     dist_mat = cdist(locs, center_locs)
     if config['capacity_weights'] == 'fractional':
-        dist_mat **= 2
+        dist_mat **= -2
         weights = dist_mat / np.sum(dist_mat, axis=1)[:, None]
     elif config['capacity_weights'] == 'voronoi':
         assignment = np.argmin(dist_mat, axis=1)
