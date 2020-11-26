@@ -254,12 +254,10 @@ def create_district_df(state, bdm, calculate_compactness=True):
 
         dispersion = dispersion_compactness(districts, state_df)
         roeck = roeck_compactness(districts, state_df, lengths)
-        edge_ratio = list(map(lambda x: len(G.subgraph(x).edges) / len(x), districts))
         cut_edges = list(map(lambda x: sum(1 for _ in nx.edge_boundary(G, x)), districts))
 
         district_df['dispersion'] = dispersion
         district_df['roeck'] = roeck
-        district_df['edge_ratio'] = edge_ratio
         district_df['cut_edges'] = cut_edges
 
     return district_df

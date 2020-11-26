@@ -15,15 +15,13 @@ from gerrypy.data.load import *
 from gerrypy.optimize import master
 
 
-def run_all_states_result_pipeline(result_path, test=False):
+def run_all_states_result_pipeline(result_path, states=None):
     try:
         os.mkdir(os.path.join(result_path, 'pnas_results'))
     except FileExistsError:
         pass
 
-    if test:
-        states = ['CO', 'WV']
-    else:
+    if states is None:
         states = [state for state in constants.seats
                   if constants.seats[state]['house'] > 1]
 
@@ -120,31 +118,6 @@ def extreme_compactness_solutions(leaf_nodes, internal_nodes, district_df):
         'solution': {n.id: n.area for n in leaf_nodes if n.id in set(anti_roeck_squared_sol)}
     }
 
-    edge_ratio = district_df.edge_ratio.values
-    edge_ratio_val, edge_ratio_sol = tree.query_tree(leaf_nodes, internal_nodes, edge_ratio)
-    anti_edge_ratio_val, anti_edge_ratio_sol = tree.query_tree(leaf_nodes, internal_nodes, -edge_ratio)
-    extreme_compact_data['edge_ratio'] = {
-        'objective_value': edge_ratio_val,
-        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(edge_ratio_sol)}
-    }
-    extreme_compact_data['anti_edge_ratio'] = {
-        'objective_value': -anti_edge_ratio_val,
-        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(anti_edge_ratio_sol)}
-    }
-
-    edge_ratio_squared = district_df.edge_ratio.values ** 2
-    edge_ratio_squared_val, edge_ratio_squared_sol = tree.query_tree(leaf_nodes, internal_nodes, edge_ratio_squared)
-    anti_edge_ratio_squared_val, anti_edge_ratio_squared_sol = tree.query_tree(leaf_nodes,
-                                                                               internal_nodes, -edge_ratio_squared)
-    extreme_compact_data['edge_ratio_squared'] = {
-        'objective_value': edge_ratio_squared_val,
-        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(edge_ratio_squared_sol)}
-    }
-    extreme_compact_data['anti_edge_ratio_squared'] = {
-        'objective_value': -anti_edge_ratio_squared_val,
-        'solution': {n.id: n.area for n in leaf_nodes if n.id in set(anti_edge_ratio_squared_sol)}
-    }
-
     cut_edges = district_df.cut_edges.values
     cut_edges_val, cut_edges_sol = tree.query_tree(leaf_nodes, internal_nodes, -cut_edges)
     anti_cut_edges_val, anti_cut_edges_sol = tree.query_tree(leaf_nodes, internal_nodes, cut_edges)
@@ -185,8 +158,6 @@ def subsampled_distributions(leaf_nodes, internal_nodes, district_df, state):
     dispersion_vals = district_df.dispersion.values
     roeck_vals = district_df.roeck.values
     roeck_squared_vals = district_df.roeck.values ** 2
-    edge_ratio_vals = district_df.edge_ratio.values
-    edge_ratio_squared_vals = district_df.edge_ratio.values ** 2
     cut_edges_vals = district_df.cut_edges.values
     cut_edges_squared_vals = district_df.cut_edges.values ** 2
     competitive_vals = tree.competitive_query_fn(district_df)
@@ -199,10 +170,6 @@ def subsampled_distributions(leaf_nodes, internal_nodes, district_df, state):
                                                                roeck_vals),
         'roeck_squared_distribution': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes,
                                                                        roeck_squared_vals),
-        'edge_ratio_distribution': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes,
-                                                                    edge_ratio_vals),
-        'edge_ratio_squared_distribution': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes,
-                                                                            edge_ratio_squared_vals),
         'cut_edges_distribution': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes,
                                                                    cut_edges_vals),
         'cut_edges_squared_distribution': districts.enumerate_distribution(leaf_nodes, pruned_internal_nodes,
