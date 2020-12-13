@@ -35,10 +35,11 @@ def run_all_states_result_pipeline(result_path, states=None):
         leaf_nodes = tree_data['leaf_nodes']
         internal_nodes = tree_data['internal_nodes']
 
+        solutions = master_solutions(leaf_nodes, internal_nodes, district_df, state)
         extreme_electoral_data = extreme_electoral_solutions(leaf_nodes, internal_nodes, district_df)
         extreme_compactness_data = extreme_compactness_solutions(leaf_nodes, internal_nodes, district_df)
         distributions = subsampled_distributions(leaf_nodes, internal_nodes, district_df, state)
-        solutions = master_solutions(leaf_nodes, internal_nodes, district_df, state)
+
 
         pipeline_result = {**extreme_electoral_data,
                            **extreme_compactness_data,
