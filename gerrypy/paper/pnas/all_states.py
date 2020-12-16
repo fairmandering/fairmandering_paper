@@ -335,6 +335,7 @@ def compute_historical_compactness(ensemble_results):
 
 
 def plot_centralization_distribution(fig_dir, ensemble_results, historical_dispersion, min_seats=3):
+    """Plot ensemble distribution of centralization compactness."""
     dispersion_box_df = create_compactness_box_df(ensemble_results, 'dispersion', historical_dispersion)
     plt.rcParams.update({'font.size': 14})
     dispersion_box_df = dispersion_box_df.drop(
@@ -354,6 +355,7 @@ def plot_centralization_distribution(fig_dir, ensemble_results, historical_dispe
 
 
 def plot_roeck_distribution(fig_dir, ensemble_results, historical_roeck, min_seats=3):
+    """Plot ensemble distribution of Roeck compactness."""
     roeck_box_df = create_compactness_box_df(ensemble_results, 'roeck', historical_roeck)
     plt.rcParams.update({'font.size': 14})
     roeck_box_df = roeck_box_df.drop(columns=[s for s in roeck_box_df.columns
@@ -371,6 +373,7 @@ def plot_roeck_distribution(fig_dir, ensemble_results, historical_roeck, min_sea
 
 
 def plot_cut_edges_distributions(fig_dir, ensemble_results, historical_cut_edges, min_seats=3):
+    """Plot ensemble distribution of cut edges compactness."""
     cut_edges_box_df = create_compactness_box_df(ensemble_results, 'cut_edges', historical_cut_edges)
     plt.rcParams.update({'font.size': 14})
     cut_edges_box_df = cut_edges_box_df.drop(
@@ -415,6 +418,7 @@ def make_ensemble_parameter_table(exp_path):
 
 
 def plot_seat_share_ensemble_comparison(new_df, old_df, fig_dir, historical=None):
+    """Plot seat-share ensemble comparison."""
     plt.rcParams.update({'font.size': 14})
     new_df = new_df[[s for s in new_df.columns if constants.seats[s]['house'] > 2]]
     new_df.boxplot(figsize=(20, 5), whis=(0, 100), positions=range(0, len(new_df.columns)))
@@ -441,6 +445,7 @@ def plot_seat_share_ensemble_comparison(new_df, old_df, fig_dir, historical=None
 
 
 def plot_compactness_ensemble_comparison(new_df, old_df, fig_dir, historical=None):
+    """Plot compactness ensemble comparison."""
     plt.rcParams.update({'font.size': 14})
     new_df = new_df[[s for s in new_df.columns if constants.seats[s]['house'] > 2]]
     new_df.boxplot(figsize=(20, 5), whis=(0, 100), positions=range(0, len(new_df.columns)))

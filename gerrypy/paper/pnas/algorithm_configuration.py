@@ -18,6 +18,7 @@ import seaborn as sns
 
 
 def load_trials_df(result_path):
+    """Create results dataframe from raw generation results."""
     trial_files = os.listdir(result_path)
     trials = {}
     for f in trial_files:
@@ -38,6 +39,7 @@ def load_trials_df(result_path):
 
 
 def get_center_method(row):
+    """Convert center selection full name in short name."""
     if row['selection_method'] == 'random_iterative':
         return 'RI'
     elif row['selection_method'] == 'uniform_random':
@@ -52,6 +54,7 @@ def get_center_method(row):
 
 
 def get_capacity_method(row):
+    """Convert capacity method full names into short names."""
     name_map = {
         'voronoi': 'V',
         'compute': 'C',
@@ -64,6 +67,7 @@ def get_capacity_method(row):
 
 
 def process_state_trial_df(df, index_columns):
+    """Format results dataframe for paper presentation."""
     drop_columns = [col for col in df.columns if len(df[col].unique()) == 1]
     drop_columns += ['name', 'n_root_failures', 'n_interior_nodes', 'max_pop_variation', 'ideal_pop', 'seat_difference']
     percent_columns = ['p_infeasible', 'p_duplicates']
@@ -136,6 +140,7 @@ def process_state_trial_df(df, index_columns):
 
 
 def load_seat_distribution_by_epsilon(path):
+    """Load seat distributions for varying population tolerance experiment."""
     distributions = {'IL': {}, 'NC': {}}
     for file in os.listdir(path):
         if os.path.isdir(os.path.join(path, file)):
@@ -154,6 +159,7 @@ def load_seat_distribution_by_epsilon(path):
 
 
 def plot_il_seat_distributions_varying_epislon(fig_folder, distributions):
+    """Plot Illinois seat-share distribution for different population tolerances."""
     plt.rcParams.update({'font.size': 12})
     for k, d in distributions['IL'].items():
         sns.distplot(np.array(d) / constants.seats['IL']['house'], hist=False, label=k)
@@ -168,6 +174,7 @@ def plot_il_seat_distributions_varying_epislon(fig_folder, distributions):
 
 
 def plot_nc_seat_distributions_varying_epislon(fig_folder, distributions):
+    """Plot North Carolina seat-share distribution for different population tolerances."""
     plt.rcParams.update({'font.size': 12})
     for k, d in distributions['NC'].items():
         sns.distplot(np.array(d) / constants.seats['NC']['house'], hist=False, label=k)
@@ -182,6 +189,7 @@ def plot_nc_seat_distributions_varying_epislon(fig_folder, distributions):
 
 
 def process_vary_k_trial_df(df):
+    """Format results dataframe for variable number of districts experiment."""
     float_cols = ['generation_time', 'analysis_time', 'p_infeasible', 'p_duplicates',
                   'conditional_entropy', 'average_district_sim', '50p_approx_rank', '95p_approx_rank',
                   '99p_approx_rank', 'lambda_2', 'lambda_k', 'dispersion', 'roeck', 'n_unique_districtings']
@@ -242,6 +250,7 @@ def process_vary_k_trial_df(df):
 
 
 def seat_share_with_k_distribution(result_path):
+    """Compute seat-share distribution deciles for varying numbers of districts."""
     trial_files = os.listdir(result_path)
     percentiles = {}
     for f in trial_files:
@@ -272,6 +281,7 @@ def seat_share_with_k_distribution(result_path):
 
 
 def plot_nc_seat_distribution_varying_k(fig_folder, nc_percentiles):
+    """Plot North Carolina seat-share for varying number of districts."""
     plt.rcParams.update({'font.size': 12})
     nc_xs = np.array(sorted(list(nc_percentiles.keys())))
     nc_percentile_list = [nc_percentiles[x] for x in nc_xs]
@@ -289,6 +299,7 @@ def plot_nc_seat_distribution_varying_k(fig_folder, nc_percentiles):
 
 
 def plot_il_seat_distribution_varying_k(fig_folder, il_percentiles):
+    """Plot Illinois seat-share for varying number of districts."""
     plt.rcParams.update({'font.size': 12})
     il_xs = np.array(sorted(list(il_percentiles.keys())))
     il_percentile_list = [il_percentiles[x] for x in il_xs]
