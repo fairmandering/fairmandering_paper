@@ -139,8 +139,8 @@ def plot_seat_share_distribution(fig_dir, box_df, state_partisanship, seat_fract
                 c='green', marker='P', vmin=0, vmax=1, label='Estimated 0 efficiency gap', s=65)
     plt.scatter(box_df.columns,
                 [seat_fractions[state] for state in box_df.columns],
-                c='red', marker='x', vmin=0, vmax=1, label='Average seat share 2012-2018', s=55)
-    plt.ylabel('Republican seat share')
+                c='red', marker='x', vmin=0, vmax=1, label='Average seat-share 2012-2018', s=55)
+    plt.ylabel('Republican seat-share')
     plt.legend()
     plt.margins(x=.01)
     plt.gca().set_ylim([-0.025, 1.025])
@@ -413,3 +413,48 @@ def make_ensemble_parameter_table(exp_path):
     ensemble_table[int_cols] = ensemble_table[int_cols].astype(np.int32)
     return ensemble_table
 
+
+def plot_seat_share_ensemble_comparison(new_df, old_df, fig_dir, historical=None):
+    plt.rcParams.update({'font.size': 14})
+    new_df = new_df[[s for s in new_df.columns if constants.seats[s]['house'] > 2]]
+    new_df.boxplot(figsize=(20, 5), whis=(0, 100), positions=range(0, len(new_df.columns)))
+    old_df = old_df[new_df.columns]
+    plt.scatter(old_df.loc['max'].index, old_df.loc['max'].values,
+               marker="_", color='red', s=100, label="FC+1-P max")
+    plt.scatter(old_df.loc['min'].index, old_df.loc['min'].values,
+                marker='_', color='red', s=100, label="FC+1-P min")
+    if historical is not None:
+        plt.scatter(new_df.columns,
+                [historical[state] for state in new_df.columns],
+                c='purple', marker='x', vmin=0, vmax=1,
+                    label='Average seat-share 2012-2018', s=55)
+    plt.legend()
+    plt.ylabel('Republican seat-share')
+    plt.legend()
+    plt.margins(x=.01)
+    plt.gca().set_ylim([-0.025, 1.025])
+    plt.yticks(ticks=np.arange(0, 1.1, .1))
+    plt.grid(linewidth=.5, alpha=.5)
+    plt.axhline(y=.5, color='black', linewidth=.5, alpha=.25, linestyle=":")
+    plt.savefig(os.path.join(fig_dir, 'ensemble_seat_share_comparison.eps'),
+                format='eps', bbox='tight')
+
+
+def plot_compactness_ensemble_comparison(new_df, old_df, fig_dir, historical=None):
+    plt.rcParams.update({'font.size': 14})
+    new_df = new_df[[s for s in new_df.columns if constants.seats[s]['house'] > 2]]
+    new_df.boxplot(figsize=(20, 5), whis=(0, 100), positions=range(0, len(new_df.columns)))
+    old_df = old_df[new_df.columns]
+    plt.scatter(old_df.loc['max'].index, old_df.loc['max'].values,
+               marker="_", color='red', s=100, label="FC+1-P max")
+    plt.scatter(old_df.loc['min'].index, old_df.loc['min'].values,
+                marker='_', color='red', s=100, label="FC+1-P min")
+    if historical is not None:
+        plt.scatter(new_df.columns,
+                [historical[state] for state in new_df.columns],
+                c='purple', marker='x', vmin=0, vmax=1, label='enacted plan (2018)', s=55)
+    plt.legend(loc='upper left', prop={'size': 12})
+    plt.ylabel('Average cut edges')
+    plt.margins(x=.01)
+    plt.savefig(os.path.join(fig_dir, 'ensemble_compactness_comparison.eps'),
+                format='eps', bbox='tight')

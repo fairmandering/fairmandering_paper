@@ -158,7 +158,7 @@ def plot_il_seat_distributions_varying_epislon(fig_folder, distributions):
     for k, d in distributions['IL'].items():
         sns.distplot(np.array(d) / constants.seats['IL']['house'], hist=False, label=k)
     plt.legend(title='$\epsilon_p$')
-    plt.xlabel('Expected Republican seat share')
+    plt.xlabel('Expected Republican seat-share')
     plt.ylabel('density')
     plt.title("Illinois seat distribution")
     frame = plt.gca()
@@ -172,7 +172,7 @@ def plot_nc_seat_distributions_varying_epislon(fig_folder, distributions):
     for k, d in distributions['NC'].items():
         sns.distplot(np.array(d) / constants.seats['NC']['house'], hist=False, label=k)
     plt.legend(title='$\epsilon_p$')
-    plt.xlabel('Expected Republican seat share')
+    plt.xlabel('Expected Republican seat-share')
     plt.ylabel('density')
     plt.title("North Carolina seat distribution")
     frame = plt.gca()
@@ -277,7 +277,7 @@ def plot_nc_seat_distribution_varying_k(fig_folder, nc_percentiles):
     nc_percentile_list = [nc_percentiles[x] for x in nc_xs]
     plot_percentiles(nc_xs, np.array(nc_percentile_list).T)
     plt.xlabel('$k$: number of seats')
-    plt.ylabel('expected Republican seat share')
+    plt.ylabel('expected Republican seat-share')
     distrs = [13, 60, 120]
     for d in distrs:
         plt.axvline(x=d, linestyle='--', linewidth=1, color='black')
@@ -294,7 +294,7 @@ def plot_il_seat_distribution_varying_k(fig_folder, il_percentiles):
     il_percentile_list = [il_percentiles[x] for x in il_xs]
     plot_percentiles(il_xs, np.array(il_percentile_list).T)
     plt.xlabel('$k$: number of seats')
-    plt.ylabel('expected Republican seat share')
+    plt.ylabel('expected Republican seat-share')
     distrs = [18, 59, 118]
     for d in distrs:
         plt.axvline(x=d, linestyle='--', linewidth=1, color='black')
