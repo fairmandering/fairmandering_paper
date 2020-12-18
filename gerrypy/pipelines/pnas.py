@@ -23,8 +23,8 @@ def run_all_states_result_pipeline(result_path, states=None):
         pass
 
     if states is None:
-        states = [state for state in constants.seats
-                  if constants.seats[state]['house'] > 1]
+        states = list(set([f[:2] for f in os.listdir(result_path)
+                           if f[-2:] == '.p']))
     partisanship = states.get_state_partisanship()
     for state in states:
         state_start_t = time.time()
@@ -213,6 +213,10 @@ def master_solutions(leaf_nodes, internal_nodes, district_df, state, state_vote_
 if __name__ == '__main__':
     for dir in [
         os.path.join(constants.RESULTS_PATH, 'allstates', 'aaai_columns1595813019'),
+        os.path.join(constants.RESULTS_PATH, 'allstates', 'uniform_random_columns1606420958'),
+        os.path.join(constants.RESULTS_PATH, 'allstates', 'uniform_random_columns1606421299'),
+        os.path.join(constants.RESULTS_PATH, 'allstates', 'uniform_random_columns1606421397'),
+        os.path.join(constants.RESULTS_PATH, 'allstates', 'uniform_random_columns1606421542'),
         os.path.join(constants.RESULTS_PATH, 'allstates', 'aaai_columns1595891125')
     ]:
         run_all_states_result_pipeline(dir)
