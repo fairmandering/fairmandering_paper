@@ -40,13 +40,14 @@ def make_master(k, block_district_matrix, costs,
     return master, x
 
 
-def efficiency_gap_coefficients(district_df):
+def efficiency_gap_coefficients(district_df, state_vote_share):
     mean = district_df['mean'].values
     std_dev = district_df['std_dev'].values
     DoF = district_df['DoF'].values
     expected_seats = 1 - t.cdf(.5, DoF, mean, std_dev)
-    ideal_seats = (mean - .5) * 2 + .5
-    return ideal_seats - expected_seats
+    # https://www.brennancenter.org/sites/default/files/legal-work/How_the_Efficiency_Gap_Standard_Works.pdf
+    # Efficiency Gap = (Seat Margin – 50%) – 2 (Vote Margin – 50%)
+    return (expected_seats - .5) - 2 * (state_vote_share - .5)
 
 
 def make_root_partition_to_leaf_map(leaf_nodes, internal_nodes):

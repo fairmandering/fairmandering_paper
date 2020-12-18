@@ -11,6 +11,7 @@ from gerrypy import constants
 from gerrypy.analyze import tree
 from gerrypy.analyze import subsample
 from gerrypy.analyze import districts
+from gerrypy.analyze import states
 from gerrypy.data.load import *
 from gerrypy.optimize import master
 
@@ -24,7 +25,7 @@ def run_all_states_result_pipeline(result_path, states=None):
     if states is None:
         states = [state for state in constants.seats
                   if constants.seats[state]['house'] > 1]
-
+    partisanship = states.get_state_partisanship()
     for state in states:
         state_start_t = time.time()
         tree_path = glob.glob(os.path.join(result_path, '%s_[0-9]*.p' % state))[0]
@@ -35,7 +36,7 @@ def run_all_states_result_pipeline(result_path, states=None):
         leaf_nodes = tree_data['leaf_nodes']
         internal_nodes = tree_data['internal_nodes']
 
-        solutions = master_solutions(leaf_nodes, internal_nodes, district_df, state)
+        solutions = master_solutions(leaf_nodes, internal_nodes, district_df, state, partisanship[state])
         extreme_electoral_data = extreme_electoral_solutions(leaf_nodes, internal_nodes, district_df)
         extreme_compactness_data = extreme_compactness_solutions(leaf_nodes, internal_nodes, district_df)
         distributions = subsampled_distributions(leaf_nodes, internal_nodes, district_df, state)
@@ -180,9 +181,9 @@ def subsampled_distributions(leaf_nodes, internal_nodes, district_df, state):
     }
 
 
-def master_solutions(leaf_nodes, internal_nodes, district_df, state):
+def master_solutions(leaf_nodes, internal_nodes, district_df, state, state_vote_share):
     bdm = districts.make_bdm(leaf_nodes)
-    cost_coeffs = master.efficiency_gap_coefficients(district_df)
+    cost_coeffs = master.efficiency_gap_coefficients(district_df, state_vote_share)
     root_map = master.make_root_partition_to_leaf_map(leaf_nodes, internal_nodes)
     sol_dict = {}
     for partition_ix, leaf_slice in root_map.items():
