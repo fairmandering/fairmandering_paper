@@ -8,18 +8,43 @@ from gerrypy.data.load import *
 from gerrypy.analyze.tree import *
 
 
-def average_entropy(M):
-    return (- M * np.ma.log(M).filled(0) - (1 - M) *
-            np.ma.log(1 - M).filled(0)).sum() / (M.shape[0] * M.shape[1])
+def average_entropy(conditional_p):
+    """
+    Compute average entropy of conditional probability of block cooccurence.
+    Args:
+        conditional_p: (np.array) n x n matrix where a_ij is P(i in D | j in D) 
+
+    Returns: (float) average entropy
+
+    """
+    return (- conditional_p * np.ma.log(conditional_p).filled(0) - (1 - conditional_p) *
+            np.ma.log(1 - conditional_p).filled(0)).sum() / (conditional_p.shape[0] * conditional_p.shape[1])
 
 
 def svd_entropy(sigma):
+    """
+    Compute the SVD entropy of the block district matrix.
+    Args:
+        sigma: (np.array) the singular values of the block district matrix.
+
+    Returns: (float) SVD entropy
+
+    """
     sigma_hat = sigma / sigma.sum()
     entropy = - (sigma_hat * (np.ma.log(sigma_hat).filled(0) / np.log(math.e))).sum()
     return entropy / (math.log(len(sigma)) / math.log(math.e))
 
 
 def make_bdm(leaf_nodes, n_blocks=None):
+    """
+    Generate the block district matrix given by a sample trees leaf nodes.
+    Args:
+        leaf_nodes: SHPNode list, output of the generation routine
+        n_blocks: (int) number of blocks in the state
+
+    Returns: (np.array) n x d matrix where a_ij = 1 when block i appears in district j.
+
+    """
     districts = [d.area for d in leaf_nodes]
     if n_blocks is None:
         n_blocks = max([max(d) for d in districts]) + 1
@@ -30,6 +55,18 @@ def make_bdm(leaf_nodes, n_blocks=None):
 
 
 def bdm_metrics(block_district_matrix, k):
+    """
+    Compute selected diversity metrics of a district ensemble.
+    
+    WARNING: this function is O(d^2) in memory; this function should not be
+        called with large ensembles as this will likely cause an OOM error.
+    Args:
+        block_district_matrix: (np.array) 
+        k: (int) number of seats in the plan
+
+    Returns: (dict) of selected ensemble diversity metrics.
+
+    """
     ubdm = np.unique(block_district_matrix, axis=1)
     max_rank = min(ubdm.shape)
     U, Sigma, Vt = np.linalg.svd(ubdm)
@@ -58,9 +95,18 @@ def bdm_metrics(block_district_matrix, k):
 
 
 def generation_metrics(cg, low_memory=False):
+    """
+    Compute ensemble generation summary statistics.
+    Args:
+        cg: (ColumnGenerator) that generated the ensemble
+        low_memory: (bool) if bdm diversity metrics should be computed.
+
+    Returns: (dict) of district ensemble summary statistics.
+
+    """
     p_infeasible = cg.n_infeasible_partitions / \
                    (cg.n_infeasible_partitions + cg.n_successful_partitions)
-    n_interior_nodes = len(cg.internal_nodes)
+    n_internal_nodes = len(cg.internal_nodes)
     districts = [d.area for d in cg.leaf_nodes]
     duplicates = len(districts) - len(set([frozenset(d) for d in districts]))
 
@@ -83,7 +129,7 @@ def generation_metrics(cg, low_memory=False):
     metrics = {
         'n_root_failures': cg.failed_root_samples,
         'p_infeasible': p_infeasible,
-        'n_interior_nodes': n_interior_nodes,
+        'n_internal_nodes': n_internal_nodes,
         'n_districts': len(districts),
         'p_duplicates': duplicates / len(districts),
         'dispersion': np.array(dispersion).mean(),
@@ -98,11 +144,20 @@ def generation_metrics(cg, low_memory=False):
         return {**metrics, **bdm_metrics(block_district_matrix, cg.config['n_districts'])}
 
 
-def number_of_districtings(leaf_nodes, interior_nodes):
-    nodes = leaf_nodes + interior_nodes
+def number_of_districtings(leaf_nodes, internal_nodes):
+    """
+    Dynamic programming method to compute the total number of district plans.
+    Args:
+        leaf_nodes: (SHPnode list) with node capacity equal to 1 (has no child nodes). 
+        internal_nodes: (SHPnode list) with node capacity >1 (has child nodes).
+
+    Returns: (int) the total number of distinct district plans.
+
+    """
+    nodes = leaf_nodes + internal_nodes
     id_to_node = {node.id: node for node in nodes}
-    root = interior_nodes[0] if interior_nodes[0].is_root \
-        else [n for n in interior_nodes if n.is_root][0]
+    root = internal_nodes[0] if internal_nodes[0].is_root \
+        else [n for n in internal_nodes if n.is_root][0]
 
     def recursive_compute(current_node, all_nodes):
         if not current_node.children_ids:
@@ -121,7 +176,16 @@ def number_of_districtings(leaf_nodes, interior_nodes):
     return recursive_compute(root, nodes)
 
 
-def enumerate_partitions(leaf_nodes, interior_nodes):
+def enumerate_partitions(leaf_nodes, internal_nodes):
+    """
+    Enumerate all feasible plans stored in the sample tree.
+    Args:
+        leaf_nodes: (SHPnode list) with node capacity equal to 1 (has no child nodes).
+        internal_nodes: (SHPnode list) with node capacity >1 (has child nodes).
+
+    Returns: A list of lists, each inner list is a plan comprised of leaf node ids.
+
+    """
     def feasible_partitions(node, node_dict):
         if not node.children_ids:
             return [[node.id]]
@@ -138,14 +202,28 @@ def enumerate_partitions(leaf_nodes, interior_nodes):
 
         return list(itertools.chain.from_iterable(partitions))
 
-    root = interior_nodes[0] if interior_nodes[0].is_root \
-        else [n for n in interior_nodes if n.is_root][0]
+    root = internal_nodes[0] if internal_nodes[0].is_root \
+        else [n for n in internal_nodes if n.is_root][0]
 
-    node_dict = {n.id: n for n in interior_nodes + leaf_nodes}
+    node_dict = {n.id: n for n in internal_nodes + leaf_nodes}
     return feasible_partitions(root, node_dict)
 
 
-def enumerate_distribution(leaf_nodes, interior_nodes, leaf_values):
+def enumerate_distribution(leaf_nodes, internal_nodes, leaf_values):
+    """
+    Compute a given linear metric for all feasible plans.
+
+    Use this function to achieve O(k) memory savings when computing
+    exact distribution metrics of the plan ensemble.
+
+    Args:
+        leaf_nodes: (SHPnode list) with node capacity equal to 1 (has no child nodes).
+        internal_nodes: (SHPnode list) with node capacity >1 (has child nodes).
+        leaf_values: (dict) keyed by leaf node ID with value equal to district metric value.
+
+    Returns:
+
+    """
     def feasible_partitions(node, node_dict):
         if not node.children_ids:
             return [[leaf_dict[node.id]]]
@@ -161,16 +239,26 @@ def enumerate_distribution(leaf_nodes, interior_nodes, leaf_values):
             partitions.append(combinations)
         return [[sum(c)] for c in list(itertools.chain.from_iterable(partitions))]
 
-    root = interior_nodes[0] if interior_nodes[0].is_root \
-        else [n for n in interior_nodes if n.is_root][0]
+    root = internal_nodes[0] if internal_nodes[0].is_root \
+        else [n for n in internal_nodes if n.is_root][0]
 
     leaf_dict = {n.id: leaf_values[ix] for ix, n in enumerate(leaf_nodes)}
-    node_dict = {n.id: n for n in interior_nodes + leaf_nodes}
+    node_dict = {n.id: n for n in internal_nodes + leaf_nodes}
     plan_values = feasible_partitions(root, node_dict)
     return [item for sublist in plan_values for item in sublist]
 
 
 def roeck_compactness(districts, state_df, lengths):
+    """
+    Calculate Roeck compactness approximation based on block centroids
+    Args:
+        districts: (list of lists) inner list contains block integer ixs of the district
+        state_df: (pd.DataFrame) selected block statistics (requires "area" field")
+        lengths: (np.array) Pairwise block distance matrix.
+
+    Returns: (list) approximate Roeck compactness
+
+    """
     compactness_scores = []
     for d in districts:
         area = state_df.loc[d]['area'].sum()
@@ -182,6 +270,17 @@ def roeck_compactness(districts, state_df, lengths):
 
 
 def roeck_more_exact(districts, state_df, tracts, lengths):
+    """
+    Calculate a more precise version of the Roeck compactness metric.
+    Args:
+        districts: (list of lists) inner list contains block integer ixs of the district
+        state_df: (pd.DataFrame) selected block statistics (requires "area" field")
+        tracts: (gpd.GeoSeries) tract polygons
+        lengths: (np.array) Pairwise block distance matrix.
+
+    Returns: List of district Roeck compactness scores.
+
+    """
     def unwind_coords(poly):
         try:
             return np.array(poly.exterior.coords)
@@ -203,6 +302,15 @@ def roeck_more_exact(districts, state_df, tracts, lengths):
 
 
 def dispersion_compactness(districts, state_df):
+    """
+    Compute the dispersion measure of compactness.
+    Args:
+        districts: (list of lists) inner list contains block integer ixs of the district
+        state_df: (pd.DataFrame) selected block statistics (requires "population", "x", "y")
+
+    Returns: (list) dispersion compactness for given districts.
+
+    """
     compactness_scores = []
     for d in districts:
         population = state_df.loc[d]['population'].values
@@ -215,6 +323,17 @@ def dispersion_compactness(districts, state_df):
 
 
 def create_district_df(state, bdm, calculate_compactness=True):
+    """
+    Create a DataFrame with selected statistics for all generated districts.
+    Args:
+        state: (str) 2 letter state abbreviation
+        bdm: (np.array) block district matrix encoding the district ensemble.
+        calculate_compactness: (bool) whether to also compute dispersion, Roeck,
+            and cut_edges measure of compactness (this is expensive to enable).
+
+    Returns: (pd.DataFrame) containing district level metrics.
+
+    """
     election_df = load_election_df(state)
     state_df = load_state_df(state)
     district_list = []

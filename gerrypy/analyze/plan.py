@@ -1,3 +1,5 @@
+"""TODO: update with non county data election data."""
+
 import numpy as np
 from scipy.stats import t
 from scipy.integrate import simps

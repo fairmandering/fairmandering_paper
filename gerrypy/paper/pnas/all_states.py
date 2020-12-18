@@ -1,18 +1,10 @@
-from gerrypy import constants
-from gerrypy.data.load import *
-from gerrypy.data.precinct_state_wrappers import *
-import os
-import pickle
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 from gerrypy.analyze.viz import *
-from gerrypy.analyze.plan import *
+from scipy.stats import spearmanr
+
 from gerrypy.analyze.districts import *
 from gerrypy.analyze.historical_districts import *
-from gerrypy.analyze.tree import *
 from gerrypy.analyze.states import *
-from scipy.stats import t, spearmanr
+from gerrypy.analyze.viz import *
 
 
 def load_all_state_results(all_states_dir):

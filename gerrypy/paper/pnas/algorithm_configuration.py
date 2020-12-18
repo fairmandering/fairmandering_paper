@@ -1,20 +1,7 @@
-from gerrypy import constants
-from gerrypy.data.load import *
-from gerrypy.data.precinct_state_wrappers import *
-import os
-import pickle
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from gerrypy.analyze.viz import *
-from gerrypy.analyze.plan import *
-from gerrypy.analyze.districts import *
-from gerrypy.analyze.historical_districts import *
-from gerrypy.analyze.tree import *
-from gerrypy.analyze.states import *
-from gerrypy.analyze.subsample import *
-from scipy.stats import t
 import seaborn as sns
+
+from gerrypy.analyze.subsample import *
+from gerrypy.analyze.viz import *
 
 
 def load_trials_df(result_path):

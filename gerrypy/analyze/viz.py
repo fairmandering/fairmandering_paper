@@ -24,7 +24,6 @@ def color_map(gdf, districting):
     G = Queen(shapes).to_networkx()
     color_series = pd.Series(nx.greedy_color(G))
     n_colors = len(set(color_series.values))
-
     cmap = LSC.from_list("", ["red", "lime", "dodgerblue",
                               'yellow', 'darkviolet', 'chocolate'][:n_colors])
 

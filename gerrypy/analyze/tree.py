@@ -3,6 +3,16 @@ from scipy.stats import t
 
 
 def query_tree(leaf_nodes, internal_nodes, query_vals):
+    """
+    Dynamic programming method to find plan which maximizes linear district metric.
+    Args:
+        leaf_nodes: (SHPnode list) with node capacity equal to 1 (has no child nodes).
+        internal_nodes: (SHPnode list) with node capacity >1 (has child nodes).
+        query_vals: (list) of metric values per node.
+
+    Returns: (list, float) tuple of optimal plan and optimal objective value.
+
+    """
     nodes = leaf_nodes + internal_nodes
     id_to_ix = {node.id: ix for ix, node in enumerate(leaf_nodes)}
     id_to_node = {node.id: node for node in nodes}
@@ -31,11 +41,30 @@ def query_tree(leaf_nodes, internal_nodes, query_vals):
 
 
 def party_step_advantage_query_fn(district_df, minimize=False):
+    """
+    Compute the expected seat share as a step function.
+    Args:
+        district_df: (pd.DataFrame) selected district statistics (requires "mean")
+        minimize: (bool) negates values if true
+
+    Returns: (np.array) leaf node query values
+
+    """
     mean = district_df['mean'].values
     return mean < .50 * (-1 if minimize else 1)
 
 
 def party_advantage_query_fn(district_df, minimize=False):
+    """
+    Compute the expected seat share as a t distribution.
+    Args:
+        district_df: (pd.DataFrame) selected district statistics
+            (requires "mean", "std_dev", "DoF")
+        minimize: (bool) negates values if true
+
+    Returns: (np.array) leaf node query values
+
+    """
     mean = district_df['mean'].values
     std_dev = district_df['std_dev'].values
     DoF = district_df['DoF'].values
@@ -43,6 +72,16 @@ def party_advantage_query_fn(district_df, minimize=False):
 
 
 def competitive_query_fn(district_df, minimize=False):
+    """
+    Compute the expected seat swaps.
+    Args:
+        district_df: (pd.DataFrame) selected district statistics
+            (requires "mean", "std_dev", "DoF")
+        minimize: (bool) negates values if true
+
+    Returns: (np.array) leaf node query values
+
+    """
     mean = district_df['mean'].values
     std_dev = district_df['std_dev'].values
     DoF = district_df['DoF'].values

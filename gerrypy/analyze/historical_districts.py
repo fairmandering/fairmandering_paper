@@ -4,6 +4,18 @@ from shapely.errors import TopologicalError
 
 
 def district_tract_map(tract_gdf, district_gdf):
+    """
+    Compute the map and inverse map of tracts to districts based on
+    maximum area overlap. Used to approximate enacted districts with
+    districts strictly composed of census tracts.
+
+    Args:
+        tract_gdf: (gpd.GeoDataFrame) of all tracts in state
+        district_gdf: (gpd.GeoDataFrame) of all districts in state
+
+    Returns: A mapping between tracts and districts
+
+    """
     def match_tract_to_district(tract, search_order):
         overlap_ratio = {}
         tgeo = tract.geometry

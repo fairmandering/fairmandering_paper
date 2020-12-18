@@ -130,7 +130,7 @@ class ColumnGenerator:
         Args:
             node: (SHPnode) Node to be samples
 
-        Returns:
+        Returns: A flattened list of child regions from multiple partitions.
 
         """
         area_df = self.state_df.loc[node.area]
