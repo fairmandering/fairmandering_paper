@@ -11,7 +11,7 @@ from gerrypy import constants
 from gerrypy.analyze import tree
 from gerrypy.analyze import subsample
 from gerrypy.analyze import districts
-from gerrypy.analyze import states
+from gerrypy.analyze.states import get_state_partisanship
 from gerrypy.data.load import *
 from gerrypy.optimize import master
 
@@ -25,7 +25,7 @@ def run_all_states_result_pipeline(result_path, states=None):
     if states is None:
         states = list(set([f[:2] for f in os.listdir(result_path)
                            if f[-2:] == '.p']))
-    partisanship = states.get_state_partisanship()
+    partisanship = get_state_partisanship()
     for state in states:
         state_start_t = time.time()
         tree_path = glob.glob(os.path.join(result_path, '%s_[0-9]*.p' % state))[0]
