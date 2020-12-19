@@ -186,7 +186,7 @@ def plot_feasibility_by_responsiveness(fig_dir, ensemble_results, state_partisan
     lines2, labels2 = ax2.get_legend_handles_labels()
     ax2.legend(lines + lines2, labels + labels2, loc="upper left")
     plt.savefig(os.path.join(fig_dir, 'responsiveness_feasibility.eps'),
-                format='eps', bbox='tight')
+                format='eps', bbox_inches='tight')
 
 
 def create_competitiveness_box_df(ensemble_results, sort_by):
@@ -454,4 +454,91 @@ def plot_compactness_ensemble_comparison(new_df, old_df, fig_dir, historical=Non
     plt.ylabel('Average cut edges')
     plt.margins(x=.01)
     plt.savefig(os.path.join(fig_dir, 'ensemble_compactness_comparison.eps'),
+                format='eps', bbox='tight')
+
+
+def process_state_internal_nodes(internal_nodes):
+    """Aggregates selected metrics from internal nodes."""
+    node_info = []
+    for node in internal_nodes:
+        split_sizes = list(map(len, node.children_ids))
+        region_size = len(node.area)
+        processing_times = node.partition_times
+        for size, time in zip(split_sizes, processing_times):
+            node_info.append([size, region_size, time])
+    return pd.DataFrame(node_info, columns=['partition_size', 'region_size', 'partition_time'])
+
+
+def create_subproblem_runtime_df(ensemble_column_path):
+    """Create dataframe with selected statistics and optimization runtime for all
+    partition subproblems."""
+    states_runtime = {}
+    for file in os.listdir(ensemble_column_path):
+        if file[-2:] == '.p':
+            state = file[:2]
+            state_tree = pickle.load(open(os.path.join(ensemble_column_path, file), 'rb'))
+            runtime_df = process_state_internal_nodes(state_tree['internal_nodes'])
+            states_runtime[state] = runtime_df
+    for state, df in states_runtime.items():
+        df['state'] = state
+    return pd.concat(states_runtime.values())
+
+
+def plot_partition_runtimes(fig_folder, runtime_df):
+    """Plot histogram and CDF of partition subproblem runtimes."""
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+    number, bin_boundary, x = ax1.hist(np.clip(runtime_df.partition_time.values, 0, 3.05),
+                                       bins=50, range=(0, 3.1))
+    ax2.plot(bin_boundary, np.cumsum(np.insert(number, 0, 0)) / len(runtime_df), color='red')
+    ax1.set_xlabel('partition runtime (seconds)')
+    ax1.set_ylabel('total subproblems')
+    ax2.set_ylabel('cumulative distribution')
+    ax2.set_ylim([0, 1.02])
+    ax1.set_xlim([-.02, 3.12])
+    plt.savefig(os.path.join(fig_folder, 'partition_runtimes.eps'),
+                format='eps', bbox='tight')
+
+
+def create_master_metrics_dfs(ensemble_dir):
+    """Load master problem optimization results and store selected metrics."""
+    master_metrics_dfs = []
+    for file in os.listdir(ensemble_dir):
+        ensemble = pickle.load(open(os.path.join(ensemble_dir, file), 'rb'))
+        state_master_metrics = pd.DataFrame(ensemble['master_solutions']).T.drop(columns=['solution_ixs'])
+        state_master_metrics['optimal_objective'] = state_master_metrics['optimal_objective'].apply(lambda x: x.sum())
+        state_master_metrics['state'] = file[:2]
+        master_metrics_dfs.append(state_master_metrics)
+    return master_metrics_dfs
+
+
+def plot_master_problem_runtimes(fig_folder, metric_df):
+    """Plot histogram and CDF of sharded master problem runtimes."""
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+    total_time = metric_df.construction_time + metric_df.solve_time
+    number, bin_boundary, x = ax1.hist(np.clip(total_time, 0, 3), bins=50)
+    ax2.plot(bin_boundary, np.cumsum(np.insert(number, 0, 0)) / len(metric_df), color='red')
+    ax2.set_ylim([0, 1.02])
+    ax1.set_xlim([-.02, 3.02])
+    plt.savefig(os.path.join(fig_folder, 'master_runtimes.eps'),
+                format='eps', bbox='tight')
+
+
+def plot_master_convergence(fig_folder, master_metrics_dfs):
+    """Plot historgram of optimal master object problems for all 50 states."""
+    rows = 9
+    cols = 5
+    fig, axs = plt.subplots(rows, cols, figsize=(16, 22))
+    for ix, df in enumerate(master_metrics_dfs):
+        ax = axs[ix // cols, ix % cols]
+        ax.hist(np.clip(df.optimal_objective, -1, 1), bins=np.arange(-1, 1.05, .05))
+        ax.set_xlim(-1, 1)
+        ax.set_xticks([-1, 0, 1])
+        ax.axvline(x=0, color='red', lw=1, ls=':')
+        state = df.iloc[0].state
+        ax.annotate(state, (0.02, .85), xycoords='axes fraction', size=14)
+    axs[-1, -1].remove()
+    axs[-1, -2].remove()
+    plt.savefig(os.path.join(fig_folder, 'master_covergence.eps'),
                 format='eps', bbox='tight')
