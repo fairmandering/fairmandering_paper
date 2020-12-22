@@ -6,13 +6,25 @@ from gerrypy import constants
 from gerrypy.analyze.districts import *
 
 
-def get_node_info(leaf_nodes, interior_nodes):
+def get_node_info(leaf_nodes, internal_nodes):
+    """
+    Preprocessing function to annotate SHP tree nodes with their parent id
+     and solution counts.
+    Args:
+        leaf_nodes: (SHPnode list) with node capacity equal to 1 (has no child nodes).
+        internal_nodes: (SHPnode list) with node capacity >1 (has child nodes).
+
+    Returns: ((dict) solution_count, (dict) parent-nodes)
+        solution_count - {(SHPNode.id) id: (int) number of feasible partitions of region}
+        parent_nodes - {(SHPNode.id): (SHPNode.id) of parent}
+
+    """
     solution_count = {}
     parent_nodes = {}
-    nodes = leaf_nodes + interior_nodes
+    nodes = leaf_nodes + internal_nodes
     id_to_node = {node.id: node for node in nodes}
-    root = interior_nodes[0] if interior_nodes[0].is_root \
-        else [n for n in interior_nodes if n.is_root][0]
+    root = internal_nodes[0] if internal_nodes[0].is_root \
+        else [n for n in internal_nodes if n.is_root][0]
 
     def recursive_compute(current_node, all_nodes):
         if not current_node.children_ids:
@@ -39,6 +51,21 @@ def prune_sample_space(internal_nodes,
                        solution_count,
                        parent_nodes,
                        target_size=1000):
+    """
+    Prune the sample tree to make enumeration tractable.
+
+    WARNING: this function has side effects. It mutates the internal_nodes
+    member variables in place. Care should be take to use a copy.
+
+    Args:
+        internal_nodes: (SHPNode list) with node capacity >1 (has child nodes).
+        solution_count: (dict) {(SHPNode.id) node: (int) size of feasible partition set}
+        parent_nodes: (dict) {(SHPNode.id) node: (SHPNode.id) parent node id}
+        target_size: (int) the ideal size to prune the feasible space
+
+    Returns: (SHPNode list) internal nodes with pruned partition samples
+
+    """
     def recompute_node_size(node):
         new_node_size = 0
         for sample in node.children_ids:

@@ -147,7 +147,7 @@ def load_seat_distribution_by_epsilon(path):
 
 def plot_il_seat_distributions_varying_epislon(fig_folder, distributions):
     """Plot Illinois seat-share distribution for different population tolerances."""
-    plt.rcParams.update({'font.size': 12})
+    plt.rcParams.update({'font.size': 10})
     for k, d in distributions['IL'].items():
         sns.distplot(np.array(d) / constants.seats['IL']['house'], hist=False, label=k)
     plt.legend(title='$\epsilon_p$')
@@ -157,12 +157,12 @@ def plot_il_seat_distributions_varying_epislon(fig_folder, distributions):
     frame = plt.gca()
     frame.axes.get_yaxis().set_ticks([])
     plt.savefig(os.path.join(fig_folder, 'il_vary_epsilon.eps'),
-                format='eps', bbox='tight')
+                format='eps', bbox_inches='tight')
 
 
 def plot_nc_seat_distributions_varying_epislon(fig_folder, distributions):
     """Plot North Carolina seat-share distribution for different population tolerances."""
-    plt.rcParams.update({'font.size': 12})
+    plt.rcParams.update({'font.size': 10})
     for k, d in distributions['NC'].items():
         sns.distplot(np.array(d) / constants.seats['NC']['house'], hist=False, label=k)
     plt.legend(title='$\epsilon_p$')
@@ -172,7 +172,7 @@ def plot_nc_seat_distributions_varying_epislon(fig_folder, distributions):
     frame = plt.gca()
     frame.axes.get_yaxis().set_ticks([])
     plt.savefig(os.path.join(fig_folder, 'nc_vary_epsilon.eps'),
-                format='eps', bbox='tight')
+                format='eps', bbox_inches='tight')
 
 
 def process_vary_k_trial_df(df):
@@ -238,6 +238,7 @@ def process_vary_k_trial_df(df):
 
 def seat_share_with_k_distribution(result_path):
     """Compute seat-share distribution deciles for varying numbers of districts."""
+    plt.rcParams.update({'font.size': 10})
     trial_files = os.listdir(result_path)
     percentiles = {}
     for f in trial_files:
@@ -269,7 +270,7 @@ def seat_share_with_k_distribution(result_path):
 
 def plot_nc_seat_distribution_varying_k(fig_folder, nc_percentiles):
     """Plot North Carolina seat-share for varying number of districts."""
-    plt.rcParams.update({'font.size': 12})
+    plt.rcParams.update({'font.size': 10})
     nc_xs = np.array(sorted(list(nc_percentiles.keys())))
     nc_percentile_list = [nc_percentiles[x] for x in nc_xs]
     plot_percentiles(nc_xs, np.array(nc_percentile_list).T)
@@ -282,12 +283,12 @@ def plot_nc_seat_distribution_varying_k(fig_folder, nc_percentiles):
     plt.text(61, .65, 'NC Senate')
     plt.text(121, .65, 'NC House')
     plt.title('North Carolina')
-    plt.savefig(os.path.join(fig_folder, 'nc_vary_k.eps'), format='eps', bbox='tight')
+    plt.savefig(os.path.join(fig_folder, 'nc_vary_k.eps'), format='eps', bbox_inches='tight')
 
 
 def plot_il_seat_distribution_varying_k(fig_folder, il_percentiles):
     """Plot Illinois seat-share for varying number of districts."""
-    plt.rcParams.update({'font.size': 12})
+    plt.rcParams.update({'font.size': 10})
     il_xs = np.array(sorted(list(il_percentiles.keys())))
     il_percentile_list = [il_percentiles[x] for x in il_xs]
     plot_percentiles(il_xs, np.array(il_percentile_list).T)
@@ -300,4 +301,4 @@ def plot_il_seat_distribution_varying_k(fig_folder, il_percentiles):
     plt.text(60, .2, 'IL Senate')
     plt.text(119, .2, 'IL House')
     plt.title('Illinois')
-    plt.savefig(os.path.join(fig_folder, 'il_vary_k.eps'), format='eps', bbox='tight')
+    plt.savefig(os.path.join(fig_folder, 'il_vary_k.eps'), format='eps', bbox_inches='tight')

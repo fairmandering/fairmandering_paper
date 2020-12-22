@@ -47,6 +47,7 @@ def make_affiliation_df():
 
 def plot_state_affiliation(affiliation_df, fig_dir, min_seats=3):
     """Saves figure of partisan distribution for each state."""
+    plt.rcParams.update({'font.size': 14})
     plt.figure(figsize=(20, 5))
     affiliation_df = affiliation_df.drop(columns=[c for c in affiliation_df.columns
                                                   if constants.seats[c]["house"] < min_seats])
@@ -55,7 +56,7 @@ def plot_state_affiliation(affiliation_df, fig_dir, min_seats=3):
     plt.gca().set_ylim([0, 1])
     plt.yticks(ticks=np.arange(0, 1.1, .1))
     plt.axhline(y=.5, color='red', linewidth=1, linestyle=':')
-    plt.savefig(os.path.join(fig_dir, 'state_affiliation.eps'), format='eps', bbox='tight')
+    plt.savefig(os.path.join(fig_dir, 'state_affiliation.eps'), format='eps', bbox_inches='tight')
 
 
 def make_state_election_table():
@@ -139,7 +140,7 @@ def plot_seat_share_distribution(fig_dir, box_df, state_partisanship, seat_fract
     plt.yticks(ticks=np.arange(0, 1.1, .1))
     plt.grid(linewidth=.5, alpha=.5)
     plt.axhline(y=.5, color='black', linewidth=.5, alpha=.25, linestyle=":")
-    plt.savefig(os.path.join(fig_dir, 'state_seat_shares.eps'), format='eps', bbox='tight')
+    plt.savefig(os.path.join(fig_dir, 'state_seat_shares.eps'), format='eps', bbox_inches='tight')
 
 
 def responsiveness_to_feasibility(ensemble_results, state_partisanship, r_min, r_max, r_interval=.01):
@@ -202,6 +203,7 @@ def create_competitiveness_box_df(ensemble_results, sort_by):
 
 def plot_competitiveness_distribution(fig_dir, ensemble_results, seat_change_dict, min_seats=3):
     """Plot distribution of expected seat swaps of ensemble."""
+    plt.rcParams.update({'font.size': 14})
     average_seat_flips = pd.DataFrame(seat_change_dict).mean(axis=1)
     average_seat_flips.loc['MN'] = 6 / 3
     competitive_box_df = create_competitiveness_box_df(ensemble_results,
@@ -219,7 +221,7 @@ def plot_competitiveness_distribution(fig_dir, ensemble_results, seat_change_dic
     plt.legend()
     plt.margins(x=.01)
 
-    plt.savefig(os.path.join(fig_dir, 'seat_swap_distribution.eps'), format='eps', bbox='tight')
+    plt.savefig(os.path.join(fig_dir, 'seat_swap_distribution.eps'), format='eps', bbox_inches='tight')
 
 
 def compute_fairness_compactness_correlations(ensemble_results, state_partisanship):
@@ -243,7 +245,7 @@ def compute_fairness_compactness_correlations(ensemble_results, state_partisansh
 def plot_fairness_correlation(fig_dir, spearman_df, state_partisanship, min_seats=3):
     """Plot the spearman correlation coefficient between compactness and three
     different measures of compactness."""
-
+    plt.rcParams.update({'font.size': 14})
     marker_dict = {
         'centralization': '*',
         'roeck': 'o',
@@ -272,7 +274,7 @@ def plot_fairness_correlation(fig_dir, spearman_df, state_partisanship, min_seat
     plt.gca().set_ylim([-1, 1])
     plt.margins(x=.005)
     plt.savefig(os.path.join(fig_dir, 'compactness_correlation.eps'),
-                format='eps', bbox='tight')
+                format='eps', bbox_inches='tight')
 
 
 def correlation_table(spearman_df):
@@ -291,6 +293,7 @@ def correlation_table(spearman_df):
 
 def create_compactness_box_df(ensemble_results, metric, sort_by):
     """Create table of compactness distribution values."""
+    plt.rcParams.update({'font.size': 14})
     series_dict = {s: pd.Series(
         r[metric + '_distribution']
     ).describe() / constants.seats[s]['house']
@@ -343,7 +346,7 @@ def plot_centralization_distribution(fig_dir, ensemble_results, historical_dispe
     plt.axhline(.5, color='black', linewidth=.1)
     plt.margins(x=.01)
     plt.savefig(os.path.join(fig_dir, 'ensemble_centralization_distribution.eps'),
-                format='eps', bbox='tight')
+                format='eps', bbox_inches='tight')
 
 
 def plot_roeck_distribution(fig_dir, ensemble_results, historical_roeck, min_seats=3):
@@ -361,7 +364,7 @@ def plot_roeck_distribution(fig_dir, ensemble_results, historical_roeck, min_sea
     plt.legend()
     plt.margins(x=.01)
     plt.savefig(os.path.join(fig_dir, 'ensemble_roeck_distribution.eps'),
-                format='eps', bbox='tight')
+                format='eps', bbox_inches='tight')
 
 
 def plot_cut_edges_distributions(fig_dir, ensemble_results, historical_cut_edges, min_seats=3):
@@ -380,7 +383,7 @@ def plot_cut_edges_distributions(fig_dir, ensemble_results, historical_cut_edges
     plt.legend()
     plt.margins(x=.01)
     plt.savefig(os.path.join(fig_dir, 'ensemble_cut_distribution.eps'),
-                format='eps', bbox='tight')
+                format='eps', bbox_inches='tight')
 
 
 def make_ensemble_parameter_table(exp_path):
@@ -433,7 +436,7 @@ def plot_seat_share_ensemble_comparison(new_df, old_df, fig_dir, historical=None
     plt.grid(linewidth=.5, alpha=.5)
     plt.axhline(y=.5, color='black', linewidth=.5, alpha=.25, linestyle=":")
     plt.savefig(os.path.join(fig_dir, 'ensemble_seat_share_comparison.eps'),
-                format='eps', bbox='tight')
+                format='eps', bbox_inches='tight')
 
 
 def plot_compactness_ensemble_comparison(new_df, old_df, fig_dir, historical=None):
@@ -454,7 +457,7 @@ def plot_compactness_ensemble_comparison(new_df, old_df, fig_dir, historical=Non
     plt.ylabel('Average cut edges')
     plt.margins(x=.01)
     plt.savefig(os.path.join(fig_dir, 'ensemble_compactness_comparison.eps'),
-                format='eps', bbox='tight')
+                format='eps', bbox_inches='tight')
 
 
 def process_state_internal_nodes(internal_nodes):
@@ -486,18 +489,19 @@ def create_subproblem_runtime_df(ensemble_column_path):
 
 def plot_partition_runtimes(fig_folder, runtime_df):
     """Plot histogram and CDF of partition subproblem runtimes."""
+    plt.rcParams.update({'font.size': 10})
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
     number, bin_boundary, x = ax1.hist(np.clip(runtime_df.partition_time.values, 0, 3.05),
                                        bins=50, range=(0, 3.1))
     ax2.plot(bin_boundary, np.cumsum(np.insert(number, 0, 0)) / len(runtime_df), color='red')
-    ax1.set_xlabel('partition runtime (seconds)')
+    ax1.set_xlabel('optimization runtime (seconds)')
     ax1.set_ylabel('total subproblems')
     ax2.set_ylabel('cumulative distribution')
     ax2.set_ylim([0, 1.02])
     ax1.set_xlim([-.02, 3.12])
     plt.savefig(os.path.join(fig_folder, 'partition_runtimes.eps'),
-                format='eps', bbox='tight')
+                format='eps', bbox_inches='tight')
 
 
 def create_master_metrics_dfs(ensemble_dir):
@@ -514,6 +518,7 @@ def create_master_metrics_dfs(ensemble_dir):
 
 def plot_master_problem_runtimes(fig_folder, metric_df):
     """Plot histogram and CDF of sharded master problem runtimes."""
+    plt.rcParams.update({'font.size': 10})
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
     total_time = metric_df.construction_time + metric_df.solve_time
@@ -521,12 +526,16 @@ def plot_master_problem_runtimes(fig_folder, metric_df):
     ax2.plot(bin_boundary, np.cumsum(np.insert(number, 0, 0)) / len(metric_df), color='red')
     ax2.set_ylim([0, 1.02])
     ax1.set_xlim([-.02, 3.02])
+    ax1.set_xlabel('optimization runtime (seconds)')
+    ax1.set_ylabel('total selection problems')
+    ax2.set_ylabel('cumulative distribution')
     plt.savefig(os.path.join(fig_folder, 'master_runtimes.eps'),
-                format='eps', bbox='tight')
+                format='eps', bbox_inches='tight')
 
 
 def plot_master_convergence(fig_folder, master_metrics_dfs):
     """Plot historgram of optimal master object problems for all 50 states."""
+    plt.rcParams.update({'font.size': 9})
     rows = 9
     cols = 5
     fig, axs = plt.subplots(rows, cols, figsize=(16, 22))
@@ -537,8 +546,11 @@ def plot_master_convergence(fig_folder, master_metrics_dfs):
         ax.set_xticks([-1, 0, 1])
         ax.axvline(x=0, color='red', lw=1, ls=':')
         state = df.iloc[0].state
+        percent_fair = round(np.mean(np.abs(df.optimal_objective.values) < .1) * 100, 1)
+        percent_fair = int(percent_fair) if percent_fair == 100 else percent_fair
         ax.annotate(state, (0.02, .85), xycoords='axes fraction', size=14)
+        ax.annotate(str(percent_fair) + '%', (0.7, .85), xycoords='axes fraction', size=14)
     axs[-1, -1].remove()
     axs[-1, -2].remove()
     plt.savefig(os.path.join(fig_folder, 'master_covergence.eps'),
-                format='eps', bbox='tight')
+                format='eps', bbox_inches='tight')

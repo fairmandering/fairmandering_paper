@@ -4,6 +4,13 @@ from gerrypy.data.precinct_state_wrappers import wrappers
 
 
 def get_state_partisanship():
+    """
+    Helper function to return dictionary of average state vote share across
+    all elections in our dataset.
+
+    Returns: (dict) {(str) state abbreviation: (float) average statewide vote share}
+
+    """
     partisanship = {}
     for state, wrapper in wrappers.items():
         if state == 'WV':
@@ -25,6 +32,14 @@ def get_state_partisanship():
 
 
 def get_state_election_results():
+    """
+    Helper function to return dict of voteshare for every election in every state
+    in our dataset.
+
+    Returns: dict {(str) state abbreviation: {(str) election id:
+                                                (float) statewide vote share}}
+
+    """
     election_results = {}
     for state, wrapper in wrappers.items():
         if state == 'WV':
@@ -46,5 +61,11 @@ def get_state_election_results():
 
 
 def get_state_population():
+    """
+    Helper function to get state population.
+
+    Returns: (dict) {(str) state abbreviation: (int) state population}
+
+    """
     return {state: load_state_df(state).population.sum()
             for state in constants.seats}
