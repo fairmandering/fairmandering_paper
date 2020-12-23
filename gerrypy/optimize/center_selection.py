@@ -5,12 +5,31 @@ from sklearn.cluster import KMeans
 from gerrypy.utils.spatial_utils import *
 
 
-def uniform_random(area_df, n_centers):
-    return np.random.choice(np.array(area_df.index), size=n_centers, replace=False)
+def uniform_random(region_df, n_centers):
+    """
+    Uniform-random center selection function.
+    Args:
+        region_df: (pd.DataFrame) state_df subset of the node region
+        n_centers: (int) split size 
+
+    Returns: (np.array) of size [n_centers] with block indices in [region_df]
+
+    """
+    return np.random.choice(np.array(region_df.index), size=n_centers, replace=False)
 
 
-def iterative_random(area_df, capacities, pdists):
-    unassigned_blocks = list(area_df.index)
+def iterative_random(region_df, capacities, pdists):
+    """
+    Iterative-random center selection method.
+    Args:
+        region_df: (pd.DataFrame) state_df subset of the node region
+        capacities: (int list) of center capacities
+        pdists: (np.array) pairwise distance matrix of region centroids
+
+    Returns: (list) of block indices of the sampled centers
+
+    """
+    unassigned_blocks = list(region_df.index)
     np.random.shuffle(capacities)
 
     centers = []
@@ -31,7 +50,7 @@ def iterative_random(area_df, capacities, pdists):
             while population_assigned_to_center < target_population:
                 block = unassigned_blocks[assignment_order[assignment_ix]]
                 blocks_assigned_to_center.append(block)
-                population_assigned_to_center += area_df.loc[block]['population']
+                population_assigned_to_center += region_df.loc[block]['population']
                 assignment_ix += 1
 
             for block in blocks_assigned_to_center:
@@ -43,27 +62,50 @@ def iterative_random(area_df, capacities, pdists):
     return centers
 
 
-def kmeans_seeds(state_df, n_distrs, n_random_seeds=0, perturbation_scale=None):
+def kmeans_seeds(region_df, split_size, n_random_seeds=0, perturbation_scale=None):
+    """
+    K-means based center selection methods.
+    
+    Implements fixed-center and/or pareto pertubation.
+    
+    Args:
+        region_df: (pd.DataFrame) state_df subset of the node region
+        split_size: (int) number of centers to sample
+        n_random_seeds: (int) number of fixed centers
+        perturbation_scale: Pareto pertubation scale parameter
 
-    weights = state_df.population.values + 1
+    Returns: (list) of block indices of the sampled centers
+
+    """
+
+    weights = region_df.population.values + 1
     if perturbation_scale:
         weights = weight_perturbation(weights, perturbation_scale)
     if n_random_seeds:
         weights = rand_seed_reweight(weights, n_random_seeds)
 
-    pts = state_df[['x', 'y']].values
+    pts = region_df[['x', 'y']].values
 
-    kmeans = KMeans(n_clusters=n_distrs, n_jobs=-1) \
+    kmeans = KMeans(n_clusters=split_size, n_jobs=-1) \
         .fit(pts, sample_weight=weights).cluster_centers_
 
     dists = cdist(kmeans, pts)
-    centers = [state_df.index[i].item()  # Convert to native int for jsonability
+    centers = [region_df.index[i].item()  # Convert to native int for jsonability
                for i in list(np.argmin(dists, axis=1))]
 
     return centers
 
 
 def rand_seed_reweight(weights, n_seeds):
+    """
+    Utility function for assigning weights for fixed-center selection method.
+    Args:
+        weights: (np.array) of region block weights for k-means
+        n_seeds: (float) number of fixed random seeds (fractional allowed)
+
+    Returns: (np.array) modified weight vector
+
+    """
     n_seeds = int(n_seeds // 1 + (random.random() < n_seeds % 1))
     total_weight = weights.sum()
     for _ in range(n_seeds):
@@ -73,29 +115,29 @@ def rand_seed_reweight(weights, n_seeds):
 
 
 def weight_perturbation(weights, scale):
+    """Pareto perturbation"""
     return weights * np.random.pareto(scale, len(weights))
 
 
-def furthest_centers(area_df, lengths, children_sizes):
-    blocks = list(area_df.index)
-    area_lengths = lengths[np.ix_(blocks, blocks)]
-    pair = np.argmax(area_lengths)
-    c1 = pair // len(area_lengths)
-    c2 = pair % len(area_lengths)
-    centers = [c1, c2]
-    while len(centers) < len(children_sizes):
-        dists = area_lengths[centers].sum(axis=0)
-        centers.append(np.argmax(dists))
-    return [blocks[c] for c in centers]
+def get_capacities(centers, child_sizes, region_df, config):
+    """
+    Implements capacity assigment methods (both computing and matching)
 
+    Args:
+        centers: (list) of block indices of the centers
+        child_sizes: (list) of integers of the child node capacities
+        region_df: (pd.DataFrame) state_df subset of the node region
+        config: (dict) ColumnGenerator configuration
 
-def get_capacities(centers, child_sizes, area_df, config):
+    Returns: (dict) {block index of center: capacity}
+
+    """
     n_children = len(child_sizes)
     total_seats = int(sum(child_sizes))
 
-    center_locs = area_df.loc[centers][['x', 'y']].values
-    locs = area_df[['x', 'y']].values
-    pop = area_df['population'].values
+    center_locs = region_df.loc[centers][['x', 'y']].values
+    locs = region_df[['x', 'y']].values
+    pop = region_df['population'].values
 
     dist_mat = cdist(locs, center_locs)
     if config['capacity_weights'] == 'fractional':

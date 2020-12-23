@@ -5,7 +5,18 @@ from scipy.stats import t
 
 def make_master(k, block_district_matrix, costs,
                 relax=False, opt_type='abs_val'):
+    """
+    Constructs the master selection problem.
+    Args:
+        k: (int) the number of districts in a plan
+        block_district_matrix: (np.array) binary matrix a_ij = 1 if block i is in district j
+        costs: (np.array) cost coefficients of districts
+        relax: (bool) construct relaxed linear master problem
+        opt_type: (str) {"minimize", "maximize", "abs_val"
 
+    Returns: (Gurobi.model, (dict) of master selection problem variables)
+
+    """
     n_blocks, n_columns = block_district_matrix.shape
 
     master = Model("master LP")
@@ -41,6 +52,16 @@ def make_master(k, block_district_matrix, costs,
 
 
 def efficiency_gap_coefficients(district_df, state_vote_share):
+    """
+
+    Args:
+        district_df: (pd.DataFrame) selected district statistics
+            (requires "mean", "std_dev", "DoF")
+        state_vote_share: (float) average state vote share across historical elections.
+
+    Returns: (np.array) of efficiency gap cost coefficients
+
+    """
     mean = district_df['mean'].values
     std_dev = district_df['std_dev'].values
     DoF = district_df['DoF'].values
@@ -51,6 +72,16 @@ def efficiency_gap_coefficients(district_df, state_vote_share):
 
 
 def make_root_partition_to_leaf_map(leaf_nodes, internal_nodes):
+    """
+    Shard the sample tree leaf nodes by root partition.
+
+    Args:
+        leaf_nodes: (SHPNode list) with node capacity equal to 1 (has no child nodes).
+        internal_nodes: (SHPNode list) with node capacity >1 (has child nodes).
+
+    Returns: (dict) {root partition index: array of leaf node indices}
+
+    """
     def add_children(node, root_partition_id):
         if node.n_districts > 1:
             for partition in node.children_ids:

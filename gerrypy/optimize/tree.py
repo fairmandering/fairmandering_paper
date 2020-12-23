@@ -5,6 +5,15 @@ import numpy as np
 
 class SHPNode:
     def __init__(self, n_districts, area, is_root=False):
+        """
+        SHPNodes store information needed to reconstruct the tree and gathers
+        metadata from the generation process.
+
+        Args:
+            n_districts: (int) the capacity of the node
+            area: (list) of block indices associated with the region
+            is_root: (bool) if this node is the root of the sample tree
+        """
         self.is_root = is_root
         self.n_districts = n_districts  # size
         self.area = area
@@ -18,6 +27,15 @@ class SHPNode:
         self.partition_times = []
 
     def sample_n_splits_and_child_sizes(self, config):
+        """
+        Samples both the split size and the capacity of all children.
+
+        Args:
+            config: (dict) ColumnGenerator configuration
+
+        Returns: (int list) of child node capacities.
+
+        """
         n_distrs = self.n_districts
         n_splits = random.randint(min(config['min_n_splits'], n_distrs),
                                   min(config['max_n_splits'], n_distrs))
@@ -36,6 +54,7 @@ class SHPNode:
         return child_n_distrs
 
     def __repr__(self):
+        """Utility function for printing a SHPNode."""
         print_str = "Node %d \n" % self.id
         internals = self.__dict__
         for k, v in internals.items():
@@ -46,6 +65,9 @@ class SHPNode:
 
 
 class ExampleTree:
+    """
+    For illustration purposes.
+    """
     def __init__(self, config, n_districts, level=0):
         self.n_districts = n_districts
         self.level = 0
