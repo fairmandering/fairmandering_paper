@@ -30,7 +30,10 @@ for state, seats_dict in constants.seats.items():
 
 # Process precinct data to match to tracts
 for state, wrapper in precinct_state_wrappers.wrappers.items():
-    election_df = wrapper().get_data()
-    election_df.to_csv(os.path.join(constants.OPT_DATA_PATH,
-                                    state, 'election_df.csv'),
-                       index=False)
+    print(state)
+    try:
+        election_df = wrapper().get_data()
+        save_path = os.path.join(constants.OPT_DATA_PATH, state, 'election_df.csv')
+        election_df.to_csv(save_path, index=False)
+    except NotImplementedError:
+        print('Not implemented')
