@@ -1,5 +1,6 @@
 import geopandas as gpd
 import networkx as nx
+import os
 import numpy as np
 import pandas as pd
 from pysal.lib.weights import Queen
@@ -111,10 +112,29 @@ def politics_map(gdf, politics, districting):
     map_gdf = gpd.GeoDataFrame({'geometry': shape_series,
                                 'color': pd.Series(colors)})
     ax = map_gdf.plot(column='color', figsize=(15, 15), edgecolor='black', lw=1,
-                      cmap='seismic', vmin=.25, vmax=.75)
+                      cmap='seismic', vmin=.35, vmax=.65)
     gdf.plot(ax=ax, facecolor='none', edgecolor='white', lw=.05)
     ax.axis('off')
     return map_gdf
+
+
+def plot_politics_comparison(plan_gdfs, save_name, fig_dir, tract_gdf=None):
+    # Takes a few seconds
+    n_plots = len(plan_gdfs)
+    fig, axs = plt.subplots(n_plots, 1)
+    for fig_ix, plan in enumerate(plan_gdfs):
+        ax = plan.plot(ax=axs[fig_ix], column='politics', figsize=(15, 15), edgecolor='black', lw=1,
+                          cmap='seismic', vmin=.2, vmax=.8)
+        if tract_gdf is not None:
+            tract_gdf.plot(ax=axs[fig_ix], facecolor='none', edgecolor='white', lw=.05)
+        axs[fig_ix].axis('off')
+    zoom = 2
+    w, h = fig.get_size_inches()
+    fig.colorbar(ax.collections[0], ax=axs.ravel().tolist(), shrink=0.4, pad=.025,
+                 label='Republican vote-share', orientation='horizontal')
+    fig.set_size_inches(w * zoom, h * zoom)
+    plt.savefig(os.path.join(fig_dir, '%s.eps' % save_name),
+                format='eps', bbox_inches='tight')
 
 
 def plot_seat_vote_curve(plan_df, n_samples=1000, height=10):

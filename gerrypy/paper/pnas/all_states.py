@@ -1,5 +1,6 @@
 from gerrypy.analyze.viz import *
 from scipy.stats import spearmanr
+import glob
 
 from gerrypy.analyze.districts import *
 from gerrypy.analyze.historical_districts import *
@@ -553,4 +554,86 @@ def plot_master_convergence(fig_folder, master_metrics_dfs):
     axs[-1, -1].remove()
     axs[-1, -2].remove()
     plt.savefig(os.path.join(fig_folder, 'master_covergence.eps'),
+                format='eps', bbox_inches='tight')
+
+
+def pool_best_solutions(solution_dict, fair_tol=.1, non_fair_tol=1.1):
+    """Gather all fair solutions within a certain tolerance."""
+    objective_values = np.array([np.sum(solution_dict[i]['optimal_objective'])
+                                for i in solution_dict])
+    fair_sols = np.abs(objective_values) <= fair_tol
+    if fair_sols.sum() > 0:
+        return {i: solution_dict[i] for i, fair in enumerate(fair_sols) if fair}
+    else:
+        most_fair = np.abs(objective_values).min()
+        solution_tolerance = np.abs(most_fair) * non_fair_tol
+        good_enough_sols = np.abs(objective_values) <= solution_tolerance
+        return {i: solution_dict[i] for i, fair in enumerate(good_enough_sols) if fair}
+
+
+def top_k_compact_solutions(solution_dict, ddf, k):
+    """Rank solutions by compactness."""
+    metric_dict = {}
+    for i, solution_info in solution_dict.items():
+        plan_df = ddf.iloc[solution_info['solution_ixs']]
+        metric_dict[i] = {
+            'cut_edges': plan_df['cut_edges'].mean(),
+            'max_cut_edges': plan_df['cut_edges'].max(),
+        }
+    metric_df = pd.DataFrame(metric_dict).T
+    plan_scores = np.zeros(len(metric_df))
+    for rank, top_plans in enumerate(metric_df.values.argsort(axis=0)):
+        plan_scores[top_plans] += rank
+    return list(metric_df.iloc[plan_scores.argsort()].index)
+
+
+def create_lower_48_map_lines(ensemble_column_path, ensemble_dir):
+    """Gather all state and district lines of optimal maps."""
+    state_lines = []
+    district_lines = []
+    for state in constants.seats:
+        if state == "HI" or state == "AK":
+            continue
+        print(state)
+
+        tracts_gdf = load_tract_shapes(state).to_crs(epsg=4326)
+        state_lines.append(tracts_gdf.geometry.unary_union)
+
+        if constants.seats[state]['house'] > 1:
+            tree_name = glob.glob(os.path.join(ensemble_column_path, '%s*.p' % state))[0][:-2]
+            tree_name = tree_name.split('\\')[-1]
+
+            tree_file = os.path.join(ensemble_column_path, tree_name + '.p')
+            district_df_file = os.path.join(ensemble_column_path, 'district_dfs', tree_name + '_district_df.csv')
+            results_file = os.path.join(ensemble_dir, tree_name[:2] + '.p')
+            tree = pickle.load(open(tree_file, 'rb'))
+            district_df = pd.read_csv(district_df_file)
+            opt_results = pickle.load(open(results_file, 'rb'))
+
+            fair_solutions = pool_best_solutions(opt_results['master_solutions'],
+                                                 fair_tol=.1, non_fair_tol=1.1)
+            best_solutions = top_k_compact_solutions(fair_solutions, district_df, 1)[0]
+            plan = {i: tree['leaf_nodes'][i].area for i in
+                    opt_results['master_solutions'][best_solutions]['solution_ixs']}
+            plan_df = district_df.loc[plan]
+            plan_politics = plan_df['mean']
+
+            district_gdf = gpd.GeoDataFrame({
+                'geometry': {i: tracts_gdf.loc[district].geometry.unary_union for i, district in plan.items()},
+                'politics': plan_df['mean']
+            })
+
+            for shape in district_gdf.geometry:
+                district_lines.append(shape)
+    return state_lines, district_lines
+
+
+def plot_lower_48(state_lines, district_lines, fig_dir):
+    """Plot figure of all congressional districts for lower 48 states."""
+    states = gpd.GeoSeries(state_lines)
+    districts = gpd.GeoSeries(district_lines)
+    ax = districts.plot(figsize=(20, 10), color='none', edgecolor='red')
+    states.plot(ax=ax, color='none', edgecolor='black')
+    ax.axis('off')
+    plt.savefig(os.path.join(fig_dir, 'lower48.eps'),
                 format='eps', bbox_inches='tight')
