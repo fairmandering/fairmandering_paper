@@ -2,6 +2,8 @@ import os
 from gerrypy import constants
 from gerrypy.data.precincts import StatePrecinctWrapper
 
+# TODO: add validation in elections with duplicate sources
+
 
 class ALPrecinctWrapper(StatePrecinctWrapper):
     def __init__(self):
@@ -35,13 +37,6 @@ class AKPrecinctWrapper(StatePrecinctWrapper):
                 ('gov', 2018): ('GOV18D', 'GOV18R'),
                 ('pres', 2016): ('PRES16D', 'PRES16R')
             }, 
-        }, {
-            'path': os.path.join(constants.PRECINCT_PATH, 'vest_2018', 'ak_2018'),
-            'precincts': True,
-            'county_column': None,
-            'elections': {
-                ('gov', 2018): ('G18GOVDBEG', 'G18GOVRDUN')
-            }
         }]
 
         self.county_inference = None
@@ -141,14 +136,6 @@ class COPrecinctWrapper(StatePrecinctWrapper):
             'elections': {
                 ('senate', 2016): ('G16USSDBen', 'G16USSRGle'),
                 ('pres', 2016): ('G16PREDCli', 'G16PRERTru'),
-            }
-        }, {
-            'path': os.path.join(constants.PRECINCT_PATH, 'vest_2018', 'co_2018'),
-            'precincts': True,
-            'county_column': 'COUNTYFP',
-            'elections': {
-                ('gov', 2018): ('G18GOVDPOL', 'G18GOVRSTA'),
-                ('AG', 2018): ('G18ATGDWEI', 'G18ATGRBRA')
             }
         }]
         self.county_inference = {
@@ -591,15 +578,6 @@ class MNPrecinctWrapper(StatePrecinctWrapper):
                 ('AG', 2014): ('AG14D', 'AG14R'),
                 ('pres', 2012): ('PRES12D', 'PRES12R'),
                 ('senate', 2012): ('SEN12D', 'SEN12R'),
-            }
-        }, {
-            'path': os.path.join(constants.PRECINCT_PATH, 'vest_2018', 'mn_2018'),
-            'precincts': True,
-            'county_column': 'COUNTYFIPS',
-            'elections': {
-                ('senate', 2018): ('G18USSDKLO', 'G18USSRNEW'),
-                ('AG', 2018): ('G18ATGDELL', 'G18ATGRWAR'),
-                ('gov', 2018): ('G18GOVDWAL', 'G18GOVRJOH')
             }
         }]
 

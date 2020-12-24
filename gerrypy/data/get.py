@@ -1,9 +1,10 @@
-"""Script for fresh download of all data
+"""Script for fresh download of all census data,
+and preprocessing of all optimization data structures
 
-NOTE: must manually download the county dataset here
-https://dataverse.harvard.edu/file.xhtml?persistentId=doi:10.7910/DVN/VOQCHQ/HEIJCQ&version=6.0#"""
+NOTE: must manually download all election data from Box repository
+"""
 
-from gerrypy.data import shapefiles, acs, preprocess
+from gerrypy.data import shapefiles, acs, preprocess, precinct_state_wrappers
 from gerrypy import constants
 import pandas as pd
 import os
@@ -27,3 +28,9 @@ for state, seats_dict in constants.seats.items():
     if seats_dict['house'] > 1:
         preprocess.preprocess_tracts(state)
 
+# Process precinct data to match to tracts
+for state, wrapper in precinct_state_wrappers.wrappers.items():
+    election_df = wrapper().get_data()
+    election_df.to_csv(os.path.join(constants.OPT_DATA_PATH,
+                                    state, 'election_df.csv'),
+                       index=False)

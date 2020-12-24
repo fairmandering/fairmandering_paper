@@ -4,11 +4,9 @@ import requests
 import pandas as pd
 from gerrypy import constants
 
-API_KEY = "e70c2da2298439c24a3bb24f6dd24a03fb30189b"
-
 
 def variable_mapping(year, columns=None):
-    dirname = constants.CENSUS_DATA_PATH
+    dirname = constants.TRACT_DATA_PATH
     file_path = os.path.join(dirname, '%d_acs5' % year, 'profile_variables.json')
     with open(file_path, 'r') as f:
         var_map = json.load(f)['variables']
@@ -86,8 +84,8 @@ def download_census_tables(state=None, year=None, county=False):
         else:
             table_url += "&for=tract:*&in=state:%s" % state_fips
 
-        if API_KEY:
-            table_url += "&key=" + API_KEY
+        if constants.CENSUS_API_KEY:
+            table_url += "&key=" + constants.CENSUS_API_KEY
 
         r = requests.get(table_url)
         try:

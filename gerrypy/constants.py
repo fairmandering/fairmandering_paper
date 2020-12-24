@@ -12,6 +12,10 @@ APP_PATH = os.path.join(GERRYPY_BASE_PATH, 'analyze', 'app', 'gerryapp')
 
 ACS_BASE_YEAR = 2018
 
+# Get an API key if doing fresh data downloads
+CENSUS_API_KEY = ""
+
+# Map projection for all experiments (but not visualization)
 CRS = 3078
 
 NAME_IX = 0

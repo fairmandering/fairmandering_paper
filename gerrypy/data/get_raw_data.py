@@ -12,7 +12,7 @@ import requests
 import pandas as pd
 
 # Replace with API key if intending to do more than 100 counties in a day.
-API_KEY = "e70c2da2298439c24a3bb24f6dd24a03fb30189b"
+API_KEY = ""
 
 ########################### PARAMETERS #############################
 YEAR = "2016"

@@ -13,12 +13,24 @@ from scipy.spatial.distance import cdist
 
 
 class StatePrecinctWrapper:
+    """
+    Parent class to do precinct to tract processing.
+    """
     def __init__(self):
+        # Two letter state abbreviation
         self.state = None
+        # (list) of (dict)
+        # Each dict should have keys 'path' and 'elections'
         self.main_sources = []
+        # (dict) to do basic county inference
         self.county_inference = {}
 
     def get_data(self):
+        """
+        Main pipeline to gather precincts, aggregate to tract totals, and do county inference
+
+        Returns: (pd.DataFrame) of election vote totals by election by party.
+        """
         precinct_gdfs = self.load_precincts()
         tract_coverages = [self.compute_tract_coverage(precincts)
                            for precincts in precinct_gdfs]
@@ -31,6 +43,7 @@ class StatePrecinctWrapper:
         return pd.concat([tract_votes, inferred_elections], axis=1).fillna(0)
 
     def load_precincts(self):
+        """Load precinct data from file system"""
         precincts_gdfs = []
         for source in self.main_sources:
             d_columns = {d_col: '_'.join(['D', office, str(year)])
@@ -54,6 +67,7 @@ class StatePrecinctWrapper:
         return precincts_gdfs
 
     def create_probability_state_df(self):
+        """Compute probability statistics for the state_df"""
         precinct_gdfs = self.load_precincts()
         source_data = [self.compute_tract_results(precincts, source_ix)
                        for source_ix, precincts in enumerate(precinct_gdfs)]
@@ -69,6 +83,13 @@ class StatePrecinctWrapper:
         })
 
     def compute_tract_coverage(self, precincts):
+        """
+        Computes area overlap between tracts and precincts.
+        Args:
+            precincts: (gpd.GeoDataFrame) of precinct shapes
+
+        Returns: (dict) {tract id: [(precinct id, coverage)]}
+        """
         tracts = load_tract_shapes(self.state).to_crs(epsg=constants.CRS)
 
         p_centers = np.stack([precincts.centroid.x, precincts.centroid.y]).T
@@ -104,6 +125,15 @@ class StatePrecinctWrapper:
         return tract_coverage
 
     def compute_tract_votes(self, precincts, tract_coverage):
+        """
+        Compute tract vote totals based on precinct vote totals
+        Args:
+            precincts: (gpd.GeoDataFrame) of vote totals by precinct
+            tract_coverage: (dict) {tract id: [(precinct id, coverage)]}
+
+        Returns: (pd.DataFrame) of tract vote totals
+
+        """
         # Estimate tract vote shares
         tract_election_results = {}
         election_columns = list(precincts.columns)
@@ -129,6 +159,14 @@ class StatePrecinctWrapper:
         return tract_election_df
 
     def infer_w_county_data(self, votes_df):
+        """
+        Uses mix of county and precinct data to infer tract voting data.
+        Args:
+            votes_df: (pd.DataFrame) of election vote totals for all precinct elections
+
+        Returns: (pd.DataFrame) of inferred tract totals
+
+        """
         state_df = load_state_df(self.state)
         votes_df['county'] = state_df['GEOID'].astype(str).apply(lambda x: x.zfill(11)[:5])
         votes_df['population'] = state_df['population']
@@ -157,6 +195,14 @@ class StatePrecinctWrapper:
         return pd.concat(inferred_dfs, axis=1)
 
     def election_columns(self, include_party=True):
+        """
+        Helper function to get list of keys for election columns
+        Args:
+            include_party: (bool) whether to include the party prefix in column name
+
+        Returns: (list) of strings usable to index specific election results
+
+        """
         election_list = []
         for source in self.main_sources:
             for election in source['elections']:
@@ -171,15 +217,8 @@ class StatePrecinctWrapper:
         else:
             return election_strs
 
-    def data_report(self):
-        precincts = self.load_precincts()
-        for gdf in precincts:
-            for column in gdf.columns:
-                print(column, (gdf[column] == 0).sum())
-            coverage, shares = self.compute_tract_results(gdf)
-            shares.isna()
-
     def check_state_mean_and_std(self):
+        """Sanity check to print mean and std"""
         precincts = self.load_precincts()
         results = {}
         for precinct_gdf in precincts:
@@ -192,6 +231,7 @@ class StatePrecinctWrapper:
         print('Mean', round(shares.mean(), 4), 'STD', round(shares.std(ddof=1), 4))
 
     def test_self(self):
+        """Test function to make sure all paths and columns exist"""
         print('Testing %s precinct wrapper' % self.state)
         for source in self.main_sources:
             if os.path.exists(source['path']):

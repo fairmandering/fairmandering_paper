@@ -1,3 +1,6 @@
+"""Constants file for mapping census names to human readable names."""
+
+
 NAME_MAP = {
     'population': {
         '2010': 'DP02_0122E',

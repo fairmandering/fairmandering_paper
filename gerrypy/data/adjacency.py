@@ -6,6 +6,16 @@ from scipy.spatial.distance import cdist, pdist, squareform
 
 
 def connect_components(gdf, inclusion_factor=1.5):
+    """
+    Generates a connected adjacency graph from a (possibly disconnected) GeoDataFrame
+
+    Args:
+        gdf: (gpd.GeoDataFrame) geometry of a region
+        inclusion_factor: (float) controls the number of edges used to connect components
+
+    Returns: (nx.Graph) block adjacency graph of region
+
+    """
     shape_list = gdf.geometry.to_list()
     # For the purpose of getting boundary node for connection algo
     outer = gdf.geometry.unary_union
