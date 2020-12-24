@@ -10,9 +10,7 @@ import os
 import json
 import requests
 import pandas as pd
-
-# Replace with API key if intending to do more than 100 counties in a day.
-API_KEY = ""
+from gerrypy import constants
 
 ########################### PARAMETERS #############################
 YEAR = "2016"
@@ -84,8 +82,8 @@ def download_census_tables(AREAS, YEAR):
                 county = fips_code[2:]
                 table_url += "&for=tract:*&in=state:%s&in=county:%s" % (state, county)
 
-            if API_KEY:
-                table_url += "&key=" + API_KEY
+            if constants.CENSUS_API_KEY:
+                table_url += "&key=" + constants.CENSUS_API_KEY
 
             r = requests.get(table_url)
             try:
