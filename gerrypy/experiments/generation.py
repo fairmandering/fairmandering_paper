@@ -10,11 +10,22 @@ import json
 
 
 class Experiment:
+    """
+    Experiment class to test different generation configurations.
+    """
     def __init__(self, base_config, experiment_config):
+        """
+        Args:
+            base_config: the config shared across as experiments.
+            experiment_config: the config specific to a trial.
+        """
         self.base_config = base_config
         self.experiment_config = experiment_config
 
     def run(self):
+        """Performs all generation trials.
+
+        Saves a file with the tree as well as a large number of ensemble level metrics."""
         name = self.experiment_config['name']
         experiment_dir = '%s_results_%s' % (name, str(int(time.time())))
         save_dir = os.path.join(constants.RESULTS_PATH, experiment_dir)

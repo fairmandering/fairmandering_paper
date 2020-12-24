@@ -17,6 +17,14 @@ from gerrypy.optimize import master
 
 
 def run_all_states_result_pipeline(result_path, states=None):
+    """
+    Run result pipeline to analyze column ensemble
+    Args:
+        result_path: (os.path) of the column ensemble
+        states: optional (list), if provided will only run on subset of states
+
+    Saves processed results in a subfolder of [results path]
+    """
     try:
         os.mkdir(os.path.join(result_path, 'pnas_results'))
     except FileExistsError:
@@ -53,6 +61,14 @@ def run_all_states_result_pipeline(result_path, states=None):
 
 
 def extreme_electoral_solutions(leaf_nodes, internal_nodes, district_df):
+    """
+    Args:
+        leaf_nodes: (SHPNode list) with node capacity equal to 1 (has no child nodes).
+        internal_nodes: (SHPNode list) with node capacity >1 (has child nodes).
+        district_df: (pd.DataFrame) selected statistics of generated districts.
+
+    Returns: (dict) of most R, D advantage and most and least competitive
+    """
     extreme_data = {}
     r_advantage_query_vals = tree.party_advantage_query_fn(district_df)
     d_advantage_query_vals = 1 - r_advantage_query_vals
@@ -82,6 +98,14 @@ def extreme_electoral_solutions(leaf_nodes, internal_nodes, district_df):
 
 
 def extreme_compactness_solutions(leaf_nodes, internal_nodes, district_df):
+    """
+    Args:
+        leaf_nodes: (SHPNode list) with node capacity equal to 1 (has no child nodes).
+        internal_nodes: (SHPNode list) with node capacity >1 (has child nodes).
+        district_df: (pd.DataFrame) selected statistics of generated districts.
+
+    Returns: (dict) of most and least compact solution for multiple compactness measures
+    """
     extreme_compact_data = {}
     dispersion = district_df.dispersion.values
     # Negative since lower dispersion is better
@@ -148,6 +172,17 @@ def extreme_compactness_solutions(leaf_nodes, internal_nodes, district_df):
 
 
 def subsampled_distributions(leaf_nodes, internal_nodes, district_df, state):
+    """
+    Subsample sample tree and save full enumeration.
+    Args:
+        leaf_nodes: (SHPNode list) with node capacity equal to 1 (has no child nodes).
+        internal_nodes: (SHPNode list) with node capacity >1 (has child nodes).
+        district_df: (pd.DataFrame) selected statistics of generated districts.
+        state: (str) two letter state abbreviation
+
+    Returns: (dict) of plan metrics for all enumerated plans
+
+    """
     subsample_constant = 1000 * constants.seats[state]['house'] ** 2
 
     solution_count, parent_nodes = subsample.get_node_info(leaf_nodes, internal_nodes)
@@ -182,6 +217,18 @@ def subsampled_distributions(leaf_nodes, internal_nodes, district_df, state):
 
 
 def master_solutions(leaf_nodes, internal_nodes, district_df, state, state_vote_share):
+    """
+    Solves the master selection problem optimizing for fairness on all root partitions.
+    Args:
+        leaf_nodes: (SHPNode list) with node capacity equal to 1 (has no child nodes).
+        internal_nodes: (SHPNode list) with node capacity >1 (has child nodes).
+        district_df: (pd.DataFrame) selected statistics of generated districts.
+        state: (str) two letter state abbreviation
+        state_vote_share: (float) the expected Republican vote-share of the state.
+
+    Returns: (dict) solution data for each optimal solution.
+
+    """
     bdm = districts.make_bdm(leaf_nodes)
     cost_coeffs = master.efficiency_gap_coefficients(district_df, state_vote_share)
     root_map = master.make_root_partition_to_leaf_map(leaf_nodes, internal_nodes)

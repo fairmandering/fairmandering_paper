@@ -10,16 +10,31 @@ from gerrypy.utils import dir_processing
 
 
 class StateRunner:
+    """Experiment class to run generation on all states, generate district dfs
+    and run MSP optimization on the ensemble"""
     def __init__(self, name, base_config):
         self.base_config = base_config
         self.name = name
 
     def k_to_w(self, k):
+        """Compute the sample width as a function of the number of districts."""
         w_root = int(round((2000 / k) ** 1.2))
         w_internal = int(round((200 / k) ** .7))
         return w_root, w_internal
 
     def run(self, states=None, test=False, test_sample_widths=(1, 1)):
+        """
+        Perform the generation, save the tree and the configuration used for generation.
+        Args:
+            states: optional (list) of states to run generation on instead of all multi district states.
+            test: (bool) whether to run a small trial run.
+            test_sample_widths: (tuple) the size of the test run if [test]
+
+        Saves three files for each state: the ensemble file containing the columns
+        and generation config, the district_df csv containing district level metrics,
+        and a results file of the result of the fairness optimization and other
+        ensemble results.
+        """
         experiment_dir_name = os.path.join(constants.RESULTS_PATH,
                                            self.name + str(int(time.time())))
         os.makedirs(experiment_dir_name)
