@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # In[1]:
-
+from IPython import get_ipython
 
 get_ipython().run_line_magic('load_ext', 'autoreload')
 get_ipython().run_line_magic('autoreload', '2')
@@ -11,7 +11,7 @@ get_ipython().run_line_magic('autoreload', '2')
 # In[2]:
 
 
-from gerrypy.paper.pnas.all_states import *
+from gerrypy.paper.acda.all_states import *
 import os
 import gerrypy.constants
 
@@ -372,7 +372,7 @@ nc_vary_k_path = os.path.join(constants.RESULTS_PATH, 'PNAS', 'PNAS_NC_k_results
 
 
 get_ipython().run_line_magic('reload_ext', 'autoreload')
-from gerrypy.paper.pnas.algorithm_configuration import *
+from gerrypy.paper.acda.algorithm_configuration import *
 get_ipython().run_line_magic('reload_ext', 'autoreload')
 
 
